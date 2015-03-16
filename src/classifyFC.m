@@ -22,7 +22,10 @@ function performance = classifyFC(data,method)
         
         % random forest
         case 'RF'
-            performance = forestClassifier(vectorFC,categoryValues);
+            performance = forestClassifier(method,vectorFC,categoryValues);
+            
+        case 'BF'
+            performance = forestClassifier(method,vectorFC,categoryValues);
             
         % wrong method
         otherwise
