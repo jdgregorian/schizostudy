@@ -37,7 +37,7 @@ function performance = forestClassifier(method, data, indices, settings)
     end
 
     y = predict(Forest,data(i,:));
-    if y == indices(i) %strcmp(y{1},num2str(indices(i)))
+    if strcmp(y{1},num2str(indices(i)))
       correctPredictions(i) = 1;
     end
     fprintf('Subject %d/%d done...\n',i,Nsubjects);

@@ -1,7 +1,7 @@
 clear
 
 param(1).name = 'nTrees';
-param(1).values = {1};% {100,400,1000};
+param(1).values = {100};% {100,400,1000};
 param(end+1).name = 'FBoot';
 param(end).values = {0.5,0.8,1}; % {0.5,0.8,1};
 param(end+1).name = 'SampleWithReplacement';
@@ -21,7 +21,7 @@ param(end).values = {'gdi','twoing','deviance'}; % {'gdi','twoing','deviance'};
 param(end+1).name = 'Surrogate';
 param(end).values = {'off','on','all'}; % {'off','on','all'}; 
 
-filename = ['results/testRFparams',randi(10^6)];
+filename = ['results/testRFparams',num2str(randi(10^6))];
 data = 'data\data_FC_203subjects.mat';
 
 nParams = length(param);
