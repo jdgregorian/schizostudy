@@ -21,8 +21,8 @@ param(end).values = {'gdi','twoing','deviance'}; % {'gdi','twoing','deviance'};
 param(end+1).name = 'Surrogate';
 param(end).values = {'off','on','all'}; % {'off','on','all'}; 
 
-filename = ['results/testRFparams',num2str(randi(10^6))];
-data = 'data\data_FC_203subjects.mat';
+filename = [fullfile('results','testRFparams'),num2str(randi(10^6))];
+data = fullfile('data','data_FC_203subjects.mat');
 
 nParams = length(param);
 for i = 1:nParams
@@ -47,7 +47,7 @@ for i = 0:nCombinations - 1
     disp(settings)
     
     tic
-    [performance(i+1), FC, categoryValues] = classifyFC('data\data_FC_203subjects.mat','rf',settings(i+1));
+    [performance(i+1), FC, categoryValues] = classifyFC(data,'rf',settings(i+1));
     elapsedTime(i+1) = toc;
     
     save([filename,'.mat'],'performance','settings','elapsedTime','FC','categoryValues');
