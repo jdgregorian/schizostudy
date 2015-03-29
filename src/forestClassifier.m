@@ -1,4 +1,5 @@
-function performance = forestClassifier(data, indices, settings)
+function performance = forestClassifier(method, data, indices, settings)
+% Classification by MATLAB forest classifier. Returns performance of forest in LOO CV.
   
   % gain number of trees and remove it from setting for easier parsing
   nTrees = defopts(settings,'nTrees',100);
@@ -23,19 +24,25 @@ function performance = forestClassifier(data, indices, settings)
   Nsubjects = size(data,1);
   correctPredictions = zeros(1,Nsubjects);
     
-    for i = 1:Nsubjects
-        trainingSet = data;
-        trainingSet(i,:) = [];
-        trainingIndices = indices;
-        trainingIndices(i) = [];
+  for i = 1:Nsubjects
+    trainingSet = data;
+    trainingSet(i,:) = [];
+    trainingIndices = indices;
+    trainingIndices(i) = [];
+    switch method
+      case 'rf'
         Forest = TreeBagger(nTrees,trainingSet,trainingIndices,otherSettings{:});
-        y = predict(Forest,data(i,:));
-        if strcmp(y{1},num2str(indices(i)))
-            correctPredictions(i) = 1;
-        end
-        fprintf('Subject %d/%d done...\n',i,Nsubjects);
+      case 'bf'
+        Forest = BinForest(trainingSet,trainingIndices,5);
     end
-    
-    performance = sum(correctPredictions)/Nsubjects;
+
+    y = predict(Forest,data(i,:));
+    if y == indices(i) %strcmp(y{1},num2str(indices(i)))
+      correctPredictions(i) = 1;
+    end
+    fprintf('Subject %d/%d done...\n',i,Nsubjects);
+  end
+
+  performance = sum(correctPredictions)/Nsubjects;
 
 end

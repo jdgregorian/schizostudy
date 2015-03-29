@@ -6,6 +6,7 @@ function [performance, FC, categoryValues] = classifyFC(data, method, settings)
   if nargin < 3
       settings = [];
   end
+  method = lower(method);
 
     % prepare data
     loadedData = load(data);
@@ -25,11 +26,11 @@ function [performance, FC, categoryValues] = classifyFC(data, method, settings)
     end
     
     % test classification by chosen method
-    switch lower(method)
+    switch method
         
         % random forest
-        case 'rf'
-            performance = forestClassifier(vectorFC, categoryValues, settings);
+        case {'rf','bf'}
+            performance = forestClassifier(method,vectorFC, categoryValues, settings);
             
         % wrong method
         otherwise
