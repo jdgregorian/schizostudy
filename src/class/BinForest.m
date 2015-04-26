@@ -1,7 +1,7 @@
 classdef BinForest 
     
     properties
-        Trees  % T-1 cell array of tree stumps
+        Trees  % T-1 cell array of trees
         nvars  % # of features
         NTrees % number of trees
         minleaf % minimal number of points in leaf

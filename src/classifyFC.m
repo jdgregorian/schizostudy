@@ -29,7 +29,7 @@ function [performance, FC, categoryValues] = classifyFC(data, method, settings)
     switch method
         
         % random forest
-        case {'rf','bf'}
+        case {'rf','bf','sf'}
             performance = forestClassifier(method,vectorFC, categoryValues, settings);
             
         % wrong method
