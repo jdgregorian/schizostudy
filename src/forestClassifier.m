@@ -1,5 +1,13 @@
 function performance = forestClassifier(method, data, indices, settings)
-% Classification by MATLAB forest classifier. Returns performance of forest in LOO CV.
+% Classification by forest classifier. Returns performance of the forest in
+% LOO CV.
+%
+% method   - shortcut of the forest type used ('rf','bf','sf') | string
+% data     - input data matrix (1st dim - single data, 2nd data dimension)
+%            | double matrix
+% indices  - class labels for each data | double vector
+% settings - structure of additional settings for forest specified in
+%            method
   
   % gain number of trees and remove it from setting for easier parsing
   nTrees = defopts(settings,'nTrees',11);
@@ -21,6 +29,7 @@ function performance = forestClassifier(method, data, indices, settings)
     otherSettings{2*i} = settingsValues{i};
   end
   
+  % count LOO cross-validation
   Nsubjects = size(data,1);
   correctPredictions = zeros(1,Nsubjects);
     

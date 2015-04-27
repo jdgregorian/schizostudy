@@ -10,7 +10,7 @@ function [performance, FC, categoryValues] = classifyFC(data, method, settings)
 
     % prepare data
     loadedData = load(data);
-    FC = loadedData.FC;
+%     FC = loadedData.FC;
     indicesPatients = loadedData.indices_patients;
     categoryValues = zeros(1,size(FC,1));
     categoryValues(indicesPatients) = 1;
