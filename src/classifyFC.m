@@ -10,7 +10,17 @@ function [performance, FC, categoryValues] = classifyFC(data, method, settings)
 
     % prepare data
     loadedData = load(data);
-%     FC = loadedData.FC;
+    if isfield(loadedData,'FC') % functional connectivity
+      FC = loadedData.FC;
+    elseif isfield(loadedData,'SC') % structional connectivity
+      FC = loadedData.SC;
+    else
+      fprintf('Wrong connectivity matrix!')
+      performance = NaN;
+      FC = [];
+      categoryValues = [];
+      return
+    end
     indicesPatients = loadedData.indices_patients;
     categoryValues = zeros(1,size(FC,1));
     categoryValues(indicesPatients) = 1;

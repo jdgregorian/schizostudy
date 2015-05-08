@@ -17,7 +17,8 @@ methods
     for T = 1:NTrees
       % bootstrap
       useInd = randi(size(data,1),1,size(data,1));
-      Tree = StumpTree(data(useInd,:),labels);
+%       Tree = StumpTree(data(useInd,:),labels);
+      Tree = LinearTree(data(useInd,:),labels);
       y = Tree.predict(data(useInd,:));
       SF.Trees{T} = Tree;
       SF.NTrees = SF.NTrees + 1;
