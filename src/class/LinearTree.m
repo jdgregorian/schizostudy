@@ -7,12 +7,14 @@ classdef LinearTree
     features  % dimension of input space
     zerocount % number of zero labels
     onescount % number of ones labels
+    traindata % data used for tree training
 
     % Tree properties
     children  % children coordinates
     parent    % parent coordinates
     splitZero % 'zero' points determining the split boundary
     splitOne  % 'one' points determining the split boundary
+    nodeData  % data assigned to the specific node
 %       predictors % predictors in leaves
   end
     
@@ -25,37 +27,66 @@ methods
     ST.features = size(data,2);
     ST.zerocount = sum(labels==0);
     ST.onescount = Nsubjects - ST.zerocount;
+    ST.traindata = data;
     
     ST.children = [0 0];
     ST.parent = 0;
-    ST.splitZero = [];
-    ST.splitOne = [];
+    ST.splitZero = NaN(1,ST.features);
+    ST.splitOne = NaN(1,ST.features);
+    ST.nodeData = ones(1,Nsubjects);
     
     if size(data,1) ~= Nsubjects
       fprintf('Data length differs from labels length!');
       return
     end
      
-    nPureLeaf = 0; % leaves which are not pure
+    nPureLeaf = true; % leaves which are not pure or split nodes
     i = 0;
-    while any(nPureLeaf) || i < 10
+    while any(nPureLeaf) && i < 10
       i = i+1; % just to be sure this ends
       
+      leafInd = find(nPureLeaf);
       nToSplit = sum(nPureLeaf); % number of leaves possible to split
       I = zeros(1,nToSplit);
-      splitZero = NaN(nToSplit,ST.features);
-      splitOne = NaN(nToSplit,ST.features);
+      splitZ = NaN(nToSplit,ST.features);
+      splitO = NaN(nToSplit,ST.features);
+      dataIndZ = {};
+      dataIndO = {};
       for s = 1:nToSplit
-        [I(s),splitZero(s),splitOne(s)] = splitGain(ST,data); %TODO: splitGain function
+        actualDataInd(s,:) = (ST.nodeData == leafInd(s));
+        [I(s),splitZ(s,:),splitO(s,:),dataIndZ{s},dataIndO{s}] = ...
+          LinearTree.splitGain(data(actualDataInd(s,:),:),actualDataInd(s,:),labels);
       end
       
+      % split node with the maximum information gain
+      [~,maxInd] = max(I);
+      
+      ST.parent(end+1:end+2) = leafInd(maxInd);
+      nNodes = length(ST.parent);
+      ST.children(leafInd(maxInd),:) = [nNodes-1 nNodes];
+      ST.children(nNodes-1:nNodes,:) = zeros(2,2);
+      
+      ST.splitZero(leafInd(maxInd),:) = splitZ(maxInd,:);
+      ST.splitOne(leafInd(maxInd),:) = splitO(maxInd,:);
+      ST.splitZero(nNodes-1:nNodes,:) = NaN(2,ST.features);
+      ST.splitOne(nNodes-1:nNodes,:) = NaN(2,ST.features);
+      
+      changeIndZ = actualDataInd(maxInd,:);
+      changeIndZ(dataIndZ{maxInd}) = false;
+      changeIndO = actualDataInd(maxInd,:);
+      changeIndO(dataIndO{maxInd}) = false;
+      ST.nodeData(changeIndZ) = nNodes - 1;
+      ST.nodeData(changeIndO) = nNodes;
+      
+      nPureLeaf(maxInd) = 0; % leaf became splitting node
+      nPureLeaf(nNodes-1) = ~all(~labels(dataIndZ{maxInd}));
+      nPureLeaf(nNodes) = ~all(labels(dataIndO{maxInd}));
     end
     % class division
     A = data(~logical(labels),:);
     B = data(logical(labels),:);
     
     % count mean
-    
     ST.splitZero = mean(A,1);
     ST.splitOne = mean(B,1);
     
@@ -68,45 +99,56 @@ methods
     oneDist = sqrt(sum((data-repmat(ST.splitOne,nData,1)).^2,2));
     y(oneDist < zeroDist) = 1; 
   end 
-  
-  % TODO: splitGain
-  function [I,A,B] = splitGain(ST,data)
-    I = NaN;
-    A = NaN;
-    B = NaN;
-  end
     
 end
 
 methods (Static)
-
-  function I = infoGain(data,labels,splitdim,splitvalues)
-  % splitdim - dimension of split
-  % splitvalue - vector of decision bounds in splitdim dimension
   
-    A = data(~logical(labels),splitdim);
-    B = data(logical(labels),splitdim);
-    Ndata = length(labels);
+  % TODO: splitGain
+  function [I,splitZero,splitOne,dataIndZ,dataIndO] = splitGain(data,index,labels)
     
-    NallA = length(A);
-    NallB = Ndata - NallA;
+    nData = size(data,1);
+    dataID = 1:nData;
     
-    NleftA = NaN(Ndata-1,1);
-    NleftB = NaN(Ndata-1,1);
-    for i = 1 : Ndata - 1
-      NleftA(i) = length(A(A<splitvalues(i)));
-      NleftB(i) = length(B(B<splitvalues(i)));
-    end
+    % class division
+    A = data(~logical(labels(index)),:);
+    B = data(logical(labels(index)),:);
     
-    NrightA = NallA - NleftA;
-    NrightB = NallB - NleftB;
+    % count mean
+    splitZero = mean(A,1);
+    splitOne = mean(B,1);
     
-    pFull = [NallA/Ndata, NallB/Ndata];
-    pLeft = [NleftA./(NleftA+NleftB), NleftB./(NleftA+NleftB)];
-    pRight = [NrightA./(NrightA+NrightB), NrightB./(NrightA+NrightB)];
+    % count indexes
+    zeroDist = sqrt(sum((data-repmat(splitZero,nData,1)).^2,2));
+    oneDist = sqrt(sum((data-repmat(splitOne,nData,1)).^2,2));
+    dataIndZ = dataID(zeroDist<oneDist);
+    dataIndO = dataID(zeroDist>=oneDist);
+    
+    % count information gain
+    I = LinearTree.infoGainSet(dataIndZ,dataIndO,labels);
+  end
+
+  function I = infoGainSet(dataIndZ,dataIndO,labels)
+  % dataIndZ - 'zero' set of data
+  % dataIndO - 'one' set of data
+  % labels   - labels of data [dataIndZ,dataIndO]
+      
+    NallZ = length(dataIndZ); % # of points to the 'zero' child
+    NallO = length(dataIndO); % # of points to the 'one' child
+    Ndata = NallZ + NallO;
+    
+    NzeroZ = sum(~labels(dataIndZ)); % # of zero points in 'zero' child (correct)
+    NzeroO = NallZ - NzeroZ;         % # of one points in 'zero' child (incorrect)
+    
+    NoneZ = sum(~labels(dataIndO)); % # of zero points in 'one' child (incorrect)
+    NoneO = NallO - NoneZ;         % # of one points in 'one' child (correct)
+    
+    pFull = [sum(~labels([dataIndZ,dataIndO]))/Ndata, sum(labels([dataIndZ,dataIndO]))/Ndata];
+    pLeft = [NzeroZ./NallZ, NzeroO./NallZ]; % zero goes to the left child
+    pRight = [NoneZ./NallO, NoneO./NallO];  % one goes to the right child
         
-    I = StumpTree.shannonEntropy(pFull)*ones(Ndata-1,1) - (NleftA+NleftB)./Ndata.*StumpTree.shannonEntropy(pLeft)...
-        - (NrightA+NrightB)./Ndata.*StumpTree.shannonEntropy(pRight);
+    I = LinearTree.shannonEntropy(pFull) - NallZ./Ndata.*LinearTree.shannonEntropy(pLeft)...
+        - NallO./Ndata.*LinearTree.shannonEntropy(pRight);
   end
   
   function H = shannonEntropy(p)
