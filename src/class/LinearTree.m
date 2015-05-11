@@ -124,15 +124,30 @@ methods
   function y = predict(ST, data)
     nData = size(data,1);
     y = zeros(nData,1);
+    dataNodeNum = ones(nData,1);
     
-    for d = 1:nData
-      zeroDist = LinearTree.distance(repmat(ST.splitZero,nData,1),repmat(data,ST.Nodes,1));
-      oneDist = LinearTree.distance(repmat(ST.splitOne,nData,1),repmat(data,ST.Nodes,1));
+    splitNodes = find(ST.children(:,1));
+    nSplitNodes = length(splitNodes);
+    
+    
+    for node = 1:nSplitNodes
+      nodeDataId = (splitNodes(node) == dataNodeNum);
+      if any(nodeDataId) % are there any data for prediction?
+        nodeDataPred = data(nodeDataId,:);
+        nNodeData = sum(nodeDataId);
+        tempDataNum = zeros(nNodeData,1);
+        zeroDist = LinearTree.distance(repmat(ST.splitZero(splitNodes(node),:),nNodeData,1),nodeDataPred);
+        oneDist = LinearTree.distance(repmat(ST.splitOne(splitNodes(node),:),nNodeData,1),nodeDataPred);
+        tempDataNum(zeroDist<oneDist) = ST.children(splitNodes(node),1);
+        tempDataNum(zeroDist>=oneDist) = ST.children(splitNodes(node),2);
+        dataNodeNum(nodeDataId) = tempDataNum;
+      end
     end
-    zeroDist = sqrt(sum((data-repmat(ST.splitZero,nData,1)).^2,2));
-    oneDist = sqrt(sum((data-repmat(ST.splitOne,nData,1)).^2,2));
-    y(oneDist < zeroDist) = 1; 
-  end 
+    
+    % if the node number is one, prediction equals one
+    y(logical(mod(dataNodeNum,2))) = 1;
+    
+  end
     
 end
 

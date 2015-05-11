@@ -4,7 +4,7 @@ close all
 % data
 nZeros = 10;
 nOnes = 10;
-nTest = 5;
+nTest = 10;
 dim = 2;
 
 A = randn(nZeros,dim);
