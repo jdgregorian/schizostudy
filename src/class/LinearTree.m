@@ -10,12 +10,13 @@ classdef LinearTree
     traindata % data used for tree training
 
     % Tree properties
-    Nodes    % # of nodes
+    Nodes     % # of nodes
     children  % children coordinates
     parent    % parent coordinates
     splitZero % 'zero' points determining the split boundary
     splitOne  % 'one' points determining the split boundary
     nodeData  % data assigned to the specific node
+    maxSplit  % upper bound of possible splits
 %       predictors % predictors in leaves
   end
     
@@ -36,6 +37,7 @@ methods
     ST.splitZero = NaN(1,ST.features);
     ST.splitOne = NaN(1,ST.features);
     ST.nodeData = ones(1,Nsubjects);
+    ST.maxSplit = 25;
     
     if size(data,1) ~= Nsubjects
       fprintf('Data length differs from labels length!');
@@ -46,7 +48,7 @@ methods
     nNodes = 1; % number of nodes
     i = 0;
     % training cycle start
-    while any(nPureLeaf) && i < 10
+    while any(nPureLeaf) && i < ST.maxSplit
       i = i+1; % just to be sure this ends
       
       % training drawing for 2D
