@@ -5,10 +5,12 @@ SCdata = fullfile('data','data_SC_203subjects.mat');
 
 % best so far forest settings on FC data
 bestFmethod = 'rf';
-bestFsettings.nTrees = 100;
-bestFsettings.Fboot = 1; 
+bestFsettings.nTrees = 11;
+bestFsettings.Fboot = 0.5; 
 bestFsettings.SampleWithReplacement = 'off';
-bestFsettings.NvarToSample = 500;
-bestFsettings.MinLeaf = 8;
-bestFsettings.SplitCriterion = 'gdi';
+bestFsettings.NvarToSample = 100;
+bestFsettings.MinLeaf = 1;
+bestFsettings.SplitCriterion = 'deviance';
 bestFsettings.Surrogate = 'off';
+
+fprintf('Print Criminisi!\n')
