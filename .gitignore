@@ -1,4 +1,5 @@
 *.asv
 data/*
+results/*
 startupSchizo.m
 *~

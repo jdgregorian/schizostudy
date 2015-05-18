@@ -21,9 +21,13 @@ function [performance, FC, categoryValues] = classifyFC(data, method, settings)
       categoryValues = [];
       return
     end
-    indicesPatients = loadedData.indices_patients;
-    categoryValues = zeros(1,size(FC,1));
-    categoryValues(indicesPatients) = 1;
+    if isfield(loadedData,'categoryValues')
+      categoryValues = loadedData.categoryValues;
+    else
+      indicesPatients = loadedData.indices_patients;
+      categoryValues = zeros(1,size(FC,1));
+      categoryValues(indicesPatients) = 1;
+    end
     Nsubjects = length(categoryValues);
     matDim = size(FC,2);
     
