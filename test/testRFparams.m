@@ -116,3 +116,16 @@ function testRFparams(data,param,filename)
     fprintf('Available computations completed.\nCheck other machines if they still compute.\n')
   end
 end
+
+function S = sLoad(filename)
+% function for secure loading of file
+  notSaved = true;
+  while notSaved
+    try
+      S = load(filename);
+      notSaved = false;
+    catch
+      fprintf('Waiting for access to file %s ...',filename)
+    end
+  end
+end
