@@ -1,5 +1,6 @@
 classdef LinearTree 
-% class for binary decision tree using linear boundaries
+% Class for binary decision tree using linear manifolds as decision split
+% boundaries.
 % NOT FINISHED
     
   properties
@@ -21,9 +22,14 @@ classdef LinearTree
   end
     
 methods
-  function ST = LinearTree(data, labels)   
+  function ST = LinearTree(data, labels, settings)
     
+    % initialize
+    if nargin < 3
+      settings = struct([]);
+    end
     
+    % learning data properties
     Nsubjects = length(labels);
     
     ST.features = size(data,2);
@@ -31,24 +37,41 @@ methods
     ST.onescount = Nsubjects - ST.zerocount;
     ST.traindata = data;
     
+    % tree properties
     ST.Nodes = 1;
     ST.parent = 0;
     ST.children = [0 0];
     ST.splitZero = NaN(1,ST.features);
     ST.splitOne = NaN(1,ST.features);
     ST.nodeData = ones(1,Nsubjects);
-    ST.maxSplit = 25;
     
+    % user defined tree properties
+    ST.maxSplit = defopts(settings,'maxSplit','all');
+    
+    % data input check
     if size(data,1) ~= Nsubjects
       fprintf('Data length differs from labels length!');
       return
     end
     
+    % prepairing for training cycle
     nPureLeaf = true; % leaves which are not pure or split nodes
     nNodes = 1; % number of nodes
+    
+    % maximum split setting
+    if ischar(ST.maxSplit) && strcmp(ST.maxSplit,'all')
+      maxSplitNum = Nsubjects;
+    elseif isnumeric(ST.maxSplit)
+      maxSplitNum = ST.maxSplit;
+    else
+      fprintf('Wrong maxSplit setting. Replacing by ''all''')
+      ST.maxSplit = 'all';
+      maxSplitNum = Nsubjects;
+    end
+      
     i = 0;
     % training cycle start
-    while any(nPureLeaf) && i < ST.maxSplit
+    while any(nPureLeaf) && i < maxSplitNum
       i = i+1; % just to be sure this ends
       
       % training drawing for 2D

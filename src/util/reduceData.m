@@ -1,24 +1,24 @@
-function reduceData(FCdata)
+function reduceData(SCdata)
 % reduce and save dataset
 
   subjectOut = [66,101,102,104,113,144,152,166,178,179,189,190,192];
   regionOut = [71,72];
-  newName = 'FC';
+  newName = 'SC';
 
-  load(FCdata)
+  load(SCdata)
 
   % decide which subjects and regions stay
-  nOrigSub = size(FC,1);
+  nOrigSub = size(SC,1);
   subjectStay = true(1,nOrigSub);
   subjectStay(subjectOut) = false;
-  regionStay = true(1,size(FC,2));
+  regionStay = true(1,size(SC,2));
   regionStay(regionOut) = false;
 
   % create new dataset
-  FC = FC(subjectStay, regionStay, regionStay);
+  SC = SC(subjectStay, regionStay, regionStay);
   indices_volunteers = 1:(length(indices_volunteers)-sum(ismember(subjectOut,indices_volunteers)));
   indices_patients = 1:(length(indices_patients)-sum(ismember(subjectOut,indices_patients)));
-  nNewSub = size(FC,1);
+  nNewSub = size(SC,1);
   if nNewSub ~= length([indices_volunteers,indices_patients])
     fprintf('Wrong data extraction! Check original data and extraction vectors!');
   else
@@ -36,7 +36,7 @@ function reduceData(FCdata)
       overwrite = 1;
     end
     if overwrite
-      eval([newName,' = FC;'])
+      eval([newName,' = SC;'])
       save(filename,newName,'indices_patients','indices_volunteers')
     end
   end
