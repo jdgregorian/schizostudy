@@ -1,36 +1,66 @@
-function performance = forestClassifier(method, data, indices, settings)
-% Classification by forest classifier. Returns performance of the forest in
-% LOO CV.
+function performance = classifier(method, data, indices, settings)
+% Classification by classifier chosen in method. Returns performance of 
+% appropriate classifier in LOO CV.
 %
-% method   - shortcut of the forest type used ('rf','bf','sf') | string
+% method   - shortcut of the classifier type used ('rf','bf','sf','lf') 
+%            | string
 % data     - input data matrix (1st dim - single data, 2nd data dimension)
 %            | double matrix
 % indices  - class labels for each data | double vector
-% settings - structure of additional settings for forest specified in
+% settings - structure of additional settings for classifier specified in
 %            method
-  
+
+  % default value
+  performance = NaN;
+
   if nargin < 4
     settings = struct([]);
   end
   
-  % gain number of trees 
-  nTrees = defopts(settings,'nTrees',11);
+  Nsubjects = size(data,1);
+  
+  % dimension reduction
+  defSet.name = 'none';
+  settings.dimReduction = defopts(settings,'dimReduction',defSet);
+  
+  switch settings.dimReduction.name
+    case 'pca'
+      nDim = defopts(settings.dimReduction,'nDim',Nsubjects-1);
+      if nDim > Nsubjects-1
+        nDim = Nsubjects-1;
+      end
+      
+      [~,transData] = pca(data);
+      dataRedDim = transData(:,1:nDim);
+      
+    case 'none'
+      dataRedDim = data;
+      
+    otherwise
+      fprintf('Wrong dimReduction property name!!!\n')
+      return
+  end
   
   % count LOO cross-validation
-  Nsubjects = size(data,1);
   correctPredictions = zeros(1,Nsubjects);
     
   for sub = 1:Nsubjects
-    trainingSet = data;
+    trainingSet = dataRedDim;
     trainingSet(sub,:) = [];
     trainingIndices = indices;
     trainingIndices(sub) = [];
     
+    % training
     switch method
       case 'rf' % matlab random forest
-        % remove nTrees from setting for easier parsing
-        if isfield(settings,'nTrees')
-          settings = rmfield(settings,'nTrees');
+        
+        % gain number of trees 
+        nTrees = defopts(settings,'nTrees',11);
+        
+        % remove nTrees and dimReduction from setting for easier parsing
+        settings = rmfield(settings,'nTrees');
+        if isfield(settings,'dimReduction')
+          settings = rmfield(settings,'dimReduction');
         end
 
         % if setting are now empty, fill some default value
@@ -51,19 +81,38 @@ function performance = forestClassifier(method, data, indices, settings)
         Forest = TreeBagger(nTrees,trainingSet,trainingIndices,otherSettings{:});
         
       case 'bf' % random forest using matlab trees
+        
+        % gain number of trees 
+        nTrees = defopts(settings,'nTrees',11);
         Forest = BinForest(trainingSet,trainingIndices,nTrees,10);
         
       case 'sf' % stump random forest
+        
+        % gain number of trees 
+        nTrees = defopts(settings,'nTrees',11);
         settings.TreeType = 'stump';
         Forest = RandomForest(trainingSet,trainingIndices,nTrees,settings);
         
       case 'lf' % linear random forest
+        
+        % gain number of trees 
+        nTrees = defopts(settings,'nTrees',11);
         settings.TreeType = 'linear';
         Forest = RandomForest(trainingSet,trainingIndices,nTrees,settings);
         
+      otherwise
+        
+        fprintf('Wrong method format!!!\n')
+        return
+        
     end
-
-    y = predict(Forest,data(sub,:));
+    
+    % prediction
+    switch method
+      case {'rf','bf','sf','lf'}
+        y = predict(Forest,dataRedDim(sub,:));
+    end
+    
     if iscell(y)
       y = str2double(y{1});
     end

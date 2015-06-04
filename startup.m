@@ -15,3 +15,4 @@ bestFsettings.SplitCriterion = 'deviance';
 bestFsettings.Surrogate = 'off';
 
 fprintf('Complete Criminisi!\n')
+fprintf('Change LOO to common CV.\n')
