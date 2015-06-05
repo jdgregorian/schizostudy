@@ -59,9 +59,20 @@ methods
     for i = 1:ST.NTrees
       Y(:,i) = ST.Trees{i}.predict(data);
     end
-    perf = ones(1,length(ST.performances));
+    perf = ST.performances;
     y = sum(Y.*perf,2)/sum(perf);
     fprintf('%f\n',y);
+    
+    % confidence loop
+%     i = 1;
+%     while abs(y-0.5)<0.1 
+%       ind = true(1,ST.NTrees);
+%       ind(randi(ST.NTrees,1,i)) = false;
+%       y = sum(Y(:,ind).*perf(ind),2)/sum(perf(ind));
+%       fprintf('%f\n',y);
+%       i = i+1;
+%     end
+    
     y = round(y); %>0.5;
   end  
     

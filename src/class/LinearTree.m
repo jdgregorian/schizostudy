@@ -26,7 +26,7 @@ methods
     
     % initialize
     if nargin < 3
-      settings = struct([]);
+      settings = [];
     end
     
     % learning data properties
