@@ -19,15 +19,22 @@ function performance = classifier(method, data, indices, settings)
   
   % settings before the main loop
   switch method
+    case 'svm'
+      settings.svm = defopts(settings,'svm',[]);
+      cellset = cellSettings(settings.svm);
+      
     case {'rf','sf','lf','bf'}
       settings.forest = defopts(settings,'forest',[]);
       % gain number of trees 
       nTrees = defopts(settings.forest,'nTrees',11);
       
-      if strcmp(method, 'sf')
-        settings.forest.TreeType = 'stump';
-      elseif strcmp(method, 'lf')
-        settings.forest.TreeType = 'linear';
+      switch method
+        case 'rf'
+          cellset = cellSettings(settings.forest,{'nTrees'});
+        case 'sf'
+          settings.forest.TreeType = 'stump';
+        case 'lf'
+          settings.forest.TreeType = 'linear';
       end
   end
   
@@ -52,8 +59,10 @@ function performance = classifier(method, data, indices, settings)
     
     % training
     switch method
+      case 'svm' % support vector machine classifier
+        SVM = svmtrain(trainingSet,trainingIndices,cellset{:});
+        
       case 'rf' % matlab random forest
-        cellset = cellSettings(settings.forest,{'nTrees'});
         % forest learning
         Forest = TreeBagger(nTrees,trainingSet,trainingIndices,cellset{:});
         
@@ -79,8 +88,11 @@ function performance = classifier(method, data, indices, settings)
     
     % predict according to the method
     switch method
+      case 'svm'
+        y = svmclassify(SVM,transData);
+        
       case {'rf','bf','sf','lf'}
-          y = predict(Forest,transData);
+        y = predict(Forest,transData);
     end
     
     if iscell(y)

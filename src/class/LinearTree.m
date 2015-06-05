@@ -8,7 +8,7 @@ classdef LinearTree
     features  % dimension of input space
     zerocount % number of zero labels
     onescount % number of ones labels
-    traindata % data used for tree training
+%     traindata % data used for tree training
 
     % Tree properties
     Nodes     % # of nodes
@@ -18,6 +18,7 @@ classdef LinearTree
     splitOne  % 'one' points determining the split boundary
     nodeData  % data assigned to the specific node
     maxSplit  % upper bound of possible splits
+    dist      % distance type
 %       predictors % predictors in leaves
   end
     
@@ -35,7 +36,7 @@ methods
     ST.features = size(data,2);
     ST.zerocount = sum(labels==0);
     ST.onescount = Nsubjects - ST.zerocount;
-    ST.traindata = data;
+%     ST.traindata = data;
     
     % tree properties
     ST.Nodes = 1;
@@ -47,6 +48,7 @@ methods
     
     % user defined tree properties
     ST.maxSplit = defopts(settings,'maxSplit','all');
+    ST.dist = defopts(settings,'distance',2);
     
     % data input check
     if size(data,1) ~= Nsubjects
@@ -98,7 +100,7 @@ methods
       for s = 1:nToSplit
         actualDataInd(s,:) = (ST.nodeData == leafInd(s));
         [I(s),splitZ(s,:),splitO(s,:),dataIndZ{s},dataIndO{s}] = ...
-          LinearTree.splitGain(data,actualDataInd(s,:),labels);
+          LinearTree.splitGain(data,actualDataInd(s,:),labels,ST.dist);
       end
       
       % split node with the maximum information gain
@@ -161,8 +163,8 @@ methods
         nodeDataPred = data(nodeDataId,:);
         nNodeData = sum(nodeDataId);
         tempDataNum = zeros(nNodeData,1);
-        zeroDist = LinearTree.distance(repmat(ST.splitZero(splitNodes(node),:),nNodeData,1),nodeDataPred);
-        oneDist = LinearTree.distance(repmat(ST.splitOne(splitNodes(node),:),nNodeData,1),nodeDataPred);
+        zeroDist = LinearTree.distance(nodeDataPred,ST.splitZero(splitNodes(node),:),ST.dist);
+        oneDist = LinearTree.distance(nodeDataPred,ST.splitOne(splitNodes(node),:),ST.dist);
         tempDataNum(zeroDist<oneDist) = ST.children(splitNodes(node),1);
         tempDataNum(zeroDist>=oneDist) = ST.children(splitNodes(node),2);
         dataNodeNum(nodeDataId) = tempDataNum;
@@ -178,13 +180,12 @@ end
 
 methods (Static)
   
-  function [I,splitZero,splitOne,dataIndZ,dataIndO] = splitGain(data,index,labels)
+  function [I,splitZero,splitOne,dataIndZ,dataIndO] = splitGain(data,index,labels,dist)
   % splitGain returns information value I of the split determined with 
   % points splitZero and splitOne. Furthermore, it returns apropriate 
   % indices of data: dataIndZ and dataIndO
   
     actualData = data(index,:);
-    nData = size(actualData,1);
     dataID = find(index);
     
     % class division
@@ -196,8 +197,8 @@ methods (Static)
     splitOne = mean(B,1);
     
     % count indexes
-    zeroDist = LinearTree.distance(actualData,repmat(splitZero,nData,1));
-    oneDist = LinearTree.distance(actualData,repmat(splitOne,nData,1));
+    zeroDist = LinearTree.distance(actualData,splitZero,dist);
+    oneDist = LinearTree.distance(actualData,splitOne,dist);
     dataIndZ = dataID(zeroDist<oneDist);
     dataIndO = dataID(zeroDist>=oneDist); 
     
@@ -234,9 +235,21 @@ methods (Static)
     H(isnan(H)) = 0;
   end
   
-  function D = distance(a,b)
-  % count distance between two points or two sets of points
-    D = sqrt(sum((a-b).^2,2)); 
+  function D = distance(a,b,type)
+  % count distance between set of points and one point
+  
+    if nargin == 2
+      type = 2;
+    end
+    
+    if isnumeric(type)
+      D = arrayfun(@(id) norm(a(id,:)-b,type), 1:size(a,1));
+    else
+      switch type
+        case 'mahal'
+      end
+    end
+    
   end
   
 end

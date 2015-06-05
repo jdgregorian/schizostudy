@@ -2,10 +2,10 @@
 close all
 
 % data
-nZeros = 10;
-nOnes = 10;
+nZeros = 100;
+nOnes = 90;
 nTest = 10;
-dim = 2;
+dim = 4000;
 
 A = randn(nZeros,dim);
 B = randn(nOnes,dim) + 1;
