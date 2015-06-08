@@ -17,6 +17,7 @@ classdef LinearTree
     splitZero % 'zero' points determining the split boundary
     splitOne  % 'one' points determining the split boundary
     nodeData  % data assigned to the specific node
+    nodeDistance % distance used in the specific node
     maxSplit  % upper bound of possible splits
     dist      % distance type
 %       predictors % predictors in leaves
@@ -45,6 +46,7 @@ methods
     ST.splitZero = NaN(1,ST.features);
     ST.splitOne = NaN(1,ST.features);
     ST.nodeData = ones(1,Nsubjects);
+    ST.nodeDistance = 2*ones(1,Nsubjects);
     
     % user defined tree properties
     ST.maxSplit = defopts(settings,'maxSplit','all');
@@ -235,18 +237,26 @@ methods (Static)
     H(isnan(H)) = 0;
   end
   
-  function D = distance(a,b,type)
+  function D = distance(A,b,type)
   % count distance between set of points and one point
   
     if nargin == 2
       type = 2;
     end
     
+    alpha = 0.001;
+    
+    [ra,ca] = size(A);
+    
     if isnumeric(type)
-      D = arrayfun(@(id) norm(a(id,:)-b,type), 1:size(a,1));
+      D = arrayfun(@(id) norm(A(id,:)-b,type), 1:ra);
     else
       switch type
         case 'mahal'
+          bm = b - mean(A,1);
+          C = cov(A) + alpha*diag(ones(ca,1));
+          D = C\bm';
+          D = sqrt(bm*D);
       end
     end
     

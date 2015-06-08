@@ -2,10 +2,13 @@
 close all
 
 % data
-nZeros = 100;
-nOnes = 90;
+nZeros = 20;
+nOnes = 15;
 nTest = 10;
-dim = 4000;
+dim = 5;
+
+clear settings
+settings.distance = 'mahal';
 
 A = randn(nZeros,dim);
 B = randn(nOnes,dim) + 1;
@@ -13,8 +16,17 @@ labels = [ones(1,nZeros),zeros(1,nOnes)];
 
 C = randn(nTest,dim) + 0.5;
 
+repvector = C(1,:);
+rsize = 10^6;
+tic
+U = repmat(repvector,rsize,1);
+toc
+tic
+U = repvector(ones(rsize,1),:);
+toc
+
 % tree training
-L = LinearTree([A;B],labels);
+L = LinearTree([A;B],labels,settings);
 
 % tree prediction
 y = L.predict(C);
