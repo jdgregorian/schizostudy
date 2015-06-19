@@ -292,14 +292,28 @@ methods (Static)
   
     alpha = 0.001;
     
-    ra = size(A,1);
-    cx = size(X,2);
+%     ra = size(A,1);
+%     cx = size(X,2);
+%     
+%     Am = A - repmat(mean(X,1),ra,1);
+%     C = cov(X) + alpha*diag(ones(cx,1)); % regularization
+%     D = C\Am';            % too much computation
+%     D1 = sqrt(diag(Am*D)); % too much computation
     
-    Am = A - repmat(mean(X,1),ra,1);
-    C = cov(X) + alpha*diag(ones(cx,1)); % regularization
-    D = C\Am';            % too much computation
-    D = sqrt(diag(Am*D)); % too much computation
+    % adjusted code from mahal.m function
+    
+    [rx,cx] = size(X);
+    [ra,~] = size(A);
 
+    m = mean(X,1);
+    M = m(ones(ra,1),:);
+    C = X - m(ones(rx,1),:);
+    
+    R = chol(C'*C + alpha*diag(ones(cx,1))); % regularization
+    
+    ri = R'\(A-M)';
+    D = sum(ri.*ri,1)'*(rx-1);
+    
   end
   
   function D = pdistance(A,b,type)

@@ -14,5 +14,5 @@ bestFsettings.MinLeaf = 1;
 bestFsettings.SplitCriterion = 'deviance';
 bestFsettings.Surrogate = 'off';
 
-fprintf('Complete Criminisi!\n')
 fprintf('Change LOO to common CV.\n')
+fprintf('Move datapoints from trees to the whole forest.\n')
