@@ -131,6 +131,26 @@ function [reducedData,settings] = reduceDim(data,settings)
       
       settings.transformPrediction = true;
       
+    case  'kendall'
+      nDim = defopts(settings.dimReduction,'nDim',Nsubjects-1);
+      % INSERTED from test.m
+%       data = [A;B];
+%       nA = size(A,1);
+%       nB = size(B,1);
+%       datasize = nA + nB;
+%       for d = 1:dim
+%         nc = 0;
+%         for ind = 1:nA
+%           for compInd = 1:nB
+%             if sign(A(ind,d)-B(compInd,d))==sign(labels(ind)-labels(compInd+nA))
+%               nc = nc + 1;
+%             end
+%           end
+%         end
+%         nd = sum(1:datasize - 1) - nc;
+%         tau(d) = (nc - nd)/(nA*nB)
+%       end
+      
     case 'none'
       reducedData = data;
       
