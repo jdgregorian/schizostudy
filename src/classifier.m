@@ -39,7 +39,7 @@ function performance = classifier(method, data, indices, settings)
   end
   
   % dimension reduction outside the LOO loop
-  [data, settings] = reduceDim(data, settings);
+  [data, settings] = reduceDim(data, indices, settings);
   settings.transformPrediction = false;
   
   Nsubjects = size(data,1);
@@ -109,10 +109,10 @@ function performance = classifier(method, data, indices, settings)
 
 end
 
-function [reducedData,settings] = reduceDim(data,settings)
+function [reducedData,settings] = reduceDim(data, indices, settings)
 % function for dimension reduction specified in settings
   
-  Nsubjects = size(data,1);
+  [Nsubjects, dim] = size(data);
   
   % dimension reduction
   defSet.name = 'none';
@@ -132,24 +132,25 @@ function [reducedData,settings] = reduceDim(data,settings)
       settings.transformPrediction = true;
       
     case  'kendall'
-      nDim = defopts(settings.dimReduction,'nDim',Nsubjects-1);
-      % INSERTED from test.m
-%       data = [A;B];
-%       nA = size(A,1);
-%       nB = size(B,1);
-%       datasize = nA + nB;
-%       for d = 1:dim
-%         nc = 0;
-%         for ind = 1:nA
-%           for compInd = 1:nB
-%             if sign(A(ind,d)-B(compInd,d))==sign(labels(ind)-labels(compInd+nA))
-%               nc = nc + 1;
-%             end
-%           end
-%         end
-%         nd = sum(1:datasize - 1) - nc;
-%         tau(d) = (nc - nd)/(nA*nB)
-%       end
+      nDim = defopts(settings.dimReduction,'nDim',Nsubjects);
+      tau = NaN(1,dim);
+      nZero = sum(indices);
+      nOne = Nsubjects - nZero;
+      for d = 1:dim
+        nc = 0;
+        % for each value from one group count equalities for each value from the
+        % other
+        for ind = 1:nZero
+          nc = nc + sum(arrayfun(@(ci) sign(data(ind,d)-data(nZero + ci,d))==sign(indices(ind)-indices(ci+nZero)), 1:nOne));
+        end
+        nd = sum(1:Nsubjects - 1) - nc;
+        tau(d) = (nc - nd)/(nZero*nOne); % count Kendall tau ranks
+      end
+      
+      [~, tauId] = sort(abs(tau));
+      reducedData = data(:,tauId(1:nDim));
+      
+      settings.transformPrediction = true;
       
     case 'none'
       reducedData = data;
