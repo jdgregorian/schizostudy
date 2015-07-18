@@ -121,6 +121,7 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
   
   switch settings.dimReduction.name
     case 'pca'
+      % principle compopnent analysis feature reduction
       nDim = defopts(settings.dimReduction,'nDim',Nsubjects-1);
       if nDim > Nsubjects-1
         nDim = Nsubjects-1;
@@ -131,26 +132,41 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
       
       settings.transformPrediction = true;
       
-    case  'kendall'
-      nDim = defopts(settings.dimReduction,'nDim',Nsubjects);
-      tau = NaN(1,dim);
-      nZero = sum(indices);
-      nOne = Nsubjects - nZero;
-      for d = 1:dim
-        nc = 0;
-        % for each value from one group count equalities for each value from the
-        % other
-        for ind = 1:nZero
-          nc = nc + sum(arrayfun(@(ci) sign(data(ind,d)-data(nZero + ci,d))==sign(indices(ind)-indices(ci+nZero)), 1:nOne));
-        end
-        nd = sum(1:Nsubjects - 1) - nc;
-        tau(d) = (nc - nd)/(nZero*nOne); % count Kendall tau ranks
-      end
+    case 'kendall'
+      % Kendall tau rank coefficient feature reduction
+      % (according to Hui 2009)
+      nDim = defopts(settings.dimReduction, 'nDim', dim);
+      treshold = defopts(settings.dimReduction, 'treshold', -1);
       
-      [~, tauId] = sort(abs(tau));
-      reducedData = data(:,tauId(1:nDim));
+      nOne = sum(indices);
+      nZero = Nsubjects - nOne;
+      nc = zeros(1,dim);
+      % for each value from one group count equalities for each value from the
+      % other
+      for ind = 1:nZero
+        for counterInd = nZero + 1:Nsubjects
+          nc = nc + (sign(data(ind,:)-data(counterInd,:)) == true(1,dim)*sign(indices(ind)-indices(counterInd)));
+        end
+      end
+      nd = ones(1,dim) * nOne * nZero - nc;
+      tau = (nc - nd)/(nZero*nOne); % count Kendall tau ranks
+      
+      [sortedTau, tauId] = sort(abs(tau),'descend');
+      reducedData = data(:,tauId(1:nDim)); % reduction by dimension setting
+      reducedData = reducedData(:,sortedTau(1:nDim) > treshold); % reduction by treshold
       
       settings.transformPrediction = true;
+      
+    case 'ttest'
+      % t-test feature reduction
+      nDim = defopts(settings.dimReduction, 'nDim', dim);
+      
+      t2 = zeros(1,dim);
+      for d = 1:dim
+        t2(d) = ttest2(data(logical(indices),d),data(~logical(indices),d));
+      end
+      
+      reducedData = data(:,logical(t2));
       
     case 'none'
       reducedData = data;

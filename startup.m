@@ -16,3 +16,9 @@ bestFsettings.Surrogate = 'off';
 
 fprintf('Change LOO to common CV.\n')
 fprintf('Move datapoints from trees to the whole forest.\n')
+fprintf('SVM trees.\n')
+fprintf('Adjustable distances. \n')
+
+fprintf('\nMost recent: \n')
+fprintf('  kendall - solving too hard conditions case - let one dimension with warning?\n')
+fprintf('  t-test - chosen number of dimensions, p-values?, hard condition case, significance level?\n')
