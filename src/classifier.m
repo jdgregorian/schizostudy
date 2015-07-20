@@ -122,7 +122,7 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
   switch settings.dimReduction.name
     case 'pca'
       % principle compopnent analysis feature reduction
-      nDim = defopts(settings.dimReduction,'nDim',Nsubjects-1);
+      nDim = defopts(settings.dimReduction,'nDim',Nsubjects-1); % maximum of chosen dimensions
       if nDim > Nsubjects-1
         nDim = Nsubjects-1;
       end
@@ -135,8 +135,8 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
     case 'kendall'
       % Kendall tau rank coefficient feature reduction
       % (according to Hui 2009)
-      nDim = defopts(settings.dimReduction, 'nDim', dim);
-      treshold = defopts(settings.dimReduction, 'treshold', -1);
+      nDim = defopts(settings.dimReduction, 'nDim', dim); % maximum of chosen dimensions
+      treshold = defopts(settings.dimReduction, 'treshold', -1); % minimal Kendall tau rank value
       
       nOne = sum(indices);
       nZero = Nsubjects - nOne;
@@ -155,18 +155,55 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
       reducedData = data(:,tauId(1:nDim)); % reduction by dimension setting
       reducedData = reducedData(:,sortedTau(1:nDim) > treshold); % reduction by treshold
       
+      if isempty(reducedData) % check if some data left
+        warning('Too severe constraints! Preventing emptyness of reduced dataset by keeping one dimension with the greatest Kendall tau rank.')
+        reducedData = data(:,tauId(1));
+      end
+      
       settings.transformPrediction = true;
       
     case 'ttest'
       % t-test feature reduction
-      nDim = defopts(settings.dimReduction, 'nDim', dim);
+      nDim = defopts(settings.dimReduction, 'nDim', dim);    % maximum of chosen dimensions
+      alpha = defopts(settings.dimReduction, 'alpha', 0.05); % significance level
       
       t2 = zeros(1,dim);
+      p = zeros(1,dim);
       for d = 1:dim
-        t2(d) = ttest2(data(logical(indices),d),data(~logical(indices),d));
+        [t2(d), p(d)] = ttest2(data(logical(indices),d),data(~logical(indices),d),'Alpha',alpha);
       end
       
-      reducedData = data(:,logical(t2));
+      reducedData = data(:,logical(t2)); % reduction by ttest
+
+      if isempty(reducedData) % check if some data left
+        warning('Too severe constraints! Preventing emptyness of reduced dataset by keeping one dimension with the greatest Kendall tau rank.')
+        [~, pMinId] = min(p);
+        reducedData = data(:,pMinId(1));
+      elseif sum(t2) > nDim   % reduction by dimensions with the lowest p-values 
+        [~, pId] = sort(p(logical(t2)));
+        reducedData = reducedData(:,pId(1:nDim));
+      end
+      
+      settings.transformPrediction = true;
+    
+    case 'median'
+      % feature reduction according to Honza Kalina's suggestion:
+      %    Choose median value in each dimension, count how many
+      %    individuals has greater or lower value
+      
+      nOne = sum(indices);
+      nZero = Nsubjects - nOne;
+      
+      medData = median(data,1);
+      greaterOnes = false(Nsubjects,dim);
+      for ind = 1:Nsubjects
+        greaterOnes(ind,:) = data(ind,:) > medData;
+      end
+      
+      warning('Median method is not working yet.');
+      reducedData = data;
+      
+      settings.transformPrediction = true; 
       
     case 'none'
       reducedData = data;
