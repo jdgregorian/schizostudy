@@ -15,9 +15,8 @@ bestFsettings.SplitCriterion = 'deviance';
 bestFsettings.Surrogate = 'off';
 
 fprintf('Change LOO to common CV.\n')
-fprintf('Move datapoints from trees to the whole forest.\n')
 fprintf('SVM trees.\n')
-fprintf('Adjustable distances. \n')
+fprintf('Median reduction method??? - according to Honza''s sugestion?\n')
 
 fprintf('\nMost recent: \n')
-fprintf(' - median points reduction??? - according to Honza''s sugestion') 
+fprintf('  Adjustable distances. \n')

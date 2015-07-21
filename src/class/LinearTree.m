@@ -5,10 +5,11 @@ classdef LinearTree
     
   properties
     % Data properties
-    features  % dimension of input space
-    zerocount % number of zero labels
-    onescount % number of ones labels
-    traindata % data used for tree training
+    features    % dimension of input space
+    zerocount   % number of zero labels
+    onescount   % number of ones labels
+    traindata   % data used for tree training
+    trainlabels % labels used for tree training
 
     % Tree properties
     Nodes     % # of nodes
@@ -20,11 +21,12 @@ classdef LinearTree
     nodeDistance % distance used in the specific node
     maxSplit  % upper bound of possible splits
     dist      % distance type
+    inForest  % 1 - tree is a part of a forest, 0 - opposite
 %     predictors % predictors in leaves
   end
     
 methods
-  function ST = LinearTree(data, labels, settings)
+  function LT = LinearTree(data, labels, settings)
     
     % initialize
     if nargin < 3
@@ -32,34 +34,36 @@ methods
     end
     
     % user defined tree properties
-    ST.maxSplit = defopts(settings,'maxSplit','all');
-    ST.dist = defopts(settings,'distance',2);
+    LT.maxSplit = defopts(settings,'maxSplit','all');
+    LT.dist = defopts(settings,'distance',2);
     
     % learning data properties
     Nsubjects = length(labels);
     
-    ST.features = size(data,2);
-    ST.zerocount = sum(labels==0);
-    ST.onescount = Nsubjects - ST.zerocount;
-    if any(strcmp(ST.dist,{'mahal','all'}))
-      ST.traindata = data;
+    LT.features = size(data,2);
+    LT.zerocount = sum(labels==0);
+    LT.onescount = Nsubjects - LT.zerocount;
+    LT.inForest = defopts(settings,'inForest',false);
+    if LT.inForest                      % as a part of forest
+      LT.traindata = settings.usedInd;  % remember only IDs of individuals
     else
-      ST.traindata = NaN;
+      LT.traindata = data;
     end
+    LT.trainlabels = labels;
     
     % tree properties
-    ST.Nodes = 1;
-    ST.parent = 0;
-    ST.children = [0 0];
-    if isnumeric(ST.dist)
-      ST.splitZero = NaN(1,ST.features);
-      ST.splitOne = NaN(1,ST.features);
+    LT.Nodes = 1;
+    LT.parent = 0;
+    LT.children = [0 0];
+    if isnumeric(LT.dist)
+      LT.splitZero = NaN(1,LT.features);
+      LT.splitOne = NaN(1,LT.features);
     else
-      ST.splitZero = false(1,Nsubjects);
-      ST.splitOne = false(1,Nsubjects);
+      LT.splitZero = false(1,Nsubjects);
+      LT.splitOne = false(1,Nsubjects);
     end
-    ST.nodeData = ones(1,Nsubjects);
-    ST.nodeDistance = 2*ones(1,Nsubjects);
+    LT.nodeData = ones(1,Nsubjects);
+    LT.nodeDistance = 2*ones(1,Nsubjects);
     
     % data input check
     if size(data,1) ~= Nsubjects
@@ -72,13 +76,13 @@ methods
     nNodes = 1; % number of nodes
     
     % maximum split setting
-    if ischar(ST.maxSplit) && strcmp(ST.maxSplit,'all')
+    if ischar(LT.maxSplit) && strcmp(LT.maxSplit,'all')
       maxSplitNum = Nsubjects;
-    elseif isnumeric(ST.maxSplit)
-      maxSplitNum = ST.maxSplit;
+    elseif isnumeric(LT.maxSplit)
+      maxSplitNum = LT.maxSplit;
     else
       fprintf('Wrong maxSplit setting. Replacing by ''all''')
-      ST.maxSplit = 'all';
+      LT.maxSplit = 'all';
       maxSplitNum = Nsubjects;
     end
       
@@ -88,7 +92,7 @@ methods
       i = i+1; % just to be sure this ends
       
       % training drawing for 2D
-      if ST.features == 2
+      if LT.features == 2
         figure(i)
         scatter(data(~logical(labels),1),data(~logical(labels),2),'o','blue')
         hold on
@@ -103,9 +107,9 @@ methods
       leafInd = find(nPureLeaf);
       nToSplit = sum(nPureLeaf); % number of leaves possible to split
       I = zeros(1,nToSplit);
-      if isnumeric(ST.dist)
-        splitZ = NaN(nToSplit,ST.features);
-        splitO = NaN(nToSplit,ST.features);
+      if isnumeric(LT.dist)
+        splitZ = NaN(nToSplit,LT.features);
+        splitO = NaN(nToSplit,LT.features);
       else
         splitZ = false(nToSplit,Nsubjects);
         splitO = false(nToSplit,Nsubjects);
@@ -115,46 +119,46 @@ methods
       actualDataInd = true(nToSplit,Nsubjects);
       dataSplit = cell(nToSplit,1);
       for s = 1:nToSplit
-        actualDataInd(s,:) = (ST.nodeData == leafInd(s));
+        actualDataInd(s,:) = (LT.nodeData == leafInd(s));
         [I(s),dataIndZ{s},dataIndO{s},dataSplit{s}] = ...
-          LinearTree.splitGain(data,actualDataInd(s,:),labels,ST.dist);
+          LinearTree.splitGain(data,actualDataInd(s,:),labels,LT.dist);
       end
       
       % split node with the maximum information gain
       [~,maxInd] = max(I);
       
-      ST.parent(end+1:end+2) = leafInd(maxInd);
+      LT.parent(end+1:end+2) = leafInd(maxInd);
       nNodes = nNodes + 2;
-      ST.Nodes = nNodes;
-      ST.children(leafInd(maxInd),:) = [nNodes-1 nNodes];
-      ST.children(nNodes-1:nNodes,:) = zeros(2,2);
+      LT.Nodes = nNodes;
+      LT.children(leafInd(maxInd),:) = [nNodes-1 nNodes];
+      LT.children(nNodes-1:nNodes,:) = zeros(2,2);
       
       % fill new splits and prepare leaves for another iteration
-      if isnumeric(ST.dist)
-        ST.splitZero(leafInd(maxInd),:) = dataSplit{maxInd}.splitZero;
-        ST.splitOne(leafInd(maxInd),:) = dataSplit{maxInd}.splitOne;
-        ST.splitZero(nNodes-1:nNodes,:) = NaN(2,ST.features);
-        ST.splitOne(nNodes-1:nNodes,:) = NaN(2,ST.features);
+      if isnumeric(LT.dist)
+        LT.splitZero(leafInd(maxInd),:) = dataSplit{maxInd}.splitZero;
+        LT.splitOne(leafInd(maxInd),:) = dataSplit{maxInd}.splitOne;
+        LT.splitZero(nNodes-1:nNodes,:) = NaN(2,LT.features);
+        LT.splitOne(nNodes-1:nNodes,:) = NaN(2,LT.features);
       else
-        ST.splitZero(leafInd(maxInd),:) = dataSplit{maxInd}.zeroIndex;
-        ST.splitOne(leafInd(maxInd),:) = dataSplit{maxInd}.onesIndex;
-        ST.splitZero(nNodes-1:nNodes,:)  = false(2,Nsubjects);
-        ST.splitOne(nNodes-1:nNodes,:)  = false(2,Nsubjects);
+        LT.splitZero(leafInd(maxInd),:) = dataSplit{maxInd}.zeroIndex;
+        LT.splitOne(leafInd(maxInd),:) = dataSplit{maxInd}.onesIndex;
+        LT.splitZero(nNodes-1:nNodes,:)  = false(2,Nsubjects);
+        LT.splitOne(nNodes-1:nNodes,:)  = false(2,Nsubjects);
       end
       
       changeIndZ = false(Nsubjects,1); % actualDataInd(maxInd,:);
       changeIndZ(dataIndZ{maxInd}) = true;
       changeIndO = false(Nsubjects,1); % actualDataInd(maxInd,:);
       changeIndO(dataIndO{maxInd}) = true;
-      ST.nodeData(changeIndZ) = nNodes - 1;
-      ST.nodeData(changeIndO) = nNodes;
+      LT.nodeData(changeIndZ) = nNodes - 1;
+      LT.nodeData(changeIndO) = nNodes;
       
       nPureLeaf(leafInd(maxInd)) = 0; % leaf became splitting node
       nPureLeaf(nNodes-1) = ~all(~labels(dataIndZ{maxInd}));
       nPureLeaf(nNodes) = ~all(labels(dataIndO{maxInd}));
       
       % training split drawing in 2D
-      if ST.features == 2
+      if LT.features == 2
         sZ = splitZ(maxInd,:);
         sO = splitO(maxInd,:);
         scatter(sZ(1),sZ(2),'x','blue')
@@ -173,16 +177,28 @@ methods
     % training cycle end
   end    
     
-  function y = predict(ST, data)
+  function y = predict(LT, data, originalData)
   % prediction function of linear tree for dataset data
   
+    if nargin<3 
+      if LT.inForest
+        error('Tree with no entrance original data cannot be part of a forest!')
+      end
+      originalData = [];
+    end
+    
     nData = size(data,1);
     y = zeros(nData,1);
     dataNodeNum = ones(nData,1);
     
-    splitNodes = find(ST.children(:,1));
+    splitNodes = find(LT.children(:,1));
     nSplitNodes = length(splitNodes);
     
+    if LT.inForest
+      trainingdata = originalData(LT.traindata,:);
+    else
+      trainingdata = LT.traindata;
+    end
     
     for node = 1:nSplitNodes
       nodeDataId = (splitNodes(node) == dataNodeNum);
@@ -190,17 +206,17 @@ methods
         nodeDataPred = data(nodeDataId,:);
         nNodeData = sum(nodeDataId);
         tempDataNum = zeros(nNodeData,1);
-        if isnumeric(ST.dist)
-          zeroDist = LinearTree.pdistance(nodeDataPred,ST.splitZero(splitNodes(node),:),ST.dist);
-          oneDist = LinearTree.pdistance(nodeDataPred,ST.splitOne(splitNodes(node),:),ST.dist);
+        if isnumeric(LT.dist)
+          zeroDist = LinearTree.pdistance(nodeDataPred,LT.splitZero(splitNodes(node),:),LT.dist);
+          oneDist = LinearTree.pdistance(nodeDataPred,LT.splitOne(splitNodes(node),:),LT.dist);
         else
-          zeroID = ST.splitZero(splitNodes(node),:);
-          onesID = ST.splitOne(splitNodes(node),:);
-          zeroDist = LinearTree.mahalanobis(nodeDataPred,ST.traindata(zeroID,:));
-          oneDist = LinearTree.mahalanobis(nodeDataPred,ST.traindata(onesID,:));
+          zeroID = LT.splitZero(splitNodes(node),:);
+          onesID = LT.splitOne(splitNodes(node),:);
+          zeroDist = LinearTree.mahalanobis(nodeDataPred,trainingdata(zeroID,:));
+          oneDist = LinearTree.mahalanobis(nodeDataPred,trainingdata(onesID,:));
         end
-        tempDataNum(zeroDist<oneDist) = ST.children(splitNodes(node),1);
-        tempDataNum(zeroDist>=oneDist) = ST.children(splitNodes(node),2);
+        tempDataNum(zeroDist<oneDist) = LT.children(splitNodes(node),1);
+        tempDataNum(zeroDist>=oneDist) = LT.children(splitNodes(node),2);
         dataNodeNum(nodeDataId) = tempDataNum;
       end
     end
