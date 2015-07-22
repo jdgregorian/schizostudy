@@ -22,5 +22,5 @@ fprintf('Change LOO to common CV.\n')
 fprintf('Median reduction method??? - according to Honza''s sugestion?\n')
 
 fprintf('\nMost recent: \n')
-fprintf('  Adjustable distances. \n')
+fprintf('  Not count same information again.\n')
 fprintf('  Discuss Arbabshirani''s paper with David.\n')

@@ -57,15 +57,8 @@ methods
     LT.Nodes = 1;
     LT.parent = 0;
     LT.children = [0 0];
-    if isnumeric(LT.dist)
-      LT.splitZero = NaN(1,LT.features);
-      LT.splitOne = NaN(1,LT.features);
-    else
-      LT.splitZero = false(1,Nsubjects);
-      LT.splitOne = false(1,Nsubjects);
-    end
     LT.nodeData = ones(1,Nsubjects);
-    LT.nodeDistance = mat2cell(2*ones(1,Nsubjects),1,ones(1,Nsubjects));
+    LT.nodeDistance = {2};
     
     % data input check
     if size(data,1) ~= Nsubjects
@@ -109,7 +102,11 @@ methods
       % prepare for counting and compute infomation gain
       leafInd = find(nPureLeaf);
       nToSplit = sum(nPureLeaf); % number of leaves possible to split
-      nDistances = length(LT.dist);
+      if iscell(LT.dist)
+        nDistances = length(LT.dist);
+      else
+        nDistances = 1;
+      end
       I = zeros(nToSplit,nDistances);
       dataIndZ = cell(nToSplit,nDistances);
       dataIndO = cell(nToSplit,nDistances);
@@ -131,15 +128,22 @@ methods
       LT.children(leafInd(maxNode),:) = [nNodes-1 nNodes];
       LT.children(nNodes-1:nNodes,:) = zeros(2,2);
       
-      chosenDistance = LT.dist{maxDist};
-      LT.nodeDistance{leafInd(maxNode)} = chosenDistance;
-      %TODO: What purpose has the following paragraph?
-      if isnumeric(chosenDistance)
-        splitZ = NaN(nToSplit,LT.features);
-        splitO = NaN(nToSplit,LT.features);
+      if iscell(LT.dist)
+        chosenDistance = LT.dist{maxDist};
       else
-        splitZ = false(nToSplit,Nsubjects);
-        splitO = false(nToSplit,Nsubjects);
+        chosenDistance = LT.dist;
+      end
+      LT.nodeDistance{leafInd(maxNode)} = chosenDistance;
+      LT.nodeDistance(nNodes-1:nNodes) = {{},{}};
+      
+      if i==1 % initialize in the first step
+        if isnumeric(chosenDistance)
+          LT.splitZero = NaN(1,LT.features);
+          LT.splitOne = NaN(1,LT.features);
+        else
+          LT.splitZero = false(1,Nsubjects);
+          LT.splitOne = false(1,Nsubjects);
+        end
       end
       
       % fill new splits and prepare leaves for another iteration
@@ -168,8 +172,8 @@ methods
       
       % training split drawing in 2D
       if LT.features == 2
-        sZ = splitZ(maxNode,:);
-        sO = splitO(maxNode,:);
+        sZ = LT.splitZero(maxNode,:);
+        sO = LT.splitOne(maxNode,:);
         scatter(sZ(1),sZ(2),'x','blue')
         scatter(sO(1),sO(2),'x','green')
 
@@ -216,7 +220,7 @@ methods
         nNodeData = sum(nodeDataId);
         tempDataNum = zeros(nNodeData,1);
         if iscell(LT.dist)
-          currentDistance = LT.nodeDistance(splitNodes(node));
+          currentDistance = LT.nodeDistance{splitNodes(node)};
         else
           currentDistance = LT.dist;
         end
@@ -330,7 +334,7 @@ methods (Static)
   % count mahalanobis distance between the set of points A and the 
   % reference set X
   
-    alpha = 0.001;
+    alpha = 0.001; % regularization coefficient
     
 %     ra = size(A,1);
 %     cx = size(X,2);

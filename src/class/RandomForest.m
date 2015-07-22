@@ -51,22 +51,29 @@ methods
           RF.performances = [];
           return
       end
-      y = Tree.predict(data(useInd,:),data);
+      
       RF.Trees{T} = Tree;
       RF.NTrees = RF.NTrees + 1;
-      % stump performance counting
-      RF.performances(T) = sum((y'==labeluse))/length(labeluse);
+      
+      % tree performance counting
+      if strcmp(Tree.maxSplit,'all') % not necessary when performing all splits
+        RF.performances(T) = 1;
+      else
+        y = Tree.predict(data(useInd,:),data);
+        RF.performances(T) = sum((y'==labeluse))/length(labeluse);
+      end
     end
   end    
     
   function [y,Y] = predict(RF, data)
   % prediction function for random forest
-    Y = zeros(size(data,1),RF.NTrees);
+    nSubj = size(data,1);
+    Y = zeros(nSubj,RF.NTrees);
     for i = 1:RF.NTrees
       Y(:,i) = RF.Trees{i}.predict(data,RF.trainingData);
     end
     perf = RF.performances;
-    y = sum(Y.*perf,2)/sum(perf);
+    y = sum(Y.*repmat(perf,nSubj,1),2)/sum(perf);
     fprintf('%f\n',y);
     
     % confidence loop
