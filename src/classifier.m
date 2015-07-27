@@ -1,9 +1,9 @@
-function performance = classifier(method, data, indices, settings)
+function [performance] = classifier(method, data, indices, settings)
 % Classification by classifier chosen in method. Returns performance of 
 % appropriate classifier in LOO CV.
 %
-% method   - shortcut of the classifier type used ('rf','bf','sf','lf') 
-%            | string
+% method   - shortcut of the classifier type used 
+%            ('svm','rf','bf','sf','lf') | string
 % data     - input data matrix (1st dim - single data, 2nd data dimension)
 %            | double matrix
 % indices  - class labels for each data | double vector
@@ -60,7 +60,9 @@ function performance = classifier(method, data, indices, settings)
     % training
     switch method
       case 'svm' % support vector machine classifier
-        SVM = svmtrain(trainingSet,trainingIndices,cellset{:});
+%         SVM = svmtrain(trainingSet,trainingIndices,cellset{:});
+          SVM = svmtrain(trainingSet,trainingIndices','-t 0');
+%         SVM = fitcsvm(trainingSet,trainingIndices,cellset{:});
         
       case 'rf' % matlab random forest
         % forest learning
@@ -89,7 +91,10 @@ function performance = classifier(method, data, indices, settings)
     % predict according to the method
     switch method
       case 'svm'
-        y = svmclassify(SVM,transData);
+%         y = svmclassify(SVM,transData);
+        y = svmpredict(randi(2)-1,transData,SVM);
+%         [y,score] = predict(SVM,transData);
+%         fprintf('%f\n',score)
         
       case {'rf','bf','sf','lf'}
         y = predict(Forest,transData);
