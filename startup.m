@@ -15,12 +15,11 @@ bestFsettings.SplitCriterion = 'deviance';
 bestFsettings.Surrogate = 'off';
 
 
-fprintf('SVM trees.\n')
 fprintf('Prepare testing kit for different settings - improve testRFparams?\n')
 fprintf('Implement all Arbabshirani''s methods.\n')
 fprintf('Change LOO to common CV.\n')
 fprintf('Median reduction method??? - according to Honza''s sugestion?\n')
 
 fprintf('\nMost recent: \n')
+fprintf('  SVM trees.\n')
 fprintf('  Not count same information again.\n')
-fprintf('  Discuss Arbabshirani''s paper with David.\n')

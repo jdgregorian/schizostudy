@@ -60,8 +60,8 @@ function [performance] = classifier(method, data, indices, settings)
     % training
     switch method
       case 'svm' % support vector machine classifier
-%         SVM = svmtrain(trainingSet,trainingIndices,cellset{:});
-          SVM = svmtrain(trainingSet,trainingIndices','-t 0');
+        SVM = svmtrain(trainingSet,trainingIndices,cellset{:});
+%           SVM = svmtrain(trainingSet,trainingIndices','-t 0');
 %         SVM = fitcsvm(trainingSet,trainingIndices,cellset{:});
         
       case 'rf' % matlab random forest
@@ -91,8 +91,8 @@ function [performance] = classifier(method, data, indices, settings)
     % predict according to the method
     switch method
       case 'svm'
-%         y = svmclassify(SVM,transData);
-        y = svmpredict(randi(2)-1,transData,SVM);
+        y = svmclassify(SVM,transData);
+%         y = svmpredict(randi(2)-1,transData,SVM);
 %         [y,score] = predict(SVM,transData);
 %         fprintf('%f\n',score)
         

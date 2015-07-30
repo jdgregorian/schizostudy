@@ -1,7 +1,6 @@
 classdef LinearTree 
 % Class for binary decision tree using linear manifolds as decision split
 % boundaries.
-% NOT FINISHED
     
   properties
     % Data properties
@@ -112,6 +111,7 @@ methods
       dataIndO = cell(nToSplit,nDistances);
       actualDataInd = true(nToSplit,Nsubjects);
       % TODO: inicialization of dataSplit
+      %       contraproductive counting of the same nodes
       for s = 1:nToSplit
         actualDataInd(s,:) = (LT.nodeData == leafInd(s));
         [I(s,:),dataIndZ(s,:),dataIndO(s,:),dataSplit(s,:)] = ...
@@ -336,27 +336,27 @@ methods (Static)
   
     alpha = 0.001; % regularization coefficient
     
-%     ra = size(A,1);
-%     cx = size(X,2);
-%     
-%     Am = A - repmat(mean(X,1),ra,1);
-%     C = cov(X) + alpha*diag(ones(cx,1)); % regularization
-%     D = C\Am';            % too much computation
-%     D1 = sqrt(diag(Am*D)); % too much computation
+    ra = size(A,1);
+    cx = size(X,2);
+    
+    Am = A - repmat(mean(X,1),ra,1);
+    C = cov(X) + alpha*diag(ones(cx,1)); % regularization
+    D = C\Am';            % too much computation
+    D = sqrt(diag(Am*D)); % too much computation
     
     % adjusted code from mahal.m function
     
-    [rx,cx] = size(X);
-    [ra,~] = size(A);
-
-    m = mean(X,1);
-    M = m(ones(ra,1),:);
-    C = X - m(ones(rx,1),:);
-    
-    R = chol(C'*C + alpha*diag(ones(cx,1))); % regularization
-    
-    ri = R'\(A-M)';
-    D = sum(ri.*ri,1)'*(rx-1);
+%     [rx,cx] = size(X);
+%     [ra,~] = size(A);
+% 
+%     m = mean(X,1);
+%     M = m(ones(ra,1),:);
+%     C = X - m(ones(rx,1),:);
+%     
+%     R = chol(C'*C + alpha*diag(ones(cx,1))); % regularization
+%     
+%     ri = R'\(A-M)';
+%     D = sum(ri.*ri,1)'*(rx-1);
     
   end
   
