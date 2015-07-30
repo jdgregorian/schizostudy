@@ -53,7 +53,7 @@ settings.forest.TreeType = 'svm';
 perf = classifyFC(FCdata,'rf',settings);
 
 %% linear tree + pca
-clear setttings
+clear settings
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
@@ -61,10 +61,10 @@ settings.dimReduction.nDim = 20;
 perf = classifyFC(FCdata,'linTree',settings);
 
 %% linear tree mahal + pca
-clear setttings
+clear settings
 
-settings.dimReduction.name = 'none';
-settings.dimReduction.nDim = 20;
-settings.tree.distance = 'mahal';
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 5;
+settings.tree.distance = {1,2,3,'mahal',Inf};
 
 perf = classifyFC(FCdata,'linTree',settings);

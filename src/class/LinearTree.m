@@ -134,29 +134,15 @@ methods
         chosenDistance = LT.dist;
       end
       LT.nodeDistance{leafInd(maxNode)} = chosenDistance;
-      LT.nodeDistance(nNodes-1:nNodes) = {{},{}};
-      
-      if i==1 % initialize in the first step
-        if isnumeric(chosenDistance)
-          LT.splitZero = NaN(1,LT.features);
-          LT.splitOne = NaN(1,LT.features);
-        else
-          LT.splitZero = false(1,Nsubjects);
-          LT.splitOne = false(1,Nsubjects);
-        end
-      end
+      LT.nodeDistance(nNodes-1:nNodes) = {{},{}};      
       
       % fill new splits and prepare leaves for another iteration
       if isnumeric(chosenDistance)
-        LT.splitZero(leafInd(maxNode),:) = dataSplit(maxNode,maxDist).splitZero;
-        LT.splitOne(leafInd(maxNode),:) = dataSplit(maxNode,maxDist).splitOne;
-        LT.splitZero(nNodes-1:nNodes,:) = NaN(2,LT.features);
-        LT.splitOne(nNodes-1:nNodes,:) = NaN(2,LT.features);
+        LT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitZero;
+        LT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitOne;
       else
-        LT.splitZero(leafInd(maxNode),:) = dataSplit(maxNode,maxDist).zeroIndex;
-        LT.splitOne(leafInd(maxNode),:) = dataSplit(maxNode,maxDist).onesIndex;
-        LT.splitZero(nNodes-1:nNodes,:)  = false(2,Nsubjects);
-        LT.splitOne(nNodes-1:nNodes,:)  = false(2,Nsubjects);
+        LT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).zeroIndex;
+        LT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).onesIndex;
       end
       
       changeIndZ = false(Nsubjects,1); % actualDataInd(maxNode,:);
@@ -172,8 +158,8 @@ methods
       
       % training split drawing in 2D
       if LT.features == 2
-        sZ = LT.splitZero(maxNode,:);
-        sO = LT.splitOne(maxNode,:);
+        sZ = LT.splitZero{maxNode};
+        sO = LT.splitOne{maxNode};
         scatter(sZ(1),sZ(2),'x','blue')
         scatter(sO(1),sO(2),'x','green')
 
@@ -187,6 +173,7 @@ methods
         hold off
       end
     end
+    fprintf('Nodes: %d\n',LT.Nodes)
     % training cycle end
   end    
     
@@ -225,11 +212,11 @@ methods
           currentDistance = LT.dist;
         end
         if isnumeric(currentDistance)
-          zeroDist = LinearTree.pdistance(nodeDataPred,LT.splitZero(splitNodes(node),:),currentDistance);
-          oneDist = LinearTree.pdistance(nodeDataPred,LT.splitOne(splitNodes(node),:),currentDistance);
+          zeroDist = LinearTree.pdistance(nodeDataPred,LT.splitZero{splitNodes(node)},currentDistance);
+          oneDist = LinearTree.pdistance(nodeDataPred,LT.splitOne{splitNodes(node)},currentDistance);
         else
-          zeroID = LT.splitZero(splitNodes(node),:);
-          onesID = LT.splitOne(splitNodes(node),:);
+          zeroID = LT.splitZero{splitNodes(node)};
+          onesID = LT.splitOne{splitNodes(node)};
           zeroDist = LinearTree.mahalanobis(nodeDataPred,trainingdata(zeroID,:));
           oneDist = LinearTree.mahalanobis(nodeDataPred,trainingdata(onesID,:));
         end
