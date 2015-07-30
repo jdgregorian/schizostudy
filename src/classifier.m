@@ -23,19 +23,16 @@ function [performance] = classifier(method, data, indices, settings)
       settings.svm = defopts(settings,'svm',[]);
       cellset = cellSettings(settings.svm);
       
-    case {'rf','sf','lf','bf'}
+    case {'rf','mrf','bf'}
       settings.forest = defopts(settings,'forest',[]);
       % gain number of trees 
       nTrees = defopts(settings.forest,'nTrees',11);
       
-      switch method
-        case 'rf'
+      if strcmpi(method,'mrf')
           cellset = cellSettings(settings.forest,{'nTrees'});
-        case 'sf'
-          settings.forest.TreeType = 'stump';
-        case 'lf'
-          settings.forest.TreeType = 'linear';
       end
+    case 'lintree'
+      settings.tree = defopts(settings,'tree',[]);
   end
   
   % dimension reduction outside the LOO loop
@@ -43,6 +40,14 @@ function [performance] = classifier(method, data, indices, settings)
   settings.transformPrediction = false;
   
   Nsubjects = size(data,1);
+  
+  % data scaling to zero mean and unit variance
+  settings.autoscale = defopts(settings,'autoscale',false);
+  if settings.autoscale
+    mx    = mean(data);
+    stdx  = std(data);
+    data    = (data-mx(ones(Nsubjects,1),:))./stdx(ones(Nsubjects,1),:);
+  end
   
   % count LOO cross-validation
   correctPredictions = zeros(1,Nsubjects);
@@ -60,19 +65,22 @@ function [performance] = classifier(method, data, indices, settings)
     % training
     switch method
       case 'svm' % support vector machine classifier
-        SVM = svmtrain(trainingSet,trainingIndices,cellset{:});
+        SVM = svmtrain(trainingSet, trainingIndices, cellset{:});
 %           SVM = svmtrain(trainingSet,trainingIndices','-t 0');
 %         SVM = fitcsvm(trainingSet,trainingIndices,cellset{:});
         
-      case 'rf' % matlab random forest
+      case 'mrf' % matlab random forest
         % forest learning
-        Forest = TreeBagger(nTrees,trainingSet,trainingIndices,cellset{:});
+        Forest = TreeBagger(nTrees, trainingSet, trainingIndices, cellset{:});
         
       case 'bf' % random forest using matlab trees
-        Forest = BinForest(trainingSet,trainingIndices,nTrees,10);
+        Forest = BinForest(trainingSet, trainingIndices, nTrees, 10);
         
-      case {'sf','lf'} % stump and linear random forest
-        Forest = RandomForest(trainingSet,trainingIndices,nTrees,settings.forest);
+      case 'rf' % random forest
+        Forest = RandomForest(trainingSet, trainingIndices, nTrees, settings.forest);
+        
+      case 'lintree'
+        Forest = LinearTree(trainingSet, trainingIndices, settings.tree);
         
       otherwise
         fprintf('Wrong method format!!!\n')
@@ -96,7 +104,7 @@ function [performance] = classifier(method, data, indices, settings)
 %         [y,score] = predict(SVM,transData);
 %         fprintf('%f\n',score)
         
-      case {'rf','bf','sf','lf'}
+      case {'rf','mrf','bf','lintree'}
         y = predict(Forest,transData);
     end
     
@@ -195,6 +203,7 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
       % feature reduction according to Honza Kalina's suggestion:
       %    Choose median value in each dimension, count how many
       %    individuals has greater or lower value
+      % NOT COMPLETED!!!
       
       nOne = sum(indices);
       nZero = Nsubjects - nOne;

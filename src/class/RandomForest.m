@@ -41,10 +41,14 @@ methods
       switch RF.TreeType
         case 'stump'
           Tree = StumpTree(data(useInd,:),labeluse);
+          Tree.maxSplit = 1;
         case 'linear'
           settings.inForest = true;
           settings.usedInd = useInd;
           Tree = LinearTree(data(useInd,:),labeluse,settings);
+        case 'svm'
+          Tree = svmtrain(data(useInd,:),labeluse);
+          Tree.maxSplit = 1;
         otherwise
           fprintf('Wrong tree format!!!')
           RF.Trees = {};
@@ -55,13 +59,19 @@ methods
       RF.Trees{T} = Tree;
       RF.NTrees = RF.NTrees + 1;
       
-      % tree performance counting
-      if strcmp(Tree.maxSplit,'all') % not necessary when performing all splits
-        RF.performances(T) = 1;
+%       % tree performance counting
+%       if strcmp(Tree.maxSplit,'all') % not necessary when performing all splits
+%         RF.performances(T) = 1;
+%       else
+%         y = Tree.predict(data(useInd,:),data);
+%         RF.performances(T) = sum((y'==labeluse))/length(labeluse);
+%       end
+      if strcmpi(RF.TreeType,'svm')
+        y = svmclassify(Tree,data);
       else
-        y = Tree.predict(data(useInd,:),data);
-        RF.performances(T) = sum((y'==labeluse))/length(labeluse);
+        y = Tree.predict(data,data);
       end
+      RF.performances(T) = sum((y'==labeluse))/length(labeluse);
     end
   end    
     
@@ -69,8 +79,14 @@ methods
   % prediction function for random forest
     nSubj = size(data,1);
     Y = zeros(nSubj,RF.NTrees);
-    for i = 1:RF.NTrees
-      Y(:,i) = RF.Trees{i}.predict(data,RF.trainingData);
+    if strcmpi(RF.TreeType,'svm')
+      for i = 1:RF.NTrees
+        Y(:,i) = svmclassify(RF.Trees{i},data);
+      end
+    else
+      for i = 1:RF.NTrees
+        Y(:,i) = RF.Trees{i}.predict(data,RF.trainingData);
+      end
     end
     perf = RF.performances;
     y = sum(Y.*repmat(perf,nSubj,1),2)/sum(perf);

@@ -99,7 +99,7 @@ function testRFparams(data,param,filename)
     
     disp(settings(setId))
     tic
-    perf = classifyFC(data,'rf',settings(setId));
+    perf = classifyFC(data,'mrf',settings(setId));
     elapsed = toc;
     
     % load again for actual data
