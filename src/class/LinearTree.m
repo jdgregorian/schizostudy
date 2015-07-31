@@ -18,12 +18,12 @@ classdef LinearTree
     splitOne  % 'one' points determining the split boundary
     nodeData  % data assigned to the specific node
     nodeDistance % distance used in the specific node
+    predictor % predictors in leaves
     
     % User defined properties
     maxSplit  % upper bound of possible splits
     dist      % distance type
     inForest  % 1 - tree is a part of a forest, 0 - opposite
-%     predictors % predictors in leaves
   end
     
 methods
@@ -58,6 +58,7 @@ methods
     LT.children = [0 0];
     LT.nodeData = ones(1,Nsubjects);
     LT.nodeDistance = {2};
+    LT.predictor = sum(labels) > sum(~labels);
     
     % data input check
     if size(data,1) ~= Nsubjects
@@ -126,71 +127,86 @@ methods
         actualDataInd(s,:) = (LT.nodeData == s);
         [allI(s,:),allDataIndZ(s,:),allDataIndO(s,:),allDataSplit(s,:)] = ...
           LinearTree.splitGain(data,actualDataInd(s,:),labels,LT.dist);
+        % check emptiness of child nodes
+        if allI(s,:) == 0 && (isempty(allDataIndZ{s,1}) || isempty(allDataIndO{s,1}))
+          % split cannot be done because one child would be empty
+          nPureLeaf(s) = 0; % stay as leaf and do not split
+        end
       end
       
       % use only nodes possible to split
       I = allI(nPureLeaf,:);
-      dataIndZ = allDataIndZ(nPureLeaf,:);
-      dataIndO = allDataIndO(nPureLeaf,:);
-      dataSplit = allDataSplit(nPureLeaf,:);
       
-      % split node with the maximum information gain
-      [~,maxIid] = max(I(:));
-      [maxNode, maxDist] = ind2sub(size(I),maxIid);
-      
-      LT.parent(end+1:end+2) = leafInd(maxNode);
-      nNodes = nNodes + 2;
-      LT.Nodes = nNodes;
-      LT.children(leafInd(maxNode),:) = [nNodes-1 nNodes];
-      LT.children(nNodes-1:nNodes,:) = zeros(2,2);
-      
-      if iscell(LT.dist)
-        chosenDistance = LT.dist{maxDist};
-      else
-        chosenDistance = LT.dist;
-      end
-      LT.nodeDistance{leafInd(maxNode)} = chosenDistance;
-      LT.nodeDistance(nNodes-1:nNodes) = {{},{}};      
-      
-      % fill new splits and prepare leaves for another iteration
-      if isnumeric(chosenDistance)
-        LT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitZero;
-        LT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitOne;
-      else
-        LT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).zeroIndex;
-        LT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).onesIndex;
-      end
-      
-      changeIndZ = false(Nsubjects,1); % actualDataInd(maxNode,:);
-      changeIndZ(dataIndZ{maxNode,maxDist}) = true;
-      changeIndO = false(Nsubjects,1); % actualDataInd(maxNode,:);
-      changeIndO(dataIndO{maxNode,maxDist}) = true;
-      LT.nodeData(changeIndZ) = nNodes - 1;
-      LT.nodeData(changeIndO) = nNodes;
-      
-      nPureLeaf(leafInd(maxNode)) = 0; % leaf became splitting node
-      nPureLeaf(nNodes-1) = ~all(~labels(dataIndZ{maxNode,maxDist}));
-      nPureLeaf(nNodes) = ~all(labels(dataIndO{maxNode,maxDist}));
-      
-      % training split drawing in 2D (only for numerical distances)
-      if LT.features == 2 && all(~strcmpi(LT.dist,'mahal'))
-        sZ = LT.splitZero{maxNode};
-        sO = LT.splitOne{maxNode};
-        scatter(sZ(1),sZ(2),'x','blue')
-        scatter(sO(1),sO(2),'x','green')
+      if ~isempty(I) % some nodes to split left
+        dataIndZ = allDataIndZ(nPureLeaf,:);
+        dataIndO = allDataIndO(nPureLeaf,:);
+        dataSplit = allDataSplit(nPureLeaf,:);
 
-        x(i,1) = min(data(actualDataInd(maxNode,:),1));
-        x(i,2) = max(data(actualDataInd(maxNode,:),1));
-        ybound(i,1) = ((sZ(1)-x(i,1))^2-(sO(1)-x(i,1))^2+sZ(2)^2-sO(2)^2)/(2*(sZ(2)-sO(2)));
-        ybound(i,2) = ((sZ(1)-x(i,2))^2-(sO(1)-x(i,2))^2+sZ(2)^2-sO(2)^2)/(2*(sZ(2)-sO(2)));
-        for l = 1:i
-          plot(x(l,:),ybound(l,:),'r')
+        % split node with the maximum information gain
+        [~,maxIid] = max(I(:));
+        [maxNode, maxDist] = ind2sub(size(I),maxIid);
+
+        % check emptiness of child nodes
+        LT.parent(end+1:end+2) = leafInd(maxNode);
+        nNodes = nNodes + 2;
+        LT.Nodes = nNodes;
+        LT.children(leafInd(maxNode),:) = [nNodes-1 nNodes];
+        LT.children(nNodes-1:nNodes,:) = zeros(2,2);
+
+        if iscell(LT.dist)
+          chosenDistance = LT.dist{maxDist};
+        else
+          chosenDistance = LT.dist;
         end
-        hold off
-      end
-    end
+        LT.nodeDistance{leafInd(maxNode)} = chosenDistance;
+        LT.nodeDistance(nNodes-1:nNodes) = {{},{}};      
+
+        % fill new splits and prepare leaves for another iteration
+        if isnumeric(chosenDistance)
+          LT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitZero;
+          LT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitOne;
+        else
+          LT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).zeroIndex;
+          LT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).onesIndex;
+        end
+
+        chosenDataZ = dataIndZ{maxNode,maxDist};
+        chosenDataO = dataIndO{maxNode,maxDist};
+        
+        changeIndZ = false(Nsubjects,1);
+        changeIndZ(chosenDataZ) = true;
+        changeIndO = false(Nsubjects,1);
+        changeIndO(chosenDataO) = true;
+        LT.nodeData(changeIndZ) = nNodes - 1;
+        LT.nodeData(changeIndO) = nNodes;
+
+        nPureLeaf(leafInd(maxNode)) = 0; % leaf became splitting node
+        nPureLeaf(nNodes-1) = ~all(labels(chosenDataZ)==labels(chosenDataZ(1)));
+        nPureLeaf(nNodes) = ~all(labels(chosenDataO)==labels(chosenDataO(1)));
+        
+        LT.predictor(nNodes-1) = sum(labels(chosenDataZ)) > sum(~labels(chosenDataZ));
+        LT.predictor(nNodes) = sum(labels(chosenDataO)) >= sum(~labels(chosenDataO));
+        
+        % training split drawing in 2D (only for numerical distances)
+        if LT.features == 2 && all(~strcmpi(LT.dist,'mahal'))
+          sZ = LT.splitZero{maxNode};
+          sO = LT.splitOne{maxNode};
+          scatter(sZ(1),sZ(2),'x','blue')
+          scatter(sO(1),sO(2),'x','green')
+
+          x(i,1) = min(data(actualDataInd(maxNode,:),1));
+          x(i,2) = max(data(actualDataInd(maxNode,:),1));
+          ybound(i,1) = ((sZ(1)-x(i,1))^2-(sO(1)-x(i,1))^2+sZ(2)^2-sO(2)^2)/(2*(sZ(2)-sO(2)));
+          ybound(i,2) = ((sZ(1)-x(i,2))^2-(sO(1)-x(i,2))^2+sZ(2)^2-sO(2)^2)/(2*(sZ(2)-sO(2)));
+          for l = 1:i
+            plot(x(l,:),ybound(l,:),'r')
+          end
+          hold off
+        end
+      end % nonempty split end
+    end % training cycle end
     fprintf('Nodes: %d\n',nNodes)
-    % training cycle end
+    
   end    
     
   function y = predict(LT, data, originalData)
@@ -204,7 +220,7 @@ methods
     end
     
     nData = size(data,1);
-    y = zeros(nData,1);
+    y1 = zeros(nData,1);
     dataNodeNum = ones(nData,1);
     
     splitNodes = find(LT.children(:,1));
@@ -243,7 +259,11 @@ methods
     end
     
     % if the node number is one, prediction equals one
-    y(logical(mod(dataNodeNum,2))) = 1;
+    y1(logical(mod(dataNodeNum,2))) = 1;
+    y = LT.predictor(dataNodeNum);
+    if y1 ~= y
+      fprintf('Classification differs from previous prediction style.\n')
+    end
     
   end
     
@@ -279,8 +299,6 @@ methods (Static)
       for d = 1:nDistances
         S(1,d).zeroIndex = zeroIndex;
         S(1,d).onesIndex = onesIndex;
-%         S(1,d).splitZero = mean(A,1);
-%         S(1,d).splitOne = mean(B,1);
       end
       return
     end
@@ -320,6 +338,7 @@ methods (Static)
   end
 
   function I = infoGainSet(dataIndZ,dataIndO,labels)
+  % Function counts information gain of split of two sets of points
   % dataIndZ - 'zero' set of data
   % dataIndO - 'one' set of data
   % labels   - labels of data [dataIndZ,dataIndO]
@@ -349,7 +368,7 @@ methods (Static)
   end
   
   function D = mahalanobis(A,X)
-  % count mahalanobis distance between the set of points A and the 
+  % Counts mahalanobis distance between the set of points A and the 
   % reference set X
   
     alpha = 0.001; % regularization coefficient
