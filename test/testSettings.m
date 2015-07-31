@@ -56,7 +56,7 @@ perf = classifyFC(FCdata,'rf',settings);
 clear settings
 
 settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
+settings.dimReduction.nDim = 200;
 
 perf = classifyFC(FCdata,'linTree',settings);
 
@@ -64,7 +64,7 @@ perf = classifyFC(FCdata,'linTree',settings);
 clear settings
 
 settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 5;
-settings.tree.distance = {1,2,3,'mahal',Inf};
+settings.dimReduction.nDim = 2;
+settings.tree.distance = 'mahal';
 
 perf = classifyFC(FCdata,'linTree',settings);

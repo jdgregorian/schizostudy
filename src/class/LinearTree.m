@@ -80,13 +80,26 @@ methods
       maxSplitNum = Nsubjects;
     end
       
+    % gain number of distances to train
+    if iscell(LT.dist)
+      nDistances = length(LT.dist);
+    else
+      nDistances = 1;
+    end
+    
+    % inicialize variables used to store splitGain results
+    allI = zeros(maxSplitNum,nDistances);
+    allDataIndZ = cell(maxSplitNum,nDistances);
+    allDataIndO = cell(maxSplitNum,nDistances);
+    actualDataInd = true(maxSplitNum,Nsubjects);
+    
     i = 0;
     % training cycle start
     while any(nPureLeaf) && i < maxSplitNum
       i = i+1; % just to be sure this ends
       
-      % training drawing for 2D
-      if LT.features == 2
+      % training drawing in 2D (only for numerical distances)
+      if LT.features == 2 && all(~strcmpi(LT.dist,'mahal'))
         figure(i)
         scatter(data(~logical(labels),1),data(~logical(labels),2),'o','blue')
         hold on
@@ -100,23 +113,26 @@ methods
       
       % prepare for counting and compute infomation gain
       leafInd = find(nPureLeaf);
-      nToSplit = sum(nPureLeaf); % number of leaves possible to split
-      if iscell(LT.dist)
-        nDistances = length(LT.dist);
+
+      % TODO: inicialization of allDataSplit
+      if i==1
+        idToCompute = 1;
       else
-        nDistances = 1;
+        lastTwoNodes = [false(1,nNodes-2), true(1,2)];
+        idToCompute = find(nPureLeaf & lastTwoNodes);
       end
-      I = zeros(nToSplit,nDistances);
-      dataIndZ = cell(nToSplit,nDistances);
-      dataIndO = cell(nToSplit,nDistances);
-      actualDataInd = true(nToSplit,Nsubjects);
-      % TODO: inicialization of dataSplit
-      %       contraproductive counting of the same nodes
-      for s = 1:nToSplit
-        actualDataInd(s,:) = (LT.nodeData == leafInd(s));
-        [I(s,:),dataIndZ(s,:),dataIndO(s,:),dataSplit(s,:)] = ...
+      
+      for s = idToCompute
+        actualDataInd(s,:) = (LT.nodeData == s);
+        [allI(s,:),allDataIndZ(s,:),allDataIndO(s,:),allDataSplit(s,:)] = ...
           LinearTree.splitGain(data,actualDataInd(s,:),labels,LT.dist);
       end
+      
+      % use only nodes possible to split
+      I = allI(nPureLeaf,:);
+      dataIndZ = allDataIndZ(nPureLeaf,:);
+      dataIndO = allDataIndO(nPureLeaf,:);
+      dataSplit = allDataSplit(nPureLeaf,:);
       
       % split node with the maximum information gain
       [~,maxIid] = max(I(:));
@@ -156,8 +172,8 @@ methods
       nPureLeaf(nNodes-1) = ~all(~labels(dataIndZ{maxNode,maxDist}));
       nPureLeaf(nNodes) = ~all(labels(dataIndO{maxNode,maxDist}));
       
-      % training split drawing in 2D
-      if LT.features == 2
+      % training split drawing in 2D (only for numerical distances)
+      if LT.features == 2 && all(~strcmpi(LT.dist,'mahal'))
         sZ = LT.splitZero{maxNode};
         sO = LT.splitOne{maxNode};
         scatter(sZ(1),sZ(2),'x','blue')
@@ -173,7 +189,7 @@ methods
         hold off
       end
     end
-    fprintf('Nodes: %d\n',LT.Nodes)
+    fprintf('Nodes: %d\n',nNodes)
     % training cycle end
   end    
     
@@ -252,8 +268,23 @@ methods (Static)
     if ~iscell(distance)
       distance = {distance};
     end
-    
     nDistances = length(distance);
+    
+    % in case of emptyness do not compute
+    if isempty(A) || isempty(B)
+      fprintf('One branch is empty\n')
+      I = zeros(1,nDistances);
+      dataIndZ = cell(1,nDistances);
+      dataIndO = cell(1,nDistances);
+      for d = 1:nDistances
+        S(1,d).zeroIndex = zeroIndex;
+        S(1,d).onesIndex = onesIndex;
+%         S(1,d).splitZero = mean(A,1);
+%         S(1,d).splitOne = mean(B,1);
+      end
+      return
+    end
+    
     for d = 1:nDistances % count each distance
       dis = distance{d};
     
@@ -329,7 +360,7 @@ methods (Static)
     Am = A - repmat(mean(X,1),ra,1);
     C = cov(X) + alpha*diag(ones(cx,1)); % regularization
     D = C\Am';            % too much computation
-    D = sqrt(diag(Am*D)); % too much computation
+    D = diag(Am*D); % too much computation
     
     % adjusted code from mahal.m function
     

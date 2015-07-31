@@ -66,6 +66,7 @@ methods
 %         y = Tree.predict(data(useInd,:),data);
 %         RF.performances(T) = sum((y'==labeluse))/length(labeluse);
 %       end
+      % tree performance counting
       if strcmpi(RF.TreeType,'svm')
         y = svmclassify(Tree,data);
       else
