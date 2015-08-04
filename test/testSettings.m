@@ -73,9 +73,10 @@ perf = classifyFC(FCdata,'rf',settings);
 %% 11 linear trees - experimental
 clear settings
 
+settings.forest.nTrees = 100;
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
-settings.forest.probability = true;
+settings.forest.probability = false;
 settings.forest.maxSplit = 6;
 
 perf = classifyFC(FCdata,'rf',settings);

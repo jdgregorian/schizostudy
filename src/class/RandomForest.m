@@ -71,7 +71,7 @@ methods
       if strcmpi(RF.TreeType,'svm')
         y = svmclassify(Tree,data);
       else
-        y = round(Tree.predict(data,data));
+        y = round(double(Tree.predict(data,data)));
       end
       RF.performances(T) = sum((y'==labeluse))/length(labeluse);
     end
