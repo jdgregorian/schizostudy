@@ -104,3 +104,11 @@ settings.dimReduction.nDim = 200;
 settings.tree.distance = 'mahal';
 
 perf = classifyFC(FCdata,'linTree',settings);
+
+%% SVM tree
+clear settings
+
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 200;
+
+perf = classifyFC(FCdata,'svmtree');

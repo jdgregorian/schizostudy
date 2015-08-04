@@ -31,7 +31,7 @@ function [performance] = classifier(method, data, indices, settings)
       if strcmpi(method,'mrf')
           cellset = cellSettings(settings.forest,{'nTrees'});
       end
-    case 'lintree'
+    case {'lintree','svmtree'}
       settings.tree = defopts(settings,'tree',[]);
   end
   
@@ -79,8 +79,11 @@ function [performance] = classifier(method, data, indices, settings)
       case 'rf' % random forest
         Forest = RandomForest(trainingSet, trainingIndices, nTrees, settings.forest);
         
-      case 'lintree'
+      case 'lintree' % linear tree
         Forest = LinearTree(trainingSet, trainingIndices, settings.tree);
+        
+      case 'svmtree' % SVM tree
+        Forest = SVMTree(trainingSet, trainingIndices, settings.tree);
         
       otherwise
         fprintf('Wrong method format!!!\n')
@@ -104,7 +107,7 @@ function [performance] = classifier(method, data, indices, settings)
 %         [y,score] = predict(SVM,transData);
 %         fprintf('%f\n',score)
         
-      case {'rf','mrf','bf','lintree'}
+      case {'rf','mrf','bf','lintree','svmtree'}
         y = predict(Forest,transData);
     end
     
@@ -119,7 +122,7 @@ function [performance] = classifier(method, data, indices, settings)
   end
 
   performance = sum(correctPredictions)/Nsubjects;
-
+ 
 end
 
 function [reducedData,settings] = reduceDim(data, indices, settings)
