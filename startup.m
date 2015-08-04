@@ -22,4 +22,4 @@ fprintf('Median reduction method??? - according to Honza''s sugestion?\n')
 
 fprintf('\nMost recent: \n')
 fprintf('  SVM trees.\n')
-fprintf('  Not count same information again.\n')
+fprintf('  Probability prediction.\n')

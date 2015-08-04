@@ -59,18 +59,19 @@ methods
       RF.Trees{T} = Tree;
       RF.NTrees = RF.NTrees + 1;
       
-%       % tree performance counting
+      % old tree performance counting
 %       if strcmp(Tree.maxSplit,'all') % not necessary when performing all splits
 %         RF.performances(T) = 1;
 %       else
 %         y = Tree.predict(data(useInd,:),data);
 %         RF.performances(T) = sum((y'==labeluse))/length(labeluse);
 %       end
+
       % tree performance counting
       if strcmpi(RF.TreeType,'svm')
         y = svmclassify(Tree,data);
       else
-        y = Tree.predict(data,data);
+        y = round(Tree.predict(data,data));
       end
       RF.performances(T) = sum((y'==labeluse))/length(labeluse);
     end

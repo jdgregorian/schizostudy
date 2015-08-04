@@ -21,9 +21,10 @@ classdef LinearTree
     predictor % predictors in leaves
     
     % User defined properties
-    maxSplit  % upper bound of possible splits
-    dist      % distance type
-    inForest  % 1 - tree is a part of a forest, 0 - opposite
+    maxSplit    % upper bound of possible splits
+    dist        % distance type
+    inForest    % 1 - tree is a part of a forest, 0 - opposite
+    probability % probability prediction mode
   end
     
 methods
@@ -37,6 +38,7 @@ methods
     % user defined tree properties
     LT.maxSplit = defopts(settings,'maxSplit','all');
     LT.dist = defopts(settings,'distance',2);
+    LT.probability = defopts(settings,'probability',false);
     
     % learning data properties
     Nsubjects = length(labels);
@@ -58,7 +60,11 @@ methods
     LT.children = [0 0];
     LT.nodeData = ones(1,Nsubjects);
     LT.nodeDistance = {2};
-    LT.predictor = sum(labels) > sum(~labels);
+    if LT.probability
+      LT.predictor = LT.onescount/Nsubjects;
+    else
+      LT.predictor = sum(labels) > sum(~labels);
+    end
     
     % data input check
     if size(data,1) ~= Nsubjects
@@ -184,8 +190,13 @@ methods
         nPureLeaf(nNodes-1) = ~all(labels(chosenDataZ)==labels(chosenDataZ(1)));
         nPureLeaf(nNodes) = ~all(labels(chosenDataO)==labels(chosenDataO(1)));
         
-        LT.predictor(nNodes-1) = sum(labels(chosenDataZ)) > sum(~labels(chosenDataZ));
-        LT.predictor(nNodes) = sum(labels(chosenDataO)) >= sum(~labels(chosenDataO));
+        if LT.probability 
+          LT.predictor(nNodes-1) = sum(labels(chosenDataZ))/length(chosenDataZ);
+          LT.predictor(nNodes) = sum(labels(chosenDataO))/length(chosenDataO);
+        else
+          LT.predictor(nNodes-1) = sum(labels(chosenDataZ)) > sum(~labels(chosenDataZ));
+          LT.predictor(nNodes) = sum(labels(chosenDataO)) >= sum(~labels(chosenDataO));
+        end
         
         % training split drawing in 2D (only for numerical distances)
         if LT.features == 2 && all(~strcmpi(LT.dist,'mahal'))
@@ -260,8 +271,8 @@ methods
     
     % if the node number is one, prediction equals one
     y1(logical(mod(dataNodeNum,2))) = 1;
-    y = LT.predictor(dataNodeNum);
-    if y1 ~= y
+    y = (LT.predictor(dataNodeNum))';
+    if ~LT.probability && any(y1 ~= y)
       fprintf('Classification differs from previous prediction style.\n')
     end
     
