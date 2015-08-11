@@ -112,3 +112,13 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 
 perf = classifyFC(FCdata,'svmtree');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% linear naive Bayes
+clear settings
+
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+settings.bayes.type = 'mahal';
+
+perf = classifyFC(FCdata,'nb',settings);

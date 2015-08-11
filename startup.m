@@ -16,10 +16,10 @@ bestFsettings.Surrogate = 'off';
 
 
 fprintf('Prepare testing kit for different settings - improve testRFparams?\n')
-fprintf('Implement all Arbabshirani''s methods.\n')
 fprintf('Change LOO to common CV.\n')
 fprintf('Median reduction method??? - according to Honza''s sugestion?\n')
 
 fprintf('\nMost recent: \n')
-fprintf('  SVM trees.\n')
-fprintf('  Probability prediction.\n')
+fprintf('    Implement all Arbabshirani''s methods.\n')
+fprintf('    Boosting\n')
+fprintf('    Solve using SVM versions\n')

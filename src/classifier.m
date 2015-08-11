@@ -2,8 +2,14 @@ function [performance] = classifier(method, data, indices, settings)
 % Classification by classifier chosen in method. Returns performance of 
 % appropriate classifier in LOO CV.
 %
-% method   - shortcut of the classifier type used 
-%            ('svm','rf','bf','sf','lf') | string
+% method   - shortcut of the classifier type used | string
+%            'svm'     - support vector machine
+%            'rf'      - random forest
+%            'mrf'     - MATLAB random forest
+%            'bf'      - binary forest
+%            'lintree' - tree using linear distance based decision splits
+%            'svmtree' - tree using linear svm based decision splits
+%            'nb'      - naive Bayes
 % data     - input data matrix (1st dim - single data, 2nd data dimension)
 %            | double matrix
 % indices  - class labels for each data | double vector
@@ -20,29 +26,34 @@ function [performance] = classifier(method, data, indices, settings)
   % settings before the main loop
   switch method
     case 'svm'
-      settings.svm = defopts(settings,'svm',[]);
+      settings.svm = defopts(settings, 'svm', []);
       cellset = cellSettings(settings.svm);
       
-    case {'rf','mrf','bf'}
-      settings.forest = defopts(settings,'forest',[]);
+    case {'rf', 'mrf', 'bf'}
+      settings.forest = defopts(settings, 'forest', []);
       % gain number of trees 
-      nTrees = defopts(settings.forest,'nTrees',11);
+      nTrees = defopts(settings.forest, 'nTrees', 11);
       
-      if strcmpi(method,'mrf')
-          cellset = cellSettings(settings.forest,{'nTrees'});
+      if strcmpi(method, 'mrf')
+          cellset = cellSettings(settings.forest, {'nTrees'});
       end
-    case {'lintree','svmtree'}
-      settings.tree = defopts(settings,'tree',[]);
+      
+    case {'lintree', 'svmtree'}
+      settings.tree = defopts(settings, 'tree', []);
+      
+    case 'nb'
+      settings.bayes = defopts(settings, 'bayes', []);
+      settings.bayes.type = defopts(settings.bayes, 'type', 'diaglinear');
   end
   
   % dimension reduction outside the LOO loop
   [data, settings] = reduceDim(data, indices, settings);
   settings.transformPrediction = false;
   
-  Nsubjects = size(data,1);
+  Nsubjects = size(data, 1);
   
   % data scaling to zero mean and unit variance
-  settings.autoscale = defopts(settings,'autoscale',false);
+  settings.autoscale = defopts(settings, 'autoscale', false);
   if settings.autoscale
     mx    = mean(data);
     stdx  = std(data);
@@ -50,7 +61,7 @@ function [performance] = classifier(method, data, indices, settings)
   end
   
   % count LOO cross-validation
-  correctPredictions = zeros(1,Nsubjects);
+  correctPredictions = zeros(1, Nsubjects);
     
   for sub = 1:Nsubjects
     
@@ -85,10 +96,6 @@ function [performance] = classifier(method, data, indices, settings)
       case 'svmtree' % SVM tree
         Forest = SVMTree(trainingSet, trainingIndices, settings.tree);
         
-      otherwise
-        fprintf('Wrong method format!!!\n')
-        return
-        
     end
     
     % prediction
@@ -101,14 +108,21 @@ function [performance] = classifier(method, data, indices, settings)
     
     % predict according to the method
     switch method
-      case 'svm'
-        y = svmclassify(SVM,transData);
+      case 'svm' % support vector machine classifier
+        y = svmclassify(SVM, transData);
 %         y = svmpredict(randi(2)-1,transData,SVM);
 %         [y,score] = predict(SVM,transData);
 %         fprintf('%f\n',score)
         
-      case {'rf','mrf','bf','lintree','svmtree'}
-        y = predict(Forest,transData);
+      case {'rf', 'mrf', 'bf', 'lintree', 'svmtree'} % tree based methods
+        y = predict(Forest, transData);
+        
+      case 'nb' % naive Bayes
+        y = classify(transData, trainingSet, trainingIndices, settings.bayes.type);
+        
+      otherwise
+        fprintf('Wrong method format!!!\n')
+        return
     end
     
     if iscell(y)
@@ -217,7 +231,7 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
         greaterOnes(ind,:) = data(ind,:) > medData;
       end
       
-      warning('Median method is not working yet.');
+      warning('Median method is not working yet. Data dimension will not be reduced.');
       reducedData = data;
       
       settings.transformPrediction = true; 

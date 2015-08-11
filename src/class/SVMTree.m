@@ -1,4 +1,4 @@
-classdef LinearTree 
+classdef SVMTree 
 % Class for binary decision tree using linear manifolds as decision split
 % boundaries.
     
@@ -17,7 +17,7 @@ classdef LinearTree
     splitZero % 'zero' points determining the split boundary
     splitOne  % 'one' points determining the split boundary
     nodeData  % data assigned to the specific node
-    nodeDistance % distance used in the specific node
+    nodeSVM   % SVM in node
     predictor % predictors in leaves
     
     % User defined properties
@@ -28,7 +28,7 @@ classdef LinearTree
   end
     
 methods
-  function LT = LinearTree(data, labels, settings)
+  function SVMT = SVMTree(data, labels, settings)
     
     % initialize
     if nargin < 3
@@ -36,35 +36,35 @@ methods
     end
     
     % user defined tree properties
-    LT.maxSplit = defopts(settings,'maxSplit','all');
-    LT.dist = defopts(settings,'distance',2);
-    LT.probability = defopts(settings,'probability',false);
+    SVMT.maxSplit = defopts(settings,'maxSplit','all');
+%     SVMT.dist = defopts(settings,'distance',2);
+    SVMT.probability = defopts(settings,'probability',false);
     
     % learning data properties
     Nsubjects = length(labels);
     
-    LT.features = size(data,2);
-    LT.zerocount = sum(labels==0);
-    LT.onescount = Nsubjects - LT.zerocount;
-    LT.inForest = defopts(settings,'inForest',false);
-    if LT.inForest                      % as a part of forest
-      LT.traindata = settings.usedInd;  % remember only IDs of individuals
+    SVMT.features = size(data,2);
+    SVMT.zerocount = sum(labels==0);
+    SVMT.onescount = Nsubjects - SVMT.zerocount;
+    SVMT.inForest = defopts(settings,'inForest',false);
+    if SVMT.inForest                      % as a part of forest
+      SVMT.traindata = settings.usedInd;  % remember only IDs of individuals
     else
-      LT.traindata = data;
+      SVMT.traindata = data;
     end
-    LT.trainlabels = labels;
+    SVMT.trainlabels = labels;
     
     % tree properties
-    LT.Nodes = 1;
-    LT.parent = 0;
-    LT.children = [0 0];
-    LT.nodeData = ones(1,Nsubjects);
-    LT.nodeDistance = {2};
-    if LT.probability
-      LT.predictor = LT.onescount/Nsubjects;
+    SVMT.Nodes = 1;
+    SVMT.parent = 0;
+    SVMT.children = [0 0];
+    SVMT.nodeData = ones(1,Nsubjects);
+    if SVMT.probability
+      SVMT.predictor = SVMT.onescount/Nsubjects;
     else
-      LT.predictor = sum(labels) > sum(~labels);
+      SVMT.predictor = sum(labels) > sum(~labels);
     end
+    SVMT.nodeSVM = {};
     
     % data input check
     if size(data,1) ~= Nsubjects
@@ -77,22 +77,18 @@ methods
     nNodes = 1; % number of nodes
     
     % maximum split setting
-    if ischar(LT.maxSplit) && strcmp(LT.maxSplit,'all')
+    if ischar(SVMT.maxSplit) && strcmp(SVMT.maxSplit,'all')
       maxSplitNum = Nsubjects;
-    elseif isnumeric(LT.maxSplit)
-      maxSplitNum = LT.maxSplit;
+    elseif isnumeric(SVMT.maxSplit)
+      maxSplitNum = SVMT.maxSplit;
     else
       fprintf('Wrong maxSplit setting. Replacing by ''all''')
-      LT.maxSplit = 'all';
+      SVMT.maxSplit = 'all';
       maxSplitNum = Nsubjects;
     end
       
-    % gain number of distances to train
-    if iscell(LT.dist)
-      nDistances = length(LT.dist);
-    else
-      nDistances = 1;
-    end
+    % gain number of SVM settings to train
+    nDistances = 1;
     
     % inicialize variables used to store splitGain results
     allI = zeros(maxSplitNum,nDistances);
@@ -104,19 +100,6 @@ methods
     % training cycle start
     while any(nPureLeaf) && i < maxSplitNum
       i = i+1; % just to be sure this ends
-      
-      % training drawing in 2D (only for numerical distances)
-      if LT.features == 2 && all(~strcmpi(LT.dist,'mahal'))
-        figure(i)
-        scatter(data(~logical(labels),1),data(~logical(labels),2),'o','blue')
-        hold on
-        scatter(data(logical(labels),1),data(logical(labels),2),'s','green')
-        for p = 1:Nsubjects
-          text(data(p,1)+0.05,data(p,2),num2str(p),'FontSize',7)
-        end
-        xlim manual
-        ylim manual
-      end
       
       % prepare for counting and compute infomation gain
       leafInd = find(nPureLeaf);
@@ -130,11 +113,11 @@ methods
       end
       
       for s = idToCompute
-        actualDataInd(s,:) = (LT.nodeData == s);
-        [allI(s,:),allDataIndZ(s,:),allDataIndO(s,:),allDataSplit(s,:)] = ...
-          LinearTree.splitGain(data,actualDataInd(s,:),labels,LT.dist);
+        actualDataInd(s,:) = (SVMT.nodeData == s);
+        [allI(s,:),allDataIndZ(s,:),allDataIndO(s,:),allSVM(s,:)] = ...
+          SVMTree.splitGain(data,actualDataInd(s,:),labels);
         % check emptiness of child nodes
-        if all(allI(s,:) == 0) && (isempty(allDataIndZ{s,1}) || isempty(allDataIndO{s,1}))
+        if allI(s,:) == 0 && (isempty(allDataIndZ{s,1}) || isempty(allDataIndO{s,1}))
           % split cannot be done because one child would be empty
           nPureLeaf(s) = 0; % stay as leaf and do not split
         end
@@ -146,133 +129,94 @@ methods
       if ~isempty(I) % some nodes to split left
         dataIndZ = allDataIndZ(nPureLeaf,:);
         dataIndO = allDataIndO(nPureLeaf,:);
-        dataSplit = allDataSplit(nPureLeaf,:);
+        SVM = allSVM(nPureLeaf,:);
+%         dataSplit = allDataSplit(nPureLeaf,:);
 
         % split node with the maximum information gain
         [~,maxIid] = max(I(:));
-        [maxNode, maxDist] = ind2sub(size(I),maxIid);
+        [maxNode, maxSet] = ind2sub(size(I),maxIid);
 
         % check emptiness of child nodes
-        LT.parent(end+1:end+2) = leafInd(maxNode);
+        SVMT.parent(end+1:end+2) = leafInd(maxNode);
         nNodes = nNodes + 2;
-        LT.Nodes = nNodes;
-        LT.children(leafInd(maxNode),:) = [nNodes-1 nNodes];
-        LT.children(nNodes-1:nNodes,:) = zeros(2,2);
+        SVMT.Nodes = nNodes;
+        SVMT.children(leafInd(maxNode),:) = [nNodes-1 nNodes];
+        SVMT.children(nNodes-1:nNodes,:) = zeros(2,2);
 
-        if iscell(LT.dist)
-          chosenDistance = LT.dist{maxDist};
-        else
-          chosenDistance = LT.dist;
-        end
-        LT.nodeDistance{leafInd(maxNode)} = chosenDistance;
-        LT.nodeDistance(nNodes-1:nNodes) = {{},{}};      
+%         if iscell(SVMT.dist)
+%           chosenDistance = SVMT.dist{maxDist};
+%         else
+%           chosenDistance = SVMT.dist;
+%         end
+%         SVMT.nodeDistance{leafInd(maxNode)} = chosenDistance;
+%         SVMT.nodeDistance(nNodes-1:nNodes) = {{},{}};      
 
         % fill new splits and prepare leaves for another iteration
-        if isnumeric(chosenDistance)
-          LT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitZero;
-          LT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitOne;
-        else
-          LT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).zeroIndex;
-          LT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).onesIndex;
-        end
+%         if isnumeric(chosenDistance)
+%           SVMT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitZero;
+%           SVMT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitOne;
+%         else
+%           SVMT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).zeroIndex;
+%           SVMT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).onesIndex;
+%         end
 
-        chosenDataZ = dataIndZ{maxNode,maxDist};
-        chosenDataO = dataIndO{maxNode,maxDist};
+        SVMT.nodeSVM{leafInd(maxNode)} = SVM(maxNode,maxSet);
+
+        chosenDataZ = dataIndZ{maxNode,maxSet};
+        chosenDataO = dataIndO{maxNode,maxSet};
         
         changeIndZ = false(Nsubjects,1);
         changeIndZ(chosenDataZ) = true;
         changeIndO = false(Nsubjects,1);
         changeIndO(chosenDataO) = true;
-        LT.nodeData(changeIndZ) = nNodes - 1;
-        LT.nodeData(changeIndO) = nNodes;
+        SVMT.nodeData(changeIndZ) = nNodes - 1;
+        SVMT.nodeData(changeIndO) = nNodes;
 
         nPureLeaf(leafInd(maxNode)) = 0; % leaf became splitting node
         nPureLeaf(nNodes-1) = ~all(labels(chosenDataZ)==labels(chosenDataZ(1)));
         nPureLeaf(nNodes) = ~all(labels(chosenDataO)==labels(chosenDataO(1)));
         
-        if LT.probability 
-          LT.predictor(nNodes-1) = sum(labels(chosenDataZ))/length(chosenDataZ);
-          LT.predictor(nNodes) = sum(labels(chosenDataO))/length(chosenDataO);
+        if SVMT.probability 
+          SVMT.predictor(nNodes-1) = sum(labels(chosenDataZ))/length(chosenDataZ);
+          SVMT.predictor(nNodes) = sum(labels(chosenDataO))/length(chosenDataO);
         else
-          LT.predictor(nNodes-1) = sum(labels(chosenDataZ)) > sum(~labels(chosenDataZ));
-          LT.predictor(nNodes) = sum(labels(chosenDataO)) >= sum(~labels(chosenDataO));
+          SVMT.predictor(nNodes-1) = sum(labels(chosenDataZ)) > sum(~labels(chosenDataZ));
+          SVMT.predictor(nNodes) = sum(labels(chosenDataO)) >= sum(~labels(chosenDataO));
         end
         
-        % training split drawing in 2D (only for numerical distances)
-        if LT.features == 2 && all(~strcmpi(LT.dist,'mahal'))
-          sZ = LT.splitZero{maxNode};
-          sO = LT.splitOne{maxNode};
-          scatter(sZ(1),sZ(2),'x','blue')
-          scatter(sO(1),sO(2),'x','green')
-
-          x(i,1) = min(data(actualDataInd(maxNode,:),1));
-          x(i,2) = max(data(actualDataInd(maxNode,:),1));
-          ybound(i,1) = ((sZ(1)-x(i,1))^2-(sO(1)-x(i,1))^2+sZ(2)^2-sO(2)^2)/(2*(sZ(2)-sO(2)));
-          ybound(i,2) = ((sZ(1)-x(i,2))^2-(sO(1)-x(i,2))^2+sZ(2)^2-sO(2)^2)/(2*(sZ(2)-sO(2)));
-          for l = 1:i
-            plot(x(l,:),ybound(l,:),'r')
-          end
-          hold off
-        end
       end % nonempty split end
     end % training cycle end
     fprintf('Nodes: %d\n',nNodes)
     
   end    
     
-  function y = predict(LT, data, originalData)
+  function y = predict(SVMT, data)
   % prediction function of linear tree for dataset data
   
-    if nargin<3 
-      if LT.inForest
-        error('Tree with no entrance original data cannot be part of a forest!')
-      end
-      originalData = [];
-    end
-    
     nData = size(data,1);
     y1 = zeros(nData,1);
     dataNodeNum = ones(nData,1);
     
-    splitNodes = find(LT.children(:,1));
+    splitNodes = find(SVMT.children(:,1));
     nSplitNodes = length(splitNodes);
-    
-    if LT.inForest
-      trainingdata = originalData(LT.traindata,:);
-    else
-      trainingdata = LT.traindata;
-    end
-    
+        
     for node = 1:nSplitNodes
       nodeDataId = (splitNodes(node) == dataNodeNum);
       if any(nodeDataId) % are there any data for prediction?
         nodeDataPred = data(nodeDataId,:);
         nNodeData = sum(nodeDataId);
         tempDataNum = zeros(nNodeData,1);
-        if iscell(LT.dist)
-          currentDistance = LT.nodeDistance{splitNodes(node)};
-        else
-          currentDistance = LT.dist;
-        end
-        if isnumeric(currentDistance)
-          zeroDist = LinearTree.pdistance(nodeDataPred,LT.splitZero{splitNodes(node)},currentDistance);
-          oneDist = LinearTree.pdistance(nodeDataPred,LT.splitOne{splitNodes(node)},currentDistance);
-        else
-          zeroID = LT.splitZero{splitNodes(node)};
-          onesID = LT.splitOne{splitNodes(node)};
-          zeroDist = LinearTree.mahalanobis(nodeDataPred,trainingdata(zeroID,:));
-          oneDist = LinearTree.mahalanobis(nodeDataPred,trainingdata(onesID,:));
-        end
-        tempDataNum(zeroDist<oneDist) = LT.children(splitNodes(node),1);
-        tempDataNum(zeroDist>=oneDist) = LT.children(splitNodes(node),2);
+        tempY = logical(svmclassify(SVMT.nodeSVM{splitNodes(node)},nodeDataPred));
+        tempDataNum(~tempY) = SVMT.children(splitNodes(node),1);
+        tempDataNum(tempY) = SVMT.children(splitNodes(node),2);
         dataNodeNum(nodeDataId) = tempDataNum;
       end
     end
     
     % if the node number is one, prediction equals one
     y1(logical(mod(dataNodeNum,2))) = 1;
-    y = (LT.predictor(dataNodeNum))';
-    if ~LT.probability && any(y1 ~= y)
+    y = (SVMT.predictor(dataNodeNum))';
+    if ~SVMT.probability && any(y1 ~= y)
       fprintf('Classification differs from previous prediction style.\n')
     end
     
@@ -282,12 +226,17 @@ end
 
 methods (Static)
   
-  function [I,dataIndZ,dataIndO,S] = splitGain(data,index,labels,distance)
+  function [I,dataIndZ,dataIndO,SVM] = splitGain(data,index,labels,svmSettings)
   % splitGain returns information value I of the split determined with 
   % points splitZero and splitOne. Furthermore, it returns apropriate 
   % indices of data: dataIndZ and dataIndO
-  
+    
+    if nargin == 3
+      svmSettings = {};
+    end
+    
     actualData = data(index,:);
+    actualLabels = labels(index);
     dataID = find(index);
     
     % class division
@@ -296,53 +245,33 @@ methods (Static)
     A = data(zeroIndex,:);
     B = data(onesIndex,:);
     
-    if ~iscell(distance)
-      distance = {distance};
+    if ~iscell(svmSettings)
+      svmSettings = {svmSettings};
     end
-    nDistances = length(distance);
+    nSettings = 1; % length(svmSettings);
     
     % in case of emptyness do not compute
     if isempty(A) || isempty(B)
       fprintf('One branch is empty\n')
-      I = zeros(1,nDistances);
-      dataIndZ = cell(1,nDistances);
-      dataIndO = cell(1,nDistances);
-      for d = 1:nDistances
-        S(1,d).zeroIndex = zeroIndex;
-        S(1,d).onesIndex = onesIndex;
+      I = zeros(1,nSettings);
+      dataIndZ = cell(1,nSettings);
+      dataIndO = cell(1,nSettings);
+      for d = 1:nSettings
+        SVM(1,d) = [];
+        SVM(1,d) = [];
       end
       return
     end
     
-    for d = 1:nDistances % count each distance
-      dis = distance{d};
-    
-      if strcmp(dis,'mahal')
-
-        % count indexes
-        zeroDist = LinearTree.mahalanobis(actualData,A);
-        oneDist = LinearTree.mahalanobis(actualData,B);
-
-        S(1,d).zeroIndex = zeroIndex;
-        S(1,d).onesIndex = onesIndex;
-
-      else
-
-        % count mean
-        S(1,d).splitZero = mean(A,1);
-        S(1,d).splitOne = mean(B,1);
-
-        % count indexes
-        zeroDist = LinearTree.pdistance(actualData,S(1,d).splitZero,dis);
-        oneDist = LinearTree.pdistance(actualData,S(1,d).splitOne,dis);
-
-      end
-
-      dataIndZ{:,d} = dataID(zeroDist<oneDist);
-      dataIndO{:,d} = dataID(zeroDist>=oneDist); 
+    for d = 1:nSettings % count for each settings
+      SVM = svmtrain(actualData,actualLabels,svmSettings{:});
+      y = logical(svmclassify(SVM,actualData));
+      
+      dataIndZ{:,d} = dataID(~y);
+      dataIndO{:,d} = dataID(y); 
 
       % count information gain
-      I(1,d) = LinearTree.infoGainSet(dataIndZ{:,d},dataIndO{:,d},labels);
+      I(1,d) = SVMTree.infoGainSet(dataIndZ{:,d},dataIndO{:,d},labels);
       
     end
       
@@ -368,8 +297,8 @@ methods (Static)
     pLeft = [NzeroZ./NallZ, NzeroO./NallZ]; % zero goes to the left child
     pRight = [NoneZ./NallO, NoneO./NallO];  % one goes to the right child
         
-    I = LinearTree.shannonEntropy(pFull) - NallZ./Ndata.*LinearTree.shannonEntropy(pLeft)...
-        - NallO./Ndata.*LinearTree.shannonEntropy(pRight);
+    I = SVMTree.shannonEntropy(pFull) - NallZ./Ndata.*SVMTree.shannonEntropy(pLeft)...
+        - NallO./Ndata.*SVMTree.shannonEntropy(pRight);
   end
   
   function H = shannonEntropy(p)
