@@ -70,14 +70,14 @@ settings.autoscale = true;
 
 perf = classifyFC(FCdata,'rf',settings);
 
-%% 11 linear trees - experimental
+%% linear trees - experimental
 clear settings
 
 settings.forest.nTrees = 100;
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 settings.forest.probability = false;
-settings.forest.maxSplit = 6;
+settings.forest.maxSplit = 1;
 
 perf = classifyFC(FCdata,'rf',settings);
 
@@ -88,7 +88,9 @@ settings.forest.TreeType = 'svm';
 
 perf = classifyFC(FCdata,'rf',settings);
 
-%% linear tree + pca
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Trees
+% linear tree + pca
 clear settings
 
 settings.dimReduction.name = 'pca';
@@ -112,6 +114,13 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 
 perf = classifyFC(FCdata,'svmtree');
+
+%% MATLAB classification tree
+clear settings
+
+settings.tree.MaxCat = 0;
+
+perf = classifyFC(FCdata,'mtltree',settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% linear naive Bayes

@@ -25,11 +25,11 @@ function [performance] = classifier(method, data, indices, settings)
   
   % settings before the main loop
   switch method
-    case 'svm'
+    case 'svm' % support vector machine
       settings.svm = defopts(settings, 'svm', []);
       cellset = cellSettings(settings.svm);
       
-    case {'rf', 'mrf', 'bf'}
+    case {'rf', 'mrf', 'bf'} % forests
       settings.forest = defopts(settings, 'forest', []);
       % gain number of trees 
       nTrees = defopts(settings.forest, 'nTrees', 11);
@@ -38,10 +38,14 @@ function [performance] = classifier(method, data, indices, settings)
           cellset = cellSettings(settings.forest, {'nTrees'});
       end
       
-    case {'lintree', 'svmtree'}
+    case {'lintree', 'mtltree', 'svmtree'} % trees
       settings.tree = defopts(settings, 'tree', []);
       
-    case 'nb'
+      if strcmpi(method, 'mtltree')
+        cellset = cellSettings(settings.tree);
+      end
+      
+    case 'nb' % naive Bayes
       settings.bayes = defopts(settings, 'bayes', []);
       settings.bayes.type = defopts(settings.bayes, 'type', 'diaglinear');
   end
@@ -96,6 +100,9 @@ function [performance] = classifier(method, data, indices, settings)
       case 'svmtree' % SVM tree
         Forest = SVMTree(trainingSet, trainingIndices, settings.tree);
         
+      case 'mtltree' % matlab classification tree
+        Forest = ClassificationTree.fit(trainingSet, trainingIndices, cellset{:});
+        
     end
     
     % prediction
@@ -114,7 +121,7 @@ function [performance] = classifier(method, data, indices, settings)
 %         [y,score] = predict(SVM,transData);
 %         fprintf('%f\n',score)
         
-      case {'rf', 'mrf', 'bf', 'lintree', 'svmtree'} % tree based methods
+      case {'rf', 'mrf', 'bf', 'lintree', 'svmtree', 'mtltree'} % tree based methods
         y = predict(Forest, transData);
         
       case 'nb' % naive Bayes

@@ -216,8 +216,10 @@ methods
         end
       end % nonempty split end
     end % training cycle end
-    fprintf('Nodes: %d\n',nNodes)
-    
+    % for testing purposes:
+    if ~LT.inForest
+      fprintf('Nodes: %d\n',nNodes)
+    end
   end    
     
   function y = predict(LT, data, originalData)
