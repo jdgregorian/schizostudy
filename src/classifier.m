@@ -1,4 +1,4 @@
-function [performance] = classifier(method, data, indices, settings)
+function [performance, class] = classifier(method, data, indices, settings)
 % Classification by classifier chosen in method. Returns performance of 
 % appropriate classifier in LOO CV.
 %
@@ -48,6 +48,13 @@ function [performance] = classifier(method, data, indices, settings)
     case 'nb' % naive Bayes
       settings.bayes = defopts(settings, 'bayes', []);
       settings.bayes.type = defopts(settings.bayes, 'type', 'diaglinear');
+      
+    case 'knn' % k-nearest neighbours
+      settings.knn = defopts(settings, 'knn', []);
+      settings.knn.k = defopts(settings.knn, 'k', 1);
+      settings.knn.distance = defopts(settings.knn, 'distance', 'euclidean');
+      settings.knn.rule = defopts(settings.knn, 'rule', 'nearest');
+      
   end
   
   % dimension reduction outside the LOO loop
@@ -65,6 +72,7 @@ function [performance] = classifier(method, data, indices, settings)
   end
   
   % count LOO cross-validation
+  class = zeros(1, Nsubjects);
   correctPredictions = zeros(1, Nsubjects);
     
   for sub = 1:Nsubjects
@@ -127,6 +135,10 @@ function [performance] = classifier(method, data, indices, settings)
       case 'nb' % naive Bayes
         y = classify(transData, trainingSet, trainingIndices, settings.bayes.type);
         
+      case 'knn' % k-nearest neighbours
+        y = knnclassify(transData, trainingSet, trainingIndices, ...
+          settings.knn.k, settings.knn.distance, settings.knn.rule);
+        
       otherwise
         fprintf('Wrong method format!!!\n')
         return
@@ -138,6 +150,7 @@ function [performance] = classifier(method, data, indices, settings)
     if y == indices(sub)
       correctPredictions(sub) = 1;
     end
+    class(sub) = y;
     
     fprintf('Subject %d/%d done. Actual performance: %.2f%% \n',sub,Nsubjects,sum(correctPredictions)/sub*100);
   end
@@ -159,6 +172,7 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
   switch settings.dimReduction.name
     case 'pca'
       % principle compopnent analysis feature reduction
+      fprintf('Starting dimension reduction by PCA...\n')
       nDim = defopts(settings.dimReduction,'nDim',Nsubjects-1); % maximum of chosen dimensions
       if nDim > Nsubjects-1
         nDim = Nsubjects-1;
@@ -168,10 +182,12 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
       reducedData = transData(:,1:nDim);
       
       settings.transformPrediction = true;
+      fprintf('Dimension reduced from %d to %d\n', dim, nDim)
       
     case 'kendall'
       % Kendall tau rank coefficient feature reduction
       % (according to Hui 2009)
+      fprintf('Starting dimension reduction using Kendall tau rank coefficients...\n')
       nDim = defopts(settings.dimReduction, 'nDim', dim); % maximum of chosen dimensions
       treshold = defopts(settings.dimReduction, 'treshold', -1); % minimal Kendall tau rank value
       
@@ -198,9 +214,11 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
       end
       
       settings.transformPrediction = true;
+      fprintf('Dimension reduced from %d to %d\n', dim, size(reducedData,2))
       
     case 'ttest'
       % t-test feature reduction
+      fprintf('Starting dimension reduction using t-test...\n')
       nDim = defopts(settings.dimReduction, 'nDim', dim);    % maximum of chosen dimensions
       alpha = defopts(settings.dimReduction, 'alpha', 0.05); % significance level
       
@@ -222,6 +240,7 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
       end
       
       settings.transformPrediction = true;
+      fprintf('Dimension reduced from %d to %d\n', dim, size(reducedData,2))
     
     case 'median'
       % feature reduction according to Honza Kalina's suggestion:

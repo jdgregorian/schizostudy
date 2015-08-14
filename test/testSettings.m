@@ -128,6 +128,17 @@ clear settings
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
-settings.bayes.type = 'mahal';
+settings.bayes.type = 'diaglinear';
 
 perf = classifyFC(FCdata,'nb',settings);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% KNN
+clear settings
+
+settings.knn.k = 3;
+settings.knn.distance = 'euclidean';
+settings.dimReduction.name = 'kendall';
+settings.dimReduction.nDim = 200;
+
+perf = classifyFC(FCdata,'knn',settings);
