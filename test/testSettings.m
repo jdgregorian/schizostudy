@@ -142,3 +142,17 @@ settings.dimReduction.name = 'kendall';
 settings.dimReduction.nDim = 200;
 
 perf = classifyFC(FCdata,'knn',settings);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% logistic linear classifier
+clear settings
+
+for s=1:100
+  settings(s).dimReduction.name = 'pca';
+  settings(s).dimReduction.nDim = s+50;
+  tic
+  perf(s) = classifyFC(FCdata,'llc',settings(s));
+  elapsedtime = toc;
+end
+
+save(fullfile('results','llc_pca_dim_50plus.mat'),'perf','settings','elapsedtime')

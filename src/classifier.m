@@ -55,6 +55,11 @@ function [performance, class] = classifier(method, data, indices, settings)
       settings.knn.distance = defopts(settings.knn, 'distance', 'euclidean');
       settings.knn.rule = defopts(settings.knn, 'rule', 'nearest');
       
+    case 'llc' % logistic linear classifier
+      if isfield(settings,'llc')
+        warning('Logistic linear classifier do not accept additional settings.')
+      end
+      
   end
   
   % dimension reduction outside the LOO loop
@@ -111,6 +116,9 @@ function [performance, class] = classifier(method, data, indices, settings)
       case 'mtltree' % matlab classification tree
         Forest = ClassificationTree.fit(trainingSet, trainingIndices, cellset{:});
         
+      case 'llc' % logistic linear classifier
+        LLC = mnrfit(trainingSet, trainingIndices' + 1);
+        
     end
     
     % prediction
@@ -138,6 +146,9 @@ function [performance, class] = classifier(method, data, indices, settings)
       case 'knn' % k-nearest neighbours
         y = knnclassify(transData, trainingSet, trainingIndices, ...
           settings.knn.k, settings.knn.distance, settings.knn.rule);
+        
+      case 'llc' % logistic linear classifier
+        y = arrayfun(@(x) (LLC(1) + transData(x,:)*LLC(2:end)) < 0,1:size(transData,1));
         
       otherwise
         fprintf('Wrong method format!!!\n')

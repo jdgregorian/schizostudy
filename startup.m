@@ -20,7 +20,7 @@ fprintf('Change LOO to common CV.\n')
 fprintf('Median reduction method??? - according to Honza''s sugestion?\n')
 
 fprintf('\nMost recent: \n')
-fprintf('    KNN\n')
+fprintf('    ANN ? LDA\n')
 fprintf('    Implement all Arbabshirani''s methods.\n')
 fprintf('    Boosting\n')
 fprintf('    Solve using SVM versions\n')
