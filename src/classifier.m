@@ -64,8 +64,8 @@ function [performance, class] = classifier(method, data, indices, settings)
   
   % dimension reduction outside the LOO loop
   [data, settings] = reduceDim(data, indices, settings);
-  settings.transformPrediction = false;
-  
+  settings.transformPrediction = false; % reduction is outside -> further 
+                                        % transformation is not necessary
   Nsubjects = size(data, 1);
   
   % data scaling to zero mean and unit variance
@@ -122,7 +122,8 @@ function [performance, class] = classifier(method, data, indices, settings)
     end
     
     % prediction
-    % transform data if necessary
+    % transform data if necessary (automatically disabled in outside
+    % transformation)
     if settings.transformPrediction
       transData = data(sub,:)*settings.dimReduction.transMatrix;
     else
@@ -224,7 +225,6 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
         reducedData = data(:,tauId(1));
       end
       
-      settings.transformPrediction = true;
       fprintf('Dimension reduced from %d to %d\n', dim, size(reducedData,2))
       
     case 'ttest'
@@ -250,28 +250,39 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
         reducedData = reducedData(:,pId(1:nDim));
       end
       
-      settings.transformPrediction = true;
       fprintf('Dimension reduced from %d to %d\n', dim, size(reducedData,2))
     
     case 'median'
       % feature reduction according to Honza Kalina's suggestion:
       %    Choose median value in each dimension, count how many
       %    individuals has greater or lower value
-      % NOT COMPLETED!!!
-      
-      nOne = sum(indices);
-      nZero = Nsubjects - nOne;
+      fprintf('Starting dimension reduction using median difference coefficients...\n')
+      nDim = defopts(settings.dimReduction, 'nDim', dim);    % maximum of chosen dimensions
+      nOnes = sum(indices);
+      nZeros = Nsubjects - nOnes;
+      minDif = defopts(settings.dimReduction, 'minDif', 2*abs(nOnes-nZeros)); % minimum number of differences
       
       medData = median(data,1);
-      greaterOnes = false(Nsubjects,dim);
-      for ind = 1:Nsubjects
-        greaterOnes(ind,:) = data(ind,:) > medData;
+      greaterSub = data > repmat(medData,Nsubjects,1);
+      greaterOnes = sum(greaterSub & repmat(indices',1,dim),1);
+      greaterZeros = sum(greaterSub & repmat(~indices',1,dim),1);
+      % count median difference coefficient
+      nDif = abs(greaterOnes - greaterZeros) + abs(nOnes - nZeros - greaterOnes + greaterZeros);
+      
+      reducedData = data(:,nDif >= minDif);
+      redDim = size(reducedData,2);
+      
+      if redDim == 0 % check if some data left
+        warning(['Too severe constraints! Preventing emptyness of reduced',...
+          'dataset by keeping one dimension with the greatest difference coefficient.'])
+        [~, minId] = min(nDif);
+        reducedData = data(:, minId(1));
+      elseif redDim > nDim   % reduction by dimensions with the greatest difference coefficients
+        [~, difId] = sort(nDif(nDif >= minDif),'descend');
+        reducedData = reducedData(:,difId(1:nDim));
       end
       
-      warning('Median method is not working yet. Data dimension will not be reduced.');
-      reducedData = data;
-      
-      settings.transformPrediction = true; 
+      fprintf('Dimension reduced from %d to %d\n', dim, redDim)
       
     case 'none'
       reducedData = data;

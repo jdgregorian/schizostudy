@@ -25,6 +25,7 @@ classdef LinearTree
     dist        % distance type
     inForest    % 1 - tree is a part of a forest, 0 - opposite
     probability % probability prediction mode
+    draw        % draws tree learning (only for numerical distances in 2D)
   end
     
 methods
@@ -36,9 +37,10 @@ methods
     end
     
     % user defined tree properties
-    LT.maxSplit = defopts(settings,'maxSplit','all');
-    LT.dist = defopts(settings,'distance',2);
-    LT.probability = defopts(settings,'probability',false);
+    LT.maxSplit = defopts(settings, 'maxSplit', 'all');
+    LT.dist = defopts(settings, 'distance', 2);
+    LT.probability = defopts(settings, 'probability', false);
+    LT.draw = defopts(settings, 'draw', false);
     
     % learning data properties
     Nsubjects = length(labels);
@@ -106,7 +108,7 @@ methods
       i = i+1; % just to be sure this ends
       
       % training drawing in 2D (only for numerical distances)
-      if LT.features == 2 && all(~strcmpi(LT.dist,'mahal'))
+      if LT.draw && LT.features == 2 && all(~strcmpi(LT.dist,'mahal'))
         figure(i)
         scatter(data(~logical(labels),1),data(~logical(labels),2),'o','blue')
         hold on
@@ -199,9 +201,9 @@ methods
         end
         
         % training split drawing in 2D (only for numerical distances)
-        if LT.features == 2 && all(~strcmpi(LT.dist,'mahal'))
-          sZ = LT.splitZero{maxNode};
-          sO = LT.splitOne{maxNode};
+        if LT.draw && LT.features == 2 && all(~strcmpi(LT.dist,'mahal'))
+          sZ = LT.splitZero{leafInd(maxNode)};
+          sO = LT.splitOne{leafInd(maxNode)};
           scatter(sZ(1),sZ(2),'x','blue')
           scatter(sO(1),sO(2),'x','green')
 

@@ -73,13 +73,12 @@ perf = classifyFC(FCdata,'rf',settings);
 %% linear trees - experimental
 clear settings
 
-settings.forest.nTrees = 100;
-settings.dimReduction.name = 'pca';
+settings.dimReduction.name = 'median';
 settings.dimReduction.nDim = 200;
-settings.forest.probability = false;
-settings.forest.maxSplit = 1;
+settings.dimReduction.minDif = 70;
+settings.tree.maxSplit = 50;
 
-perf = classifyFC(FCdata,'rf',settings);
+perf = classifyFC(FCdata,'lintree',settings);
 
 %% bagged linear svm
 clear settings
