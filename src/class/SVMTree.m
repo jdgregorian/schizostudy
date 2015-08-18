@@ -1,6 +1,6 @@
 classdef SVMTree 
-% Class for binary decision tree using linear manifolds as decision split
-% boundaries.
+% Class for binary decision tree using linear manifolds learnt through SVM 
+% as decision split boundaries.
     
   properties
     % Data properties
@@ -142,29 +142,15 @@ methods
         SVMT.Nodes = nNodes;
         SVMT.children(leafInd(maxNode),:) = [nNodes-1 nNodes];
         SVMT.children(nNodes-1:nNodes,:) = zeros(2,2);
-
-%         if iscell(SVMT.dist)
-%           chosenDistance = SVMT.dist{maxDist};
-%         else
-%           chosenDistance = SVMT.dist;
-%         end
-%         SVMT.nodeDistance{leafInd(maxNode)} = chosenDistance;
-%         SVMT.nodeDistance(nNodes-1:nNodes) = {{},{}};      
-
-        % fill new splits and prepare leaves for another iteration
-%         if isnumeric(chosenDistance)
-%           SVMT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitZero;
-%           SVMT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).splitOne;
-%         else
-%           SVMT.splitZero{leafInd(maxNode)} = dataSplit(maxNode,maxDist).zeroIndex;
-%           SVMT.splitOne{leafInd(maxNode)} = dataSplit(maxNode,maxDist).onesIndex;
-%         end
-
+        
+        % save chosen SVM
         SVMT.nodeSVM{leafInd(maxNode)} = SVM(maxNode,maxSet);
-
+        
+        % split data
         chosenDataZ = dataIndZ{maxNode,maxSet};
         chosenDataO = dataIndO{maxNode,maxSet};
         
+        % mark data in correspondance with nodes
         changeIndZ = false(Nsubjects,1);
         changeIndZ(chosenDataZ) = true;
         changeIndO = false(Nsubjects,1);
@@ -176,6 +162,7 @@ methods
         nPureLeaf(nNodes-1) = ~all(labels(chosenDataZ)==labels(chosenDataZ(1)));
         nPureLeaf(nNodes) = ~all(labels(chosenDataO)==labels(chosenDataO(1)));
         
+        % probability prediction
         if SVMT.probability 
           SVMT.predictor(nNodes-1) = sum(labels(chosenDataZ))/length(chosenDataZ);
           SVMT.predictor(nNodes) = sum(labels(chosenDataO))/length(chosenDataO);
@@ -191,7 +178,7 @@ methods
   end    
     
   function y = predict(SVMT, data)
-  % prediction function of linear tree for dataset data
+  % prediction function of SVM tree for dataset data
   
     nData = size(data,1);
     y1 = zeros(nData,1);

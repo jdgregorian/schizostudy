@@ -84,6 +84,7 @@ perf = classifyFC(FCdata,'lintree',settings);
 clear settings
 
 settings.forest.TreeType = 'svm';
+settings.forest.perfType = 'all';
 
 perf = classifyFC(FCdata,'rf',settings);
 

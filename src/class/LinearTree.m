@@ -226,6 +226,8 @@ methods
     
   function y = predict(LT, data, originalData)
   % prediction function of linear tree for dataset data
+  % data         - points to predict
+  % originalData - data used to tree training (used when inForest == true)
   
     if nargin<3 
       if LT.inForest

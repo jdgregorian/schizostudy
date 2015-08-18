@@ -7,10 +7,12 @@ classdef RandomForest
     nvars          % # of features
     NTrees         % number of trees
     performances   % array of performances
+    perfType       % type of performance of predictors to weight prediction
     FBoot          % fraction of input data used to training
     TreeType       % type of the tree (stump, linear)
     trainingData   % data used for forest training
     trainingLabels % labels used for forest training
+    learning       % learning algorithm
   end
     
 methods
@@ -25,30 +27,45 @@ methods
       end
       settings.nTrees = NTrees;
     end
-    RF.FBoot = defopts(settings,'FBoot',1);
-    RF.TreeType = defopts(settings,'TreeType','linear');
+    RF.FBoot = defopts(settings, 'FBoot', 1);
+    RF.TreeType = defopts(settings, 'TreeType', 'linear');
+    RF.learning = defopts(settings, 'learning', 'bagging');
+    RF.perfType = defopts(settings, 'perfType', 'treedata');
     RF.trainingData = data;
     RF.trainingLabels = labels;
     
     datacount = size(data,1);
-    datause = ceil(RF.FBoot*datacount);
+    Ndatause = ceil(RF.FBoot*datacount);
 
     % tree learning sequence
     for T = 1:NTrees
-      % bootstrap
-      useInd = randi(datause,1,datause);
-      labeluse = labels(useInd);
+      % learning algorithm type
+      switch RF.learning
+        case {'bag','bagging'} % bagging
+          useInd = randi(Ndatause, 1, Ndatause);
+          datause = data(useInd,:);
+          labeluse = labels(useInd);
+        otherwise
+          warning('Wrong learning algorithm name! Switching to bagging...')
+          RF.learning = 'bagging';
+          useInd = randi(Ndatause,1,Ndatause);
+          datause = data(useInd,:);
+          labeluse = labels(useInd);
+      end
+      
+      % tree training
       switch RF.TreeType
         case 'stump'
-          Tree = StumpTree(data(useInd,:),labeluse);
+          Tree = StumpTree(datause,labeluse);
           Tree.maxSplit = 1;
         case 'linear'
           settings.inForest = true;
           settings.usedInd = useInd;
-          Tree = LinearTree(data(useInd,:),labeluse,settings);
+          Tree = LinearTree(datause,labeluse,settings);
         case 'svm'
-          Tree = svmtrain(data(useInd,:),labeluse);
-          Tree.maxSplit = 1;
+          settings.inForest = true;
+          settings.usedInd = useInd;
+          Tree = SVMTree(datause,labeluse,settings);
         otherwise
           fprintf('Wrong tree format!!!')
           RF.Trees = {};
@@ -58,51 +75,51 @@ methods
       
       RF.Trees{T} = Tree;
       RF.NTrees = RF.NTrees + 1;
-      
-      % old tree performance counting
-%       if strcmp(Tree.maxSplit,'all') % not necessary when performing all splits
-%         RF.performances(T) = 1;
-%       else
-%         y = Tree.predict(data(useInd,:),data);
-%         RF.performances(T) = sum((y'==labeluse))/length(labeluse);
-%       end
 
       % tree performance counting
-      if strcmpi(RF.TreeType,'svm')
-        y = svmclassify(Tree,data);
-      else
-        y = round(double(Tree.predict(data,data)));
+      switch RF.perfType
+        case 'treedata'
+          perfData = datause;
+          perfLabels = labeluse;
+        case {'all','alldata'}
+          perfData = data;
+          perfLabels = labels;
+        otherwise
+          perfData = [];
       end
-      RF.performances(T) = sum((y'==labeluse))/length(labeluse);
+      
+      if ~isempty(perfData)
+        if strcmpi(RF.TreeType,'svm')
+          pred = Tree.predict(perfData);
+        else
+          pred = Tree.predict(perfData, datause);
+        end
+        y = round(double(pred));
+        RF.performances(T) = sum((y'==perfLabels))/length(perfLabels);
+      else
+        RF.performances(T) = 1;
+      end
     end
   end    
     
   function [y,Y] = predict(RF, data)
   % prediction function for random forest
-    nSubj = size(data,1);
-    Y = zeros(nSubj,RF.NTrees);
+    nSubj = size(data, 1);
+    Y = zeros(nSubj, RF.NTrees);
+    
     if strcmpi(RF.TreeType,'svm')
       for i = 1:RF.NTrees
-        Y(:,i) = svmclassify(RF.Trees{i},data);
+        Y(:,i) = RF.Trees{i}.predict(data);
       end
-    else
+    else      
       for i = 1:RF.NTrees
-        Y(:,i) = RF.Trees{i}.predict(data,RF.trainingData);
+        Y(:,i) = RF.Trees{i}.predict(data, RF.trainingData);
       end
     end
+      
     perf = RF.performances;
-    y = sum(Y.*repmat(perf,nSubj,1),2)/sum(perf);
-    fprintf('%f\n',y);
-    
-    % confidence loop
-%     i = 1;
-%     while abs(y-0.5)<0.1 
-%       ind = true(1,ST.NTrees);
-%       ind(randi(ST.NTrees,1,i)) = false;
-%       y = sum(Y(:,ind).*perf(ind),2)/sum(perf(ind));
-%       fprintf('%f\n',y);
-%       i = i+1;
-%     end
+    y = sum(Y.*repmat(perf, nSubj, 1), 2)/sum(perf); % weighted prediction
+    fprintf('%f\n', y);
     
     y = round(y); %>0.5;
   end  
