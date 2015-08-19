@@ -30,25 +30,25 @@ function testRFparams(data,param,filename)
 
     if nargin < 2 || strcmp(param,'default')
       clear param
-      param(1).name = 'nTrees';
+      param(1).name = 'forest.nTrees';
       param(1).values = {11};% {100,400,1000};
-      param(end+1).name = 'FBoot';
+      param(end+1).name = 'forest.FBoot';
       param(end).values = {0.5,0.8,1}; % {0.5,0.8,1};
-      param(end+1).name = 'SampleWithReplacement';
+      param(end+1).name = 'forest.SampleWithReplacement';
       param(end).values = {'on','off'}; % {'on','off'};
-      param(end+1).name = 'NVarToSample';
+      param(end+1).name = 'forest.NVarToSample';
       param(end).values = {10,50,100,500,2000,'all'}; % {100,500,1000,2000,'all'};
-      param(end+1).name = 'MinLeaf';
+      param(end+1).name = 'forest.MinLeaf';
       param(end).values = {1,3,8}; % {1,3,8};
 
       % fitctree params
-      % param(end+1).name = 'CrossVal';
+      % param(end+1).name = 'forest.CrossVal';
       % param(end).values = {'on','off'}; % {'on','off'};
-      % param(end+1).name = 'Prune';
+      % param(end+1).name = 'forest.Prune';
       % param(end).values = {'on','off'}; % {'on','off'};
-      param(end+1).name = 'SplitCriterion';
+      param(end+1).name = 'forest.SplitCriterion';
       param(end).values = {'gdi','twoing','deviance'}; % {'gdi','twoing','deviance'};
-      param(end+1).name = 'Surrogate';
+      param(end+1).name = 'forest.Surrogate';
       param(end).values = {'off','on','all'}; % {'off','on','all'};
     end
 

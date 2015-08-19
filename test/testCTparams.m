@@ -30,25 +30,25 @@ function testCTparams(data,param,filename)
 
     if nargin < 2 || strcmp(param,'default')
       clear param
-      param(1).name = 'MaxCat';
+      param(1).name = 'tree.MaxCat';
       param(1).values = {0,1,5,10,20,50};% {100,400,1000};
-      param(end+1).name = 'MergeLeaves';
+      param(end+1).name = 'tree.MergeLeaves';
       param(end).values = {'on','off'}; % {0.5,0.8,1};
-      % param(end+1).name = 'SampleWithReplacement';
+      % param(end+1).name = 'tree.SampleWithReplacement';
       % param(end).values = {'on','off'}; % {'on','off'};
-      % param(end+1).name = 'NVarToSample';
+      % param(end+1).name = 'tree.NVarToSample';
       % param(end).values = {10,50,100,500,2000,'all'}; % {100,500,1000,2000,'all'};
-      param(end+1).name = 'MinLeaf';
+      param(end+1).name = 'tree.MinLeaf';
       param(end).values = {1,3,5,8}; % {1,3,8};
 
       % fitctree params
-      % param(end+1).name = 'CrossVal';
+      % param(end+1).name = 'tree.CrossVal';
       % param(end).values = {'on','off'}; % {'on','off'};
-      % param(end+1).name = 'Prune';
+      % param(end+1).name = 'tree.Prune';
       % param(end).values = {'on','off'}; % {'on','off'};
-      param(end+1).name = 'SplitCriterion';
+      param(end+1).name = 'tree.SplitCriterion';
       param(end).values = {'gdi','twoing','deviance'}; % {'gdi','twoing','deviance'};
-      param(end+1).name = 'Surrogate';
+      param(end+1).name = 'tree.Surrogate';
       param(end).values = {'off','on','all'}; % {'off','on','all'};
     end
 
@@ -126,6 +126,7 @@ function S = sLoad(filename)
       notSaved = false;
     catch
       fprintf('Waiting for access to file %s ...',filename)
+      pause(1)
     end
   end
 end

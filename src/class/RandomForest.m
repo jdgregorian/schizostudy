@@ -36,8 +36,11 @@ methods
     
     datacount = size(data,1);
     Ndatause = ceil(RF.FBoot*datacount);
-    if strcmpi(RF.learning,'boosting')
+    if strcmpi(RF.learning, 'boosting')
       useInd = 1:datacount;
+    end
+    if strcmpi(RF.TreeType, 'matlab')
+      cellset = cellSettings(settings, {'FBoot', 'TreeType', 'learning' ,'perfType'});
     end
 
     % tree learning sequence
@@ -64,6 +67,13 @@ methods
         case 'stump'
           Tree = StumpTree(datause,labeluse);
           Tree.maxSplit = 1;
+        case 'matlab'
+            if verLessThan('matlab','8.3') % be careful, tree has different 
+                                           % settings according to version
+              Tree = ClassificationTree.fit(datause, labeluse, cellset{:});
+            else
+              Tree = fitctree(data(useInd,:), labels, cellset{:});
+            end
         case 'linear'
           settings.inForest = true;
           settings.usedInd = useInd;
@@ -95,7 +105,7 @@ methods
       end
       
       if ~isempty(perfData)
-        if strcmpi(RF.TreeType,'svm')
+        if any(strcmpi(RF.TreeType,{'svm','matlab'}))
           pred = Tree.predict(perfData);
         else
           pred = Tree.predict(perfData, datause);
@@ -118,7 +128,7 @@ methods
     nSubj = size(data, 1);
     Y = zeros(nSubj, RF.NTrees);
     
-    if strcmpi(RF.TreeType,'svm')
+    if any(strcmpi(RF.TreeType,{'svm','matlab'}))
       for i = 1:RF.NTrees
         Y(:,i) = RF.Trees{i}.predict(data);
       end

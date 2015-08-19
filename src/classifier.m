@@ -6,7 +6,6 @@ function [performance, class] = classifier(method, data, indices, settings)
 %            'svm'     - support vector machine
 %            'rf'      - random forest
 %            'mrf'     - MATLAB random forest
-%            'bf'      - binary forest
 %            'lintree' - tree using linear distance based decision splits
 %            'svmtree' - tree using linear svm based decision splits
 %            'nb'      - naive Bayes
@@ -29,7 +28,7 @@ function [performance, class] = classifier(method, data, indices, settings)
       settings.svm = defopts(settings, 'svm', []);
       cellset = cellSettings(settings.svm);
       
-    case {'rf', 'mrf', 'bf'} % forests
+    case {'rf', 'mrf'} % forests
       settings.forest = defopts(settings, 'forest', []);
       % gain number of trees 
       nTrees = defopts(settings.forest, 'nTrees', 11);
@@ -98,11 +97,7 @@ function [performance, class] = classifier(method, data, indices, settings)
 %         SVM = fitcsvm(trainingSet,trainingIndices,cellset{:});
         
       case 'mrf' % matlab random forest
-        % forest learning
         Forest = TreeBagger(nTrees, trainingSet, trainingIndices, cellset{:});
-        
-      case 'bf' % random forest using matlab trees
-        Forest = BinForest(trainingSet, trainingIndices, nTrees, 10);
         
       case 'rf' % random forest
         Forest = RandomForest(trainingSet, trainingIndices, nTrees, settings.forest);
@@ -138,7 +133,7 @@ function [performance, class] = classifier(method, data, indices, settings)
 %         [y,score] = predict(SVM,transData);
 %         fprintf('%f\n',score)
         
-      case {'rf', 'mrf', 'bf', 'lintree', 'svmtree', 'mtltree'} % tree based methods
+      case {'rf', 'mrf', 'lintree', 'svmtree', 'mtltree'} % tree based methods
         y = predict(Forest, transData);
         
       case 'nb' % naive Bayes
@@ -292,33 +287,4 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
       
   end
 
-end
-
-function cellset = cellSettings(settings,remove)
-% cellSettings removes settings in remove and transforms the rest to cell
-% array for matlab algorithms
-  
-  if nargin < 2
-    remove = {};
-  end
-  
-  % remove settings from stucture
-  for i = 1:length(remove)
-    if isfield(settings,remove{i})
-      settings = rmfield(settings,remove{i});
-    end
-  end
-
-  if isempty(settings)
-    cellset = {};
-  else
-    % parse settings to cell array
-    settingsNames = fieldnames(settings);
-    settingsValues = struct2cell(settings);
-    cellset = cell(1,2*length(settingsNames));
-    for s = 1 : length(settingsNames)
-      cellset{2*s-1} = settingsNames{s};
-      cellset{2*s} = settingsValues{s};
-    end
-  end
 end

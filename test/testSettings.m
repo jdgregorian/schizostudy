@@ -73,12 +73,14 @@ perf = classifyFC(FCdata,'rf',settings);
 %% linear trees - experimental
 clear settings
 
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 200;
-settings.forest.maxSplit = 1;
-settings.forest.learning = 'boosting';
+% settings.dimReduction.name = 'pca';
+% settings.dimReduction.nDim = 200;
+settings.forest.learning = 'bag';
+settings.forest.TreeType = 'matlab';
+settings.forest.MinParent = 2;
 
 perf = classifyFC(FCdata,'rf',settings);
+
 
 %% bagged linear svm
 clear settings
@@ -119,6 +121,7 @@ perf = classifyFC(FCdata,'svmtree');
 clear settings
 
 settings.tree.MaxCat = 0;
+settings.tree.MinLeaf = 10;
 
 perf = classifyFC(FCdata,'mtltree',settings);
 
