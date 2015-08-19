@@ -8,22 +8,11 @@ FCdata_old = fullfile('data','data_FC_203subjects.mat');
 SCdata = fullfile('data','data_SC_190subjects.mat');
 SCdata_old = fullfile('data','data_SC_203subjects.mat');
 
-% best so far forest settings on FC data
-bestFmethod = 'rf';
-bestFsettings.nTrees = 11;
-bestFsettings.Fboot = 0.5; 
-bestFsettings.SampleWithReplacement = 'off';
-bestFsettings.NvarToSample = 100;
-bestFsettings.MinLeaf = 1;
-bestFsettings.SplitCriterion = 'deviance';
-bestFsettings.Surrogate = 'off';
-
-
+% Startup tasks informations
 fprintf('Prepare testing kit for different settings - improve testRFparams?\n')
 fprintf('Change LOO to common CV.\n')
+fprintf('Checkout SVM toolbox.\n')
 
 fprintf('\nMost recent: \n')
 fprintf('    ANN ? LDA\n')
 fprintf('    Implement all Arbabshirani''s methods.\n')
-fprintf('    Solve using SVM versions\n')
-fprintf('    TestCTparams')

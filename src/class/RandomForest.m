@@ -68,8 +68,9 @@ methods
           Tree = StumpTree(datause,labeluse);
           Tree.maxSplit = 1;
         case 'matlab'
-            if verLessThan('matlab','8.3') % be careful, tree has different 
-                                           % settings according to version
+            % be careful, tree has different settings according to version
+            % (older versions may not accept new settings)
+            if verLessThan('matlab','8.3') 
               Tree = ClassificationTree.fit(datause, labeluse, cellset{:});
             else
               Tree = fitctree(data(useInd,:), labels, cellset{:});

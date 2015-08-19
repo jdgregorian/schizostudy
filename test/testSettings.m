@@ -37,22 +37,25 @@ settings.svm.rbf_sigma = 6; % found through gridsearch
 
 perf = classifyFC(FCdata,'svm',settings);
 
-%% rbf
+%% rbf - experimental
 clear settings
 
 settings.svm.kernel_function = 'rbf';
 settings.svm.rbf_sigma = 6; % found through gridsearch
 settings.svm.autoscale = false;
+settings.crossval = 10;
 
-nValues = 10;
-for i=1:nValues
-  sigma(i) = i;
-  settings.svm.rbf_sigma = sigma(i);
-  perf(i) = classifyFC(FCdata,'svm',settings);
-end
-for i = 1:nValues
-  fprintf('Sigma:%f   Perf:%f\n',sigma(i),perf(i))
-end
+perf = classifyFC(FCdata,'svm',settings);
+
+% nValues = 10;
+% for i=1:nValues
+%   sigma(i) = i;
+%   settings.svm.rbf_sigma = sigma(i);
+%   perf(i) = classifyFC(FCdata,'svm',settings);
+% end
+% for i = 1:nValues
+%   fprintf('Sigma:%f   Perf:%f\n',sigma(i),perf(i))
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Random forest
@@ -73,11 +76,11 @@ perf = classifyFC(FCdata,'rf',settings);
 %% linear trees - experimental
 clear settings
 
-% settings.dimReduction.name = 'pca';
-% settings.dimReduction.nDim = 200;
-settings.forest.learning = 'bag';
+settings.dimReduction.name = 'ttest';
+settings.dimReduction.nDim = 200;
+settings.forest.learning = 'boosting';
 settings.forest.TreeType = 'matlab';
-settings.forest.MinParent = 2;
+settings.forest.MinLeaf = 10;
 
 perf = classifyFC(FCdata,'rf',settings);
 

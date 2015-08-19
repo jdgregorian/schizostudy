@@ -1,4 +1,4 @@
-function [performance, class] = classifier(method, data, indices, settings)
+function [performance, class] = classifier(method, data, labels, settings)
 % Classification by classifier chosen in method. Returns performance of 
 % appropriate classifier in LOO CV.
 %
@@ -11,7 +11,7 @@ function [performance, class] = classifier(method, data, indices, settings)
 %            'nb'      - naive Bayes
 % data     - input data matrix (1st dim - single data, 2nd data dimension)
 %            | double matrix
-% indices  - class labels for each data | double vector
+% labels   - class labels for each data | double vector
 % settings - structure of additional settings for classifier specified in
 %            method
 
@@ -62,7 +62,7 @@ function [performance, class] = classifier(method, data, indices, settings)
   end
   
   % dimension reduction outside the LOO loop
-  [data, settings] = reduceDim(data, indices, settings);
+  [data, settings] = reduceDim(data, labels, settings);
   settings.transformPrediction = false; % reduction is outside -> further 
                                         % transformation is not necessary
   Nsubjects = size(data, 1);
@@ -75,16 +75,22 @@ function [performance, class] = classifier(method, data, indices, settings)
     data    = (data-mx(ones(Nsubjects,1),:))./stdx(ones(Nsubjects,1),:);
   end
   
-  % count LOO cross-validation
+  % count cross-validation
   class = zeros(1, Nsubjects);
   correctPredictions = zeros(1, Nsubjects);
+  kFold = defopts(settings, 'crossval', 'loo');
+  if strcmpi(kFold,'loo') || (kFold > Nsubjects)
+    kFold = Nsubjects;
+    CVindices = 1:Nsubjects;
+  else
+    CVindices = crossvalind('kfold', Nsubjects, kFold);
+  end
     
-  for sub = 1:Nsubjects
+  for sub = 1:kFold
     
-    trainingSet = data;
-    trainingSet(sub,:) = [];
-    trainingIndices = indices;
-    trainingIndices(sub) = [];
+    foldIds = sub == CVindices;
+    trainingData = data(~foldIds,:);
+    trainingLabels = labels(~foldIds);
     
     % dimension reduction inside the LOO loop
 %     [trainingSet, settings] = reduceDim(trainingSet,settings);
@@ -92,27 +98,26 @@ function [performance, class] = classifier(method, data, indices, settings)
     % training
     switch method
       case 'svm' % support vector machine classifier
-        SVM = svmtrain(trainingSet, trainingIndices, cellset{:});
-%           SVM = svmtrain(trainingSet,trainingIndices','-t 0');
+        SVM = svmtrain(trainingData, trainingLabels, cellset{:});
 %         SVM = fitcsvm(trainingSet,trainingIndices,cellset{:});
         
       case 'mrf' % matlab random forest
-        Forest = TreeBagger(nTrees, trainingSet, trainingIndices, cellset{:});
+        Forest = TreeBagger(nTrees, trainingData, trainingLabels, cellset{:});
         
       case 'rf' % random forest
-        Forest = RandomForest(trainingSet, trainingIndices, nTrees, settings.forest);
+        Forest = RandomForest(trainingData, trainingLabels, nTrees, settings.forest);
         
       case 'lintree' % linear tree
-        Forest = LinearTree(trainingSet, trainingIndices, settings.tree);
+        Forest = LinearTree(trainingData, trainingLabels, settings.tree);
         
       case 'svmtree' % SVM tree
-        Forest = SVMTree(trainingSet, trainingIndices, settings.tree);
+        Forest = SVMTree(trainingData, trainingLabels, settings.tree);
         
       case 'mtltree' % matlab classification tree
-        Forest = ClassificationTree.fit(trainingSet, trainingIndices, cellset{:});
+        Forest = ClassificationTree.fit(trainingData, trainingLabels, cellset{:});
         
       case 'llc' % logistic linear classifier
-        LLC = mnrfit(trainingSet, trainingIndices' + 1);
+        LLC = mnrfit(trainingData, trainingLabels' + 1);
         
     end
     
@@ -120,31 +125,30 @@ function [performance, class] = classifier(method, data, indices, settings)
     % transform data if necessary (automatically disabled in outside
     % transformation)
     if settings.transformPrediction
-      transData = data(sub,:)*settings.dimReduction.transMatrix;
+      testingData = data(foldIds,:)*settings.dimReduction.transMatrix;
     else
-      transData = data(sub,:);
+      testingData = data(foldIds,:);
     end
+    testingLabels = labels(foldIds);
     
     % predict according to the method
     switch method
       case 'svm' % support vector machine classifier
-        y = svmclassify(SVM, transData);
-%         y = svmpredict(randi(2)-1,transData,SVM);
-%         [y,score] = predict(SVM,transData);
-%         fprintf('%f\n',score)
+        y = svmclassify(SVM, testingData);
+%         y = predict(SVM,transData);
         
       case {'rf', 'mrf', 'lintree', 'svmtree', 'mtltree'} % tree based methods
-        y = predict(Forest, transData);
+        y = predict(Forest, testingData);
         
       case 'nb' % naive Bayes
-        y = classify(transData, trainingSet, trainingIndices, settings.bayes.type);
+        y = classify(testingData, trainingData, trainingLabels, settings.bayes.type);
         
       case 'knn' % k-nearest neighbours
-        y = knnclassify(transData, trainingSet, trainingIndices, ...
+        y = knnclassify(testingData, trainingData, trainingLabels, ...
           settings.knn.k, settings.knn.distance, settings.knn.rule);
         
       case 'llc' % logistic linear classifier
-        y = arrayfun(@(x) (LLC(1) + transData(x,:)*LLC(2:end)) < 0,1:size(transData,1));
+        y = arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0,1:size(testingData,1));
         
       otherwise
         fprintf('Wrong method format!!!\n')
@@ -154,12 +158,10 @@ function [performance, class] = classifier(method, data, indices, settings)
     if iscell(y)
       y = str2double(y{1});
     end
-    if y == indices(sub)
-      correctPredictions(sub) = 1;
-    end
-    class(sub) = y;
+    correctPredictions(foldIds) = y == testingLabels';
+    class(foldIds) = y;
     
-    fprintf('Subject %d/%d done. Actual performance: %.2f%% \n',sub,Nsubjects,sum(correctPredictions)/sub*100);
+    fprintf('Subset %d/%d done. Actual performance: %.2f%% \n', sub, kFold, sum(correctPredictions)/sum(sub >= CVindices)*100);
   end
 
   performance = sum(correctPredictions)/Nsubjects;

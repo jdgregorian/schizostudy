@@ -194,6 +194,7 @@ methods
         nNodeData = sum(nodeDataId);
         tempDataNum = zeros(nNodeData,1);
         tempY = logical(svmclassify(SVMT.nodeSVM{splitNodes(node)},nodeDataPred));
+%         tempY = logical(predict(SVMT.nodeSVM{splitNodes(node)},nodeDataPred));
         tempDataNum(~tempY) = SVMT.children(splitNodes(node),1);
         tempDataNum(tempY) = SVMT.children(splitNodes(node),2);
         dataNodeNum(nodeDataId) = tempDataNum;
@@ -252,6 +253,7 @@ methods (Static)
     
     for d = 1:nSettings % count for each settings
       SVM = svmtrain(actualData,actualLabels,svmSettings{:});
+%         SVM = fitcsvm(actualData,actualLabels,svmSettings{:});
       y = logical(svmclassify(SVM,actualData));
       
       dataIndZ{:,d} = dataID(~y);
