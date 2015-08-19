@@ -6,7 +6,20 @@ clear settings
 settings.svm.kernel_function = 'linear';
 perf = classifyFC(FCdata,'svm',settings);
 
+%% linear - autoscale 'off'
+clear settings
+
+settings.svm.kernel_function = 'linear';
+settings.svm.autoscale = false;
+perf = classifyFC(FCdata,'svm',settings);
+
 %% quadratic
+clear settings
+
+settings.svm.kernel_function = 'quadratic';
+perf = classifyFC(FCdata,'svm',settings);
+
+%% quadratic - autoscale 'off'
 clear settings
 
 settings.svm.kernel_function = 'quadratic';
@@ -16,24 +29,45 @@ perf = classifyFC(FCdata,'svm',settings);
 %% polynomial
 clear settings
 
+settings.svm.kernel_function = 'polynomial'; 
+perf = classifyFC(FCdata,'svm',settings);
+
+%% polynomial - autoscale 'off'
+clear settings
+
 settings.svm.kernel_function = 'polynomial';
 settings.svm.autoscale = false; 
 perf = classifyFC(FCdata,'svm',settings);
 
-%% rbf
+%% rbf - autoscale 'on'
 clear settings
 
 settings.svm.kernel_function = 'rbf';
-settings.svm.rbf_sigma = 31; % found through gridsearch
+settings.svm.rbf_sigma = 42; % found through gridsearch
 
 perf = classifyFC(FCdata,'svm',settings);
 
-%% rbf
+%% rbf - autoscale 'off'
 clear settings
 
 settings.svm.kernel_function = 'rbf';
 settings.svm.autoscale = false;
-settings.svm.rbf_sigma = 6; % found through gridsearch
+settings.svm.rbf_sigma = 7; % found through gridsearch
+
+perf = classifyFC(FCdata,'svm',settings);
+
+%% mlp
+clear settings
+
+settings.svm.kernel_function = 'mlp';
+
+perf = classifyFC(FCdata,'svm',settings);
+
+%% mlp - autoscale 'off'
+clear settings
+
+settings.svm.kernel_function = 'mlp';
+settings.svm.autoscale = false;
 
 perf = classifyFC(FCdata,'svm',settings);
 
@@ -41,21 +75,19 @@ perf = classifyFC(FCdata,'svm',settings);
 clear settings
 
 settings.svm.kernel_function = 'rbf';
-settings.svm.rbf_sigma = 6; % found through gridsearch
 settings.svm.autoscale = false;
-settings.crossval = 10;
 
 perf = classifyFC(FCdata,'svm',settings);
 
-% nValues = 10;
-% for i=1:nValues
-%   sigma(i) = i;
-%   settings.svm.rbf_sigma = sigma(i);
-%   perf(i) = classifyFC(FCdata,'svm',settings);
-% end
-% for i = 1:nValues
-%   fprintf('Sigma:%f   Perf:%f\n',sigma(i),perf(i))
-% end
+nValues = 20;
+for i=1:nValues
+  sigma(i) = i;
+  settings.svm.rbf_sigma = sigma(i);
+  perf(i) = classifyFC(FCdata,'svm',settings);
+end
+for i = 1:nValues
+  fprintf('Sigma:%f   Perf:%f\n',sigma(i),perf(i))
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Random forest
