@@ -30,19 +30,25 @@ methods
     RF.FBoot = defopts(settings, 'FBoot', 1);
     RF.TreeType = defopts(settings, 'TreeType', 'linear');
     RF.learning = defopts(settings, 'learning', 'bagging');
-    RF.perfType = defopts(settings, 'perfType', 'treedata');
+    RF.perfType = defopts(settings, 'perfType', 'alldata');
     RF.trainingData = data;
     RF.trainingLabels = labels;
     
     datacount = size(data,1);
     Ndatause = ceil(RF.FBoot*datacount);
+    if strcmpi(RF.learning,'boosting')
+      useInd = 1:datacount;
+    end
 
     % tree learning sequence
     for T = 1:NTrees
-      % learning algorithm type
+      % choose training data according to learning algorithm type
       switch RF.learning
-        case {'bag','bagging'} % bagging
+        case {'bag', 'bagging'} % bagging
           useInd = randi(Ndatause, 1, Ndatause);
+          datause = data(useInd,:);
+          labeluse = labels(useInd);
+        case 'boosting' % boosting
           datause = data(useInd,:);
           labeluse = labels(useInd);
         otherwise
@@ -78,10 +84,10 @@ methods
 
       % tree performance counting
       switch RF.perfType
-        case 'treedata'
+        case {'treedata','treedataNP'} % performance on tree training data
           perfData = datause;
           perfLabels = labeluse;
-        case {'all','alldata'}
+        case {'all','alldata', 'allNP'} % performance on forest training data
           perfData = data;
           perfLabels = labels;
         otherwise
@@ -95,7 +101,12 @@ methods
           pred = Tree.predict(perfData, datause);
         end
         y = round(double(pred));
-        RF.performances(T) = sum((y'==perfLabels))/length(perfLabels);
+        correctPred = y'==perfLabels;
+        RF.performances(T) = sum((correctPred))/length(perfLabels);
+        if strcmpi(RF.learning,'boosting')
+          nNotCorrect = sum(~correctPred);
+          useInd(end+1:end+nNotCorrect) = find(~correctPred);
+        end
       else
         RF.performances(T) = 1;
       end
@@ -117,7 +128,11 @@ methods
       end
     end
       
-    perf = RF.performances;
+    if any(strcmpi(RF.perfType, {'allNP','treedataNP'}))
+      perf = ones(1,RF.NTrees);
+    else
+      perf = RF.performances;
+    end
     y = sum(Y.*repmat(perf, nSubj, 1), 2)/sum(perf); % weighted prediction
     fprintf('%f\n', y);
     

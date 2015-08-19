@@ -278,9 +278,9 @@ methods
     % if the node number is one, prediction equals one
     y1(logical(mod(dataNodeNum,2))) = 1;
     y = (LT.predictor(dataNodeNum))';
-    if ~LT.probability && any(y1 ~= y)
-      fprintf('Classification differs from previous prediction style.\n')
-    end
+%     if ~LT.probability && any(y1 ~= y)
+%       fprintf('Classification differs from previous prediction style.\n')
+%     end
     
   end
     
