@@ -155,6 +155,17 @@ settings.tree.distance = 'mahal';
 
 perf = classifyFC(FCdata,'linTree',settings);
 
+%% linear tree mahal + pca
+clear settings
+
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 10;
+settings.tree.distance = {2,'mahal',Inf};
+settings.something = {{}, @sum, true};
+
+% perf = classifyFC(FCdata,'linTree',settings,fullfile('mainSettings','experimental_tree.mat'));
+perf = classifyFC(FCdata,'linTree',settings);
+
 %% SVM tree
 clear settings
 

@@ -292,7 +292,7 @@ clear settings
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 
-perf(s) = classifyFC(FCdata,'llc',settings, fullfile('mainSettings','LLC_pca20.mat'));
+perf = classifyFC(FCdata,'llc',settings, fullfile('mainSettings','LLC_pca20.mat'));
 
 %% logistic linear classifier - PCA 50
 clear settings
@@ -300,7 +300,7 @@ clear settings
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 50;
 
-perf(s) = classifyFC(FCdata,'llc',settings, fullfile('mainSettings','LLC_pca50.mat'));
+perf = classifyFC(FCdata,'llc',settings, fullfile('mainSettings','LLC_pca50.mat'));
 
 %% logistic linear classifier - PCA 75
 clear settings
@@ -308,4 +308,4 @@ clear settings
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 75;
 
-perf(s) = classifyFC(FCdata,'llc',settings, fullfile('mainSettings','LLC_pca75.mat'));
+perf = classifyFC(FCdata,'llc',settings, fullfile('mainSettings','LLC_pca75.mat'));
