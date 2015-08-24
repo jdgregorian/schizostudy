@@ -7,7 +7,7 @@ function listSettingsResults(folder)
              'performance testing in FOLDER to txt file resultsList.txt.\n']) 
   end
   
-  resultname = 'resultsList.txt';
+  resultname = [folder, '.txt'];
   fileList = dir([folder, filesep, '*.mat']);
   nFiles = length(fileList);
   
@@ -32,7 +32,7 @@ function listSettingsResults(folder)
 
   % printing results to txt file
   fprintf('Printing results to %s...\n', resultname)
-  FID = fopen([folder, filesep, resultname],'w');
+  FID = fopen(resultname,'w');
   fprintf(FID,'---------------------------------------------------------------------------------\n');
   fprintf(FID,'------------------------- LIST OF TEST SETTINGS RESULTS -------------------------\n');
   fprintf(FID,'---------------------------------------------------------------------------------\n');

@@ -166,7 +166,6 @@ settings.forest.TreeType = 'linear';
 settings.forest.learning = 'boosting';
 settings.forest.maxSplit = 10;
 settings.forest.distance = 2;
-settings.iteration = 10;
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
@@ -222,7 +221,7 @@ settings.tree.distance = 'mahal';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 
-perf = classifyFC(FCdata,'linTree',settings, fullfile('mainSettings','linTree_mahal.mat'));
+perf = classifyFC(FCdata,'linTree',settings, fullfile('mainSettings','linTree_mahal_pca20.mat'));
 
 %% SVM tree
 clear settings
