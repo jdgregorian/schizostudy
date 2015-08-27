@@ -59,6 +59,10 @@ function [performance, class] = classifier(method, data, labels, settings)
         warning('Logistic linear classifier do not accept additional settings.')
       end
       
+    case 'lda' % linear discriminant analysis
+      settings.bayes = defopts(settings, 'lda', []);
+      settings.bayes.type = defopts(settings.lda, 'type', 'linear');
+      
   end
   
   % dimension reduction outside the LOO loop
@@ -149,6 +153,9 @@ function [performance, class] = classifier(method, data, labels, settings)
         
       case 'llc' % logistic linear classifier
         y = arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0,1:size(testingData,1));
+        
+      case 'lda' % linear discriminant analysis
+        y = classify(testingData, trainingData, trainingLabels, settings.lda.type);
         
       otherwise
         fprintf('Wrong method format!!!\n')

@@ -2,6 +2,7 @@
 
 %% initialization
 FCdata = fullfile('data','data_FC_190subjects.mat');
+mkdir('results','mainSettings')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SVM
@@ -238,23 +239,22 @@ settings.note = 'Default MATLAB classification tree settings.';
 perf = classifyFC(FCdata,'mtltree',settings, fullfile('mainSettings','mtlTree.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% linear naive Bayes
+%% LDA
 clear settings
 
-settings.bayes.type = 'diaglinear';
-settings.note = 'Check if it is really linear naive Bayes.';
+settings.lda.type = 'diaglinear';
+settings.note = 'Default LDA settings.';
 
-perf = classifyFC(FCdata,'nb',settings, fullfile('mainSettings','NB_linear.mat'));
+perf = classifyFC(FCdata,'lda',settings, fullfile('mainSettings','LDA_linear.mat'));
 
-%% linear naive Bayes + PCA 20
+%% LDA + PCA 20
 clear settings
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
-settings.bayes.type = 'diaglinear';
-settings.note = 'Check if it is really linear naive Bayes.';
+settings.lda.type = 'diaglinear';
 
-perf = classifyFC(FCdata,'nb',settings, fullfile('mainSettings','NB_linear_pca20.mat'));
+perf = classifyFC(FCdata,'lda',settings, fullfile('mainSettings','LDA_linear_pca20.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN

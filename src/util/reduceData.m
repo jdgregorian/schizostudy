@@ -1,28 +1,46 @@
-function reduceData(FCdata)
-% reduce and save dataset
+function reduceData(data, subjectOut, regionOut)
+% Reduce connectivity matrix and indices vectors and save dataset.
 
-  subjectOut = [66,101,102,104,113,144,152,166,178,179,189,190,192];
-  regionOut = [71,72];
-  newName = 'FC';
+  % check input
+  if nargin < 3
+    regionOut = [71,72];
+    if nargin < 2
+      subjectOut = [66,101,102,104,113,144,152,166,178,179,189,190,192];
+      if nargin < 1
+        help reduceData
+        return
+      end
+    end
+  end
 
-  load(FCdata)
+  load(data)
+  
+  % find out type of connectivity matrix
+  if exist('FC','var')
+    newName = 'FC';
+    CM = FC;
+  elseif exist('SC','var')
+    newName = 'SC';
+    CM = SC;
+  else
+    error('FC or SC matrix has to be included in file!')
+  end
 
   % decide which subjects and regions stay
-  nOrigSub = size(FC,1);
+  nOrigSub = size(CM,1);
   subjectStay = true(1,nOrigSub);
   subjectStay(subjectOut) = false;
-  regionStay = true(1,size(FC,2));
+  regionStay = true(1,size(CM,2));
   regionStay(regionOut) = false;
 
   % create new dataset
-  FC = FC(subjectStay, regionStay, regionStay);
+  CM = CM(subjectStay, regionStay, regionStay);
   indices_volunteers = 1:(length(indices_volunteers)-sum(ismember(subjectOut,indices_volunteers)));
   indices_patients = length(indices_volunteers) + (1 : (length(indices_patients)-sum(ismember(subjectOut,indices_patients))));
-  nNewSub = size(FC,1);
+  nNewSub = size(CM,1);
   if nNewSub ~= length([indices_volunteers,indices_patients])
     fprintf('Wrong data extraction! Check original data and extraction vectors!');
   else
-
     % ask and save new data
     filename = ['data/data_',newName,'_',num2str(nNewSub),'subjects.mat'];
     if exist(filename,'file')
@@ -36,7 +54,7 @@ function reduceData(FCdata)
       overwrite = 1;
     end
     if overwrite
-      eval([newName,' = FC;'])
+      eval([newName,' = CM;'])
       save(filename,newName,'indices_patients','indices_volunteers')
     end
   end
