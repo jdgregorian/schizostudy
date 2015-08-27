@@ -185,14 +185,14 @@ settings.tree.MinLeaf = 10;
 perf = classifyFC(FCdata,'mtltree',settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% linear naive Bayes
+%% linear discriminant analysis
 clear settings
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
-settings.bayes.type = 'diaglinear';
+settings.lda.type = 'diaglinear';
 
-perf = classifyFC(FCdata,'nb',settings);
+perf = classifyFC(FCdata,'lda',settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN
@@ -218,3 +218,11 @@ for s=1:100
 end
 
 save(fullfile('results','llc_pca_dim_50plus.mat'),'perf','settings','elapsedtime')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% naive Bayes
+clear settings
+
+settings.nb.distribution = 'normal';
+
+perf = classifyFC(FCdata, 'nb', settings);

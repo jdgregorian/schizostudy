@@ -45,8 +45,8 @@ function [performance, class] = classifier(method, data, labels, settings)
       end
       
     case 'nb' % naive Bayes
-      settings.bayes = defopts(settings, 'bayes', []);
-      settings.bayes.type = defopts(settings.bayes, 'type', 'diaglinear');
+      settings.nb = defopts(settings, 'nb', []);
+      cellset = cellSettings(settings.nb);
       
     case 'knn' % k-nearest neighbours
       settings.knn = defopts(settings, 'knn', []);
@@ -60,8 +60,8 @@ function [performance, class] = classifier(method, data, labels, settings)
       end
       
     case 'lda' % linear discriminant analysis
-      settings.bayes = defopts(settings, 'lda', []);
-      settings.bayes.type = defopts(settings.lda, 'type', 'linear');
+      settings.lda = defopts(settings, 'lda', []);
+      settings.lda.type = defopts(settings.lda, 'type', 'linear');
       
   end
   
@@ -123,6 +123,9 @@ function [performance, class] = classifier(method, data, labels, settings)
       case 'llc' % logistic linear classifier
         LLC = mnrfit(trainingData, trainingLabels' + 1);
         
+      case 'nb' % naive Bayes
+        NB = fitNaiveBayes(trainingData, trainingLabels, cellset{:});
+        
     end
     
     % prediction
@@ -145,7 +148,7 @@ function [performance, class] = classifier(method, data, labels, settings)
         y = predict(Forest, testingData);
         
       case 'nb' % naive Bayes
-        y = classify(testingData, trainingData, trainingLabels, settings.bayes.type);
+        y = predict(NB, testingData);
         
       case 'knn' % k-nearest neighbours
         y = knnclassify(testingData, trainingData, trainingLabels, ...

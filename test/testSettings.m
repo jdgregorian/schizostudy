@@ -308,3 +308,12 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 75;
 
 perf = classifyFC(FCdata,'llc',settings, fullfile('mainSettings','LLC_pca75.mat'));
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% naive Bayes
+clear settings
+
+settings.nb.distribution = 'normal';
+settings.note = 'Default naive Bayes settings.';
+
+perf = classifyFC(FCdata, 'nb', settings);
