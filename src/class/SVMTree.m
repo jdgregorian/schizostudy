@@ -164,11 +164,11 @@ methods
         
         % probability prediction
         if SVMT.probability 
-          SVMT.predictor(nNodes-1) = sum(labels(chosenDataZ))/length(chosenDataZ);
-          SVMT.predictor(nNodes) = sum(labels(chosenDataO))/length(chosenDataO);
+          SVMT.predictor(nNodes-1,1) = sum(labels(chosenDataZ))/length(chosenDataZ);
+          SVMT.predictor(nNodes,1) = sum(labels(chosenDataO))/length(chosenDataO);
         else
-          SVMT.predictor(nNodes-1) = sum(labels(chosenDataZ)) > sum(~labels(chosenDataZ));
-          SVMT.predictor(nNodes) = sum(labels(chosenDataO)) >= sum(~labels(chosenDataO));
+          SVMT.predictor(nNodes-1,1) = sum(labels(chosenDataZ)) > sum(~labels(chosenDataZ));
+          SVMT.predictor(nNodes,1) = sum(labels(chosenDataO)) >= sum(~labels(chosenDataO));
         end
         
       end % nonempty split end
@@ -203,7 +203,7 @@ methods
     
     % if the node number is one, prediction equals one
     y1(logical(mod(dataNodeNum,2))) = 1;
-    y = (SVMT.predictor(dataNodeNum))';
+    y = SVMT.predictor(dataNodeNum);
     if ~SVMT.probability && any(y1 ~= y)
       fprintf('Classification differs from previous prediction style.\n')
     end

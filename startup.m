@@ -13,5 +13,7 @@ fprintf('Checkout SVM toolbox.\n')
 
 fprintf('\nMost recent: \n')
 fprintf('    Prepare testing kit for different settings - improve testRFparams?\n')
+fprintf('    Trees - Add weight vector to information gain counting. Make InfoGain solo function?\n')
+fprintf('    Implement t-test (kendall) feature selection from MATLAB.\n')
 fprintf('    ANN ? LDA\n')
 fprintf('    Implement all Arbabshirani''s methods.\n')

@@ -316,4 +316,9 @@ clear settings
 settings.nb.distribution = 'normal';
 settings.note = 'Default naive Bayes settings.';
 
-perf = classifyFC(FCdata, 'nb', settings);
+perf = classifyFC(FCdata, 'nb', settings, fullfile('mainSettings','NB_default.mat'));
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% final results listing
+
+listSettingsResults(fullfile('results','mainSettings'));

@@ -3,8 +3,8 @@ function listSettingsResults(folder)
 % in FOLDER to txt file. 
 
   if nargin == 0
-    fprintf(['\nlistSettingsResults(FOLDER) lists results of FC ',... 
-             'performance testing in FOLDER to txt file resultsList.txt.\n']) 
+    help listSettingsResults
+    return
   end
   
   resultname = [folder, '.txt'];

@@ -44,6 +44,9 @@ function [performance, FC, categoryValues] = classifyFC(data, method, settings, 
   performance = zeros(1,iteration);
   class = cell(1,iteration);
   for i = 1:iteration
+    if iteration > 1
+      fprintf('Iteration %d:\n',i)
+    end
     [performance(i), class{i}] = classifier(method,vectorFC, categoryValues, settings);
   end
   avgPerformance = mean(performance);

@@ -223,6 +223,6 @@ save(fullfile('results','llc_pca_dim_50plus.mat'),'perf','settings','elapsedtime
 %% naive Bayes
 clear settings
 
-settings.nb.distribution = 'normal';
+settings.nb.distribution = 'mn';
 
 perf = classifyFC(FCdata, 'nb', settings);
