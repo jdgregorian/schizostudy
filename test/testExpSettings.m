@@ -169,11 +169,11 @@ perf = classifyFC(FCdata,'linTree',settings);
 %% SVM tree
 clear settings
 
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 200;
+% settings.dimReduction.name = 'pca';
+% settings.dimReduction.nDim = 200;
 
 tic
-perf = classifyFC(FCdata,'svmtree', settings);
+perf = classifyFC(FCdata,'svmtree');
 toc
 
 %% MATLAB classification tree

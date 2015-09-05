@@ -23,6 +23,7 @@ classdef LinearTree
     % User defined properties
     maxSplit    % upper bound of possible splits
     dist        % distance type
+    weights     % weight vector
     inForest    % 1 - tree is a part of a forest, 0 - opposite
     probability % probability prediction mode
     draw        % draws tree learning (only for numerical distances in 2D)
@@ -35,12 +36,6 @@ methods
     if nargin < 3
       settings = [];
     end
-    
-    % user defined tree properties
-    LT.maxSplit = defopts(settings, 'maxSplit', 'all');
-    LT.dist = defopts(settings, 'distance', 2);
-    LT.probability = defopts(settings, 'probability', false);
-    LT.draw = defopts(settings, 'draw', false);
     
     % learning data properties
     Nsubjects = length(labels);
@@ -55,6 +50,13 @@ methods
       LT.traindata = data;
     end
     LT.trainlabels = labels;
+    
+    % user defined tree properties
+    LT.maxSplit = defopts(settings, 'maxSplit', 'all');
+    LT.dist = defopts(settings, 'distance', 2);
+    LT.weights = defopts(settings, 'weights', ones(1,Nsubjects));
+    LT.probability = defopts(settings, 'probability', false);
+    LT.draw = defopts(settings, 'draw', false);
     
     % tree properties
     LT.Nodes = 1;
@@ -134,7 +136,7 @@ methods
       for s = idToCompute
         actualDataInd(s,:) = (LT.nodeData == s);
         [allI(s,:),allDataIndZ(s,:),allDataIndO(s,:),allDataSplit(s,:)] = ...
-          LinearTree.splitGain(data,actualDataInd(s,:),labels,LT.dist);
+          LinearTree.splitGain(data,actualDataInd(s,:),labels,LT.dist, LT.weights);
         % check emptiness of child nodes
         if all(allI(s,:) == 0) && (isempty(allDataIndZ{s,1}) || isempty(allDataIndO{s,1}))
           % split cannot be done because one child would be empty
@@ -288,7 +290,7 @@ end
 
 methods (Static)
   
-  function [I,dataIndZ,dataIndO,S] = splitGain(data,index,labels,distance)
+  function [I,dataIndZ,dataIndO,S] = splitGain(data,index,labels,distance, weights)
   % splitGain returns information value I of the split determined with 
   % points splitZero and splitOne. Furthermore, it returns apropriate 
   % indices of data: dataIndZ and dataIndO
@@ -348,40 +350,10 @@ methods (Static)
       dataIndO{:,d} = dataID(zeroDist>=oneDist); 
 
       % count information gain
-      I(1,d) = LinearTree.infoGainSet(dataIndZ{:,d},dataIndO{:,d},labels);
+      I(1,d) = infoGainSet(dataIndZ{:,d},dataIndO{:,d},labels, weights);
       
     end
       
-  end
-
-  function I = infoGainSet(dataIndZ,dataIndO,labels)
-  % Function counts information gain of split of two sets of points
-  % dataIndZ - 'zero' set of data
-  % dataIndO - 'one' set of data
-  % labels   - labels of data [dataIndZ,dataIndO]
-      
-    NallZ = length(dataIndZ); % # of points to the 'zero' child
-    NallO = length(dataIndO); % # of points to the 'one' child
-    Ndata = NallZ + NallO;
-    
-    NzeroZ = sum(~labels(dataIndZ)); % # of zero points in 'zero' child (correct)
-    NzeroO = NallZ - NzeroZ;         % # of one points in 'zero' child (incorrect)
-    
-    NoneZ = sum(~labels(dataIndO)); % # of zero points in 'one' child (incorrect)
-    NoneO = NallO - NoneZ;         % # of one points in 'one' child (correct)
-    
-    pFull = [sum(~labels([dataIndZ,dataIndO]))/Ndata, sum(labels([dataIndZ,dataIndO]))/Ndata];
-    pLeft = [NzeroZ./NallZ, NzeroO./NallZ]; % zero goes to the left child
-    pRight = [NoneZ./NallO, NoneO./NallO];  % one goes to the right child
-        
-    I = LinearTree.shannonEntropy(pFull) - NallZ./Ndata.*LinearTree.shannonEntropy(pLeft)...
-        - NallO./Ndata.*LinearTree.shannonEntropy(pRight);
-  end
-  
-  function H = shannonEntropy(p)
-  % p is matrix of probabilities
-    H = - sum(p.*log(p),2);
-    H(isnan(H)) = 0;
   end
   
   function D = mahalanobis(A,X)
