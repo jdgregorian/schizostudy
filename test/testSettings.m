@@ -285,7 +285,7 @@ settings.dimReduction.nDim = 200;
 perf = classifyFC(FCdata,'knn',settings, fullfile('mainSettings','KNN_3_kendall_200.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% logistic linear classifier - PCA 20
+%% logistic linear classifier + PCA 20
 clear settings
 
 settings.dimReduction.name = 'pca';
@@ -293,7 +293,7 @@ settings.dimReduction.nDim = 20;
 
 perf = classifyFC(FCdata,'llc',settings, fullfile('mainSettings','LLC_pca20.mat'));
 
-%% logistic linear classifier - PCA 50
+%% logistic linear classifier + PCA 50
 clear settings
 
 settings.dimReduction.name = 'pca';
@@ -301,7 +301,7 @@ settings.dimReduction.nDim = 50;
 
 perf = classifyFC(FCdata,'llc',settings, fullfile('mainSettings','LLC_pca50.mat'));
 
-%% logistic linear classifier - PCA 75
+%% logistic linear classifier + PCA 75
 clear settings
 
 settings.dimReduction.name = 'pca';
@@ -328,6 +328,15 @@ settings.dimReduction.name = 'ttest';
 settings.dimReduction.nDim = 1000;
 
 perf = classifyFC(FCdata, 'perceptron', settings, fullfile('mainSettings','perceptron_ttest1000.mat'));
+
+%% ANN + PCA 200
+clear settings
+
+settings.note = 'ANN default settings. PCA (200ft.) used due to ANN memory limitations.';
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 200;
+
+perf = classifyFC(FCdata, 'ann', settings, fullfile('mainSettings','ann_pca189.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% final results listing

@@ -236,3 +236,12 @@ settings.dimReduction.name = 'ttest';
 settings.dimReduction.nDim = 1000;
 
 perf = classifyFC(FCdata, 'perceptron', settings);
+
+%% ann
+clear settings
+
+settings.note = 'ANN';
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 200;
+
+perf = classifyFC(FCdata, 'ann', settings);

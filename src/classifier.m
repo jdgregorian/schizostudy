@@ -62,7 +62,16 @@ function [performance, class] = classifier(method, data, labels, settings)
     case 'lda' % linear discriminant analysis (Fisher's linear discriminant)
       settings.lda = defopts(settings, 'lda', []);
       settings.lda.type = defopts(settings.lda, 'type', 'linear');
+    
+    case 'perceptron' % linear perceptron
+      if isfield(settings,'perceptron')
+        warning('Linear perceptron do not accept additional settings.')
+      end
       
+    case 'ann' % artificial neural network
+      settings.ann = defopts(settings, 'ann', []);
+      settings.ann.hiddenSizes = 10;
+      settings.ann.trainFcn = 'trainscg';
   end
   
   % dimension reduction outside the LOO loop
@@ -132,6 +141,11 @@ function [performance, class] = classifier(method, data, labels, settings)
         net.trainParam.showWindow = false;
         net = train(net, trainingData', trainingLabels);
         
+      case 'ann' % artificial neural networks
+        net = patternnet(settings.ann.hiddenSizes, settings.ann.trainFcn);
+        net.trainParam.showWindow = false;
+        net = train(net, data', labels);
+        
     end
     
     % prediction
@@ -166,8 +180,8 @@ function [performance, class] = classifier(method, data, labels, settings)
       case 'lda' % linear discriminant analysis (Fisher's linear discriminant)
         y = classify(testingData, trainingData, trainingLabels, settings.lda.type);
         
-      case 'perceptron' % linear perceptron
-        y = net(testingData');
+      case {'perceptron', 'ann'} % perceptron based methods
+        y = round(net(testingData'));
         
       otherwise
         fprintf('Wrong method format!!!\n')
