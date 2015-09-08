@@ -319,6 +319,17 @@ settings.note = 'Default naive Bayes settings.';
 perf = classifyFC(FCdata, 'nb', settings, fullfile('mainSettings','NB_default.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Artificial Neural Networks
+% linear perceptron - ttest 1000
+clear settings
+
+settings.note = 'Linear perceptron has no settings. Dimension has to be reduced because of memory limits.';
+settings.dimReduction.name = 'ttest';
+settings.dimReduction.nDim = 1000;
+
+perf = classifyFC(FCdata, 'perceptron', settings, fullfile('mainSettings','perceptron_ttest1000.mat'));
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% final results listing
 
 listSettingsResults(fullfile('results','mainSettings'));

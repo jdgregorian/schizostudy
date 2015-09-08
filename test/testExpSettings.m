@@ -223,6 +223,16 @@ save(fullfile('results','llc_pca_dim_50plus.mat'),'perf','settings','elapsedtime
 %% naive Bayes
 clear settings
 
-settings.nb.distribution = 'mn';
+settings.note = 'Default';
 
 perf = classifyFC(FCdata, 'nb', settings);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% linear perceptron
+clear settings
+
+settings.note = 'Linear perceptron has no settings';
+settings.dimReduction.name = 'ttest';
+settings.dimReduction.nDim = 1000;
+
+perf = classifyFC(FCdata, 'perceptron', settings);

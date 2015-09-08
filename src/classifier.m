@@ -59,7 +59,7 @@ function [performance, class] = classifier(method, data, labels, settings)
         warning('Logistic linear classifier do not accept additional settings.')
       end
       
-    case 'lda' % linear discriminant analysis
+    case 'lda' % linear discriminant analysis (Fisher's linear discriminant)
       settings.lda = defopts(settings, 'lda', []);
       settings.lda.type = defopts(settings.lda, 'type', 'linear');
       
@@ -124,7 +124,13 @@ function [performance, class] = classifier(method, data, labels, settings)
         LLC = mnrfit(trainingData, trainingLabels' + 1);
         
       case 'nb' % naive Bayes
-        NB = fitNaiveBayes(trainingData, trainingLabels, cellset{:});
+%         NB = fitNaiveBayes(trainingData, trainingLabels, cellset{:});
+        NB = NaiveBayes.fit(trainingData, trainingLabels, cellset{:});
+        
+      case 'perceptron' % linear perceptron
+        net = perceptron;
+        net.trainParam.showWindow = false;
+        net = train(net, trainingData', trainingLabels);
         
     end
     
@@ -155,10 +161,13 @@ function [performance, class] = classifier(method, data, labels, settings)
           settings.knn.k, settings.knn.distance, settings.knn.rule);
         
       case 'llc' % logistic linear classifier
-        y = arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0,1:size(testingData,1));
+        y = arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0, 1:size(testingData,1));
         
-      case 'lda' % linear discriminant analysis
+      case 'lda' % linear discriminant analysis (Fisher's linear discriminant)
         y = classify(testingData, trainingData, trainingLabels, settings.lda.type);
+        
+      case 'perceptron' % linear perceptron
+        y = net(testingData');
         
       otherwise
         fprintf('Wrong method format!!!\n')
