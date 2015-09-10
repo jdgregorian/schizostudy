@@ -232,8 +232,8 @@ perf = classifyFC(FCdata, 'nb', settings);
 clear settings
 
 settings.note = 'Linear perceptron has no settings';
-settings.dimReduction.name = 'ttest';
-settings.dimReduction.nDim = 1000;
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
 
 perf = classifyFC(FCdata, 'perceptron', settings);
 
@@ -245,3 +245,20 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 
 perf = classifyFC(FCdata, 'ann', settings);
+
+%% ann - Arbabshirani settings
+clear settings
+
+settings.note = 'ANN';
+settings.ann.hiddenSizes = [6 6 6]; % [4 4 4] - on reduced
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+
+perf = classifyFC(FCdata, 'ann', settings);
+
+%% rbf
+clear settings
+
+settings.note = 'default rbf';
+
+perf = classifyFC(FCdata, 'rbf', settings);

@@ -1,10 +1,19 @@
 function [performance, FC, categoryValues] = classifyFC(data, method, settings, filename)
-% data - path to datafile
-% method - method used to classification
-% settings - settings of chosen method
+% classifyFC(data, method, settings, filename) classifies functional 
+% (structural) connectivity data in 'data' by 'method' with additional
+% settings to method.
+%
+% data     - path to datafile | string
+% method   - method used to classification | string
+% settings - settings of chosen method | structure
+% filename - name of file with results (optional) | string
 
   if nargin < 3
       settings = [];
+      if nargin < 2
+        help classifyFC
+        return
+      end
   end
   method = lower(method);
 
@@ -12,7 +21,7 @@ function [performance, FC, categoryValues] = classifyFC(data, method, settings, 
   loadedData = load(data);
   if isfield(loadedData,'FC') % functional connectivity
     FC = loadedData.FC;
-  elseif isfield(loadedData,'SC') % structional connectivity
+  elseif isfield(loadedData,'SC') % structural connectivity
     FC = loadedData.SC;
   else
     fprintf('Wrong connectivity matrix!')
@@ -43,11 +52,13 @@ function [performance, FC, categoryValues] = classifyFC(data, method, settings, 
   iteration = defopts(settings,'iteration',1);
   performance = zeros(1,iteration);
   class = cell(1,iteration);
+  correctPredictions = cell(1,iteration);
+  errors = cell(1,iteration);
   for i = 1:iteration
     if iteration > 1
       fprintf('Iteration %d:\n',i)
     end
-    [performance(i), class{i}] = classifier(method,vectorFC, categoryValues, settings);
+    [performance(i), class{i}, correctPredictions{i}, errors{i}] = classifier(method, vectorFC, categoryValues, settings);
   end
   avgPerformance = mean(performance);
 
@@ -55,6 +66,6 @@ function [performance, FC, categoryValues] = classifyFC(data, method, settings, 
   
   % save results
   if nargin == 4
-    save(fullfile('results',filename), 'settings', 'method', 'data', 'performance', 'avgPerformance', 'class')
+    save(fullfile('results',filename), 'settings', 'method', 'data', 'performance', 'avgPerformance', 'class', 'correctPredictions', 'errors')
   end
 end

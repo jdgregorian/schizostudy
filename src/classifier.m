@@ -1,25 +1,56 @@
-function [performance, class] = classifier(method, data, labels, settings)
-% Classification by classifier chosen in method. Returns performance of 
-% appropriate classifier in LOO CV.
+function [performance, class, correctPredictions, errors] = classifier(method, data, labels, settings)
+% Binary classification of data with labels by classifier chosen in method. 
+% Returns performance of cross-validation of appropriate classifier.
 %
-% method   - shortcut of the classifier type used | string
-%            'svm'     - support vector machine
-%            'rf'      - random forest
-%            'mrf'     - MATLAB random forest
-%            'lintree' - tree using linear distance based decision splits
-%            'svmtree' - tree using linear svm based decision splits
-%            'nb'      - naive Bayes
-% data     - input data matrix (1st dim - single data, 2nd data dimension)
-%            | double matrix
-% labels   - class labels for each data | double vector
-% settings - structure of additional settings for classifier specified in
-%            method
+% classifier() - shows help of classifier
+% classifier(method, data, labels) - classify data with appropriate labels
+%                                    using method
+% classifier(method, data, labels, settings) - use additional settings
+%                                              adjust classification
+% [performance, class, correctPredictions, errors] = classifier(...)
+%   - return classification performance, classes, correct predictions of
+%   individual subjects and pertinent errors of subsets
+%
+% Input:
+%
+%  method   - shortcut of the classifier type used | string
+%             'svm'     - support vector machine
+%             'rf'      - random forest
+%             'mrf'     - MATLAB random forest
+%             'lintree' - tree using linear distance based decision splits
+%             'mtltree' - MATLAB classification tree
+%             'svmtree' - tree using linear svm based decision splits
+%             'nb'      - naive Bayes
+%             'knn'     - k-nearest neighbours
+%             'llc'     - logistic linear classifier
+%             'lda'     - linear discriminant analysis (Fisher's linear 
+%                         discriminant)
+%             'ann'     - artificial neural network
+%             'rbf'     - radial basis function network
+%             'perceptron' - linear perceptron
+%  data     - input data matrix (1st dim - single data, 2nd data dimension)
+%             | double matrix
+%  labels   - class labels for each data | double vector
+%  settings - structure of additional settings for classifier function
+%
+% Output:
+%
+%  performance        - classifiers performance | double
+%  class              - classes assigned to individual subjects ! double 
+%                       vector
+%  correctPredictions - correctness of classifications | boolean vector
+%  errors             - errors of individual subsets | cell array of
+%                       MException
 
   % default value
   performance = NaN;
 
   if nargin < 4
     settings = []; 
+    if nargin < 3
+      help classifier
+      return
+    end
   end
   
   % settings before the main loop
@@ -91,6 +122,7 @@ function [performance, class] = classifier(method, data, labels, settings)
   % count cross-validation
   class = zeros(1, Nsubjects);
   correctPredictions = zeros(1, Nsubjects);
+  errors = cell(1,Nsubjects);
   kFold = defopts(settings, 'crossval', 'loo');
   if strcmpi(kFold,'loo') || (kFold > Nsubjects)
     kFold = Nsubjects;
@@ -108,89 +140,112 @@ function [performance, class] = classifier(method, data, labels, settings)
     % dimension reduction inside the LOO loop
 %     [trainingSet, settings] = reduceDim(trainingSet,settings);
     
-    % training
-    switch method
-      case 'svm' % support vector machine classifier
-        SVM = svmtrain(trainingData, trainingLabels, cellset{:});
-%         SVM = fitcsvm(trainingSet,trainingIndices,cellset{:});
-        
-      case 'mrf' % matlab random forest
-        Forest = TreeBagger(nTrees, trainingData, trainingLabels, cellset{:});
-        
-      case 'rf' % random forest
-        Forest = RandomForest(trainingData, trainingLabels, nTrees, settings.forest);
-        
-      case 'lintree' % linear tree
-        Forest = LinearTree(trainingData, trainingLabels, settings.tree);
-        
-      case 'svmtree' % SVM tree
-        Forest = SVMTree(trainingData, trainingLabels, settings.tree);
-        
-      case 'mtltree' % matlab classification tree
-        Forest = ClassificationTree.fit(trainingData, trainingLabels, cellset{:});
-        
-      case 'llc' % logistic linear classifier
-        LLC = mnrfit(trainingData, trainingLabels' + 1);
-        
-      case 'nb' % naive Bayes
-%         NB = fitNaiveBayes(trainingData, trainingLabels, cellset{:});
-        NB = NaiveBayes.fit(trainingData, trainingLabels, cellset{:});
-        
-      case 'perceptron' % linear perceptron
-        net = perceptron;
-        net.trainParam.showWindow = false;
-        net = train(net, trainingData', trainingLabels);
-        
-      case 'ann' % artificial neural networks
-        net = patternnet(settings.ann.hiddenSizes, settings.ann.trainFcn);
-        net.trainParam.showWindow = false;
-        net = train(net, data', labels);
-        
+    try % one error should not cancel full computation
+
+      % training
+      switch method
+        case 'svm' % support vector machine classifier
+          SVM = svmtrain(trainingData, trainingLabels, cellset{:});
+  %         SVM = fitcsvm(trainingSet,trainingIndices,cellset{:});
+
+        case 'mrf' % matlab random forest
+          Forest = TreeBagger(nTrees, trainingData, trainingLabels, cellset{:});
+
+        case 'rf' % random forest
+          Forest = RandomForest(trainingData, trainingLabels, nTrees, settings.forest);
+
+        case 'lintree' % linear tree
+          Forest = LinearTree(trainingData, trainingLabels, settings.tree);
+
+        case 'svmtree' % SVM tree
+          Forest = SVMTree(trainingData, trainingLabels, settings.tree);
+
+        case 'mtltree' % matlab classification tree
+          Forest = ClassificationTree.fit(trainingData, trainingLabels, cellset{:});
+
+        case 'llc' % logistic linear classifier
+          LLC = mnrfit(trainingData, trainingLabels' + 1);
+
+        case 'nb' % naive Bayes
+          NB = NaiveBayes.fit(trainingData, trainingLabels, cellset{:});
+
+        case 'perceptron' % linear perceptron
+          net = perceptron;
+          net.trainParam.showWindow = false;
+          net = train(net, trainingData', trainingLabels);
+
+        case 'ann' % artificial neural networks
+          net = patternnet(settings.ann.hiddenSizes, settings.ann.trainFcn);
+          net.trainParam.showWindow = false;
+          indLabels = ind2vec(trainingLabels+1);
+%           indLabels = trainingLabels;
+          net = train(net, trainingData', indLabels);
+          
+        case 'rbf' % radial basis function network
+          indLabels = ind2vec(trainingLabels + 1);
+          net = newpnn(trainingData', indLabels);
+
+      end
+
+      % prediction
+      % transform data if necessary (automatically disabled in outside
+      % transformation)
+      if settings.transformPrediction
+        testingData = data(foldIds,:)*settings.dimReduction.transMatrix;
+      else
+        testingData = data(foldIds,:);
+      end
+      testingLabels = labels(foldIds);
+
+      % predict according to the method
+      switch method
+        case 'svm' % support vector machine classifier
+          y = svmclassify(SVM, testingData);
+  %         y = predict(SVM,transData);
+
+        case {'rf', 'mrf', 'lintree', 'svmtree', 'mtltree'} % tree based methods
+          y = predict(Forest, testingData);
+
+        case 'nb' % naive Bayes
+          y = predict(NB, testingData);
+
+        case 'knn' % k-nearest neighbours
+          y = knnclassify(testingData, trainingData, trainingLabels, ...
+            settings.knn.k, settings.knn.distance, settings.knn.rule);
+
+        case 'llc' % logistic linear classifier
+          y = arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0, 1:size(testingData,1));
+
+        case 'lda' % linear discriminant analysis (Fisher's linear discriminant)
+          y = classify(testingData, trainingData, trainingLabels, settings.lda.type);
+
+        case 'perceptron' % linear perceptron
+          y = net(testingData');
+          
+        case 'ann' % artificial neural networks
+          y = net(testingData');
+          y = vec2ind(y) - 1;
+%           y = round(y);
+          
+        case 'rbf' % radial basis function network
+          y = sim(net, testingData');
+          y = vec2ind(y)-1;
+
+        otherwise
+          fprintf('Wrong method format!!!\n')
+          return
+      end
+
+      if iscell(y)
+        y = str2double(y{1});
+      end
+      
+    catch err
+      errors{sub} = err;
+      y = NaN;
+      fprintf('Subset %d could not be classified because of internal error.\n', sub)
     end
     
-    % prediction
-    % transform data if necessary (automatically disabled in outside
-    % transformation)
-    if settings.transformPrediction
-      testingData = data(foldIds,:)*settings.dimReduction.transMatrix;
-    else
-      testingData = data(foldIds,:);
-    end
-    testingLabels = labels(foldIds);
-    
-    % predict according to the method
-    switch method
-      case 'svm' % support vector machine classifier
-        y = svmclassify(SVM, testingData);
-%         y = predict(SVM,transData);
-        
-      case {'rf', 'mrf', 'lintree', 'svmtree', 'mtltree'} % tree based methods
-        y = predict(Forest, testingData);
-        
-      case 'nb' % naive Bayes
-        y = predict(NB, testingData);
-        
-      case 'knn' % k-nearest neighbours
-        y = knnclassify(testingData, trainingData, trainingLabels, ...
-          settings.knn.k, settings.knn.distance, settings.knn.rule);
-        
-      case 'llc' % logistic linear classifier
-        y = arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0, 1:size(testingData,1));
-        
-      case 'lda' % linear discriminant analysis (Fisher's linear discriminant)
-        y = classify(testingData, trainingData, trainingLabels, settings.lda.type);
-        
-      case {'perceptron', 'ann'} % perceptron based methods
-        y = round(net(testingData'));
-        
-      otherwise
-        fprintf('Wrong method format!!!\n')
-        return
-    end
-    
-    if iscell(y)
-      y = str2double(y{1});
-    end
     correctPredictions(foldIds) = y == testingLabels';
     class(foldIds) = y;
     

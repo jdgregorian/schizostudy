@@ -12,12 +12,13 @@ SCdata_old = fullfile('data','data_SC_203subjects.mat');
 fprintf('Checkout SVM toolbox.\n')
 
 fprintf('\nMost recent: \n')
-fprintf('    Test NB on 2014 matlab\n')
-fprintf('    Solve Bayes methods according to Arbabshirani - Martin\n')
-fprintf('    ANN - good settings, prepare Arbabshirani''s settings\n')
+fprintf('    Rebuild experiment folder structure.\n')
+fprintf('    Solve Bayes methods according to Arbabshirani - meeting\n')
+fprintf('    ANN - good settings\n')
+fprintf('    RBF\n')
 fprintf('    Implement all Arbabshirani''s methods.\n')
 fprintf('    Prepare testing kit for different settings - improve testRFparams?\n')
 fprintf('    Boosting strategies\n')
 fprintf('    Different SVMTree settings\n')
 fprintf('    Implement t-test (kendall) feature selection from MATLAB.\n')
-
+fprintf('    Error printing in listSettingsResults\n')
