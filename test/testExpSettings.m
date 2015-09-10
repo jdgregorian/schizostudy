@@ -244,7 +244,7 @@ settings.note = 'Linear perceptron has no settings';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 
-perf = classifyFC(FCdata, 'perceptron', settings);
+perf = classifyFC(FCdata, 'perc', settings);
 
 %% ann
 clear settings

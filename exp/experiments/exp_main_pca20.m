@@ -313,7 +313,7 @@ settings.dimReduction.nDim = 20;
 
 settings.note = 'Linear perceptron has no settings + PCA 20ft.';
 
-perf = classifyFC(FCdata, 'perceptron', settings, fullfile(filename,'perceptron_pca20.mat'));
+perf = classifyFC(FCdata, 'perc', settings, fullfile(filename,'perc_pca20.mat'));
 
 %% ANN + PCA 20
 clear settings

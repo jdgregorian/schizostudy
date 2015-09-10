@@ -329,7 +329,7 @@ settings.note = 'Linear perceptron has no settings. Dimension has to be reduced 
 settings.dimReduction.name = 'ttest';
 settings.dimReduction.nDim = 1000;
 
-perf = classifyFC(FCdata, 'perceptron', settings, fullfile(filename,'perceptron_ttest1000.mat'));
+perf = classifyFC(FCdata, 'perc', settings, fullfile(filename,'perc_ttest1000.mat'));
 
 %% ANN + PCA 200
 clear settings
