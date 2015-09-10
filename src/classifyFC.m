@@ -66,6 +66,6 @@ function [performance, FC, categoryValues] = classifyFC(data, method, settings, 
   
   % save results
   if nargin == 4
-    save(fullfile('results',filename), 'settings', 'method', 'data', 'performance', 'avgPerformance', 'class', 'correctPredictions', 'errors')
+    save(fullfile('exp','experiments',filename), 'settings', 'method', 'data', 'performance', 'avgPerformance', 'class', 'correctPredictions', 'errors')
   end
 end

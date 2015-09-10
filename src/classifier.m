@@ -27,7 +27,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %                         discriminant)
 %             'ann'     - artificial neural network
 %             'rbf'     - radial basis function network
-%             'perceptron' - linear perceptron
+%             'perc'    - linear perceptron
 %  data     - input data matrix (1st dim - single data, 2nd data dimension)
 %             | double matrix
 %  labels   - class labels for each data | double vector
@@ -94,8 +94,8 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       settings.lda = defopts(settings, 'lda', []);
       settings.lda.type = defopts(settings.lda, 'type', 'linear');
     
-    case 'perceptron' % linear perceptron
-      if isfield(settings,'perceptron')
+    case 'perc' % linear perceptron
+      if isfield(settings,'perc')
         warning('Linear perceptron do not accept additional settings.')
       end
       
@@ -169,7 +169,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         case 'nb' % naive Bayes
           NB = NaiveBayes.fit(trainingData, trainingLabels, cellset{:});
 
-        case 'perceptron' % linear perceptron
+        case 'perc' % linear perceptron
           net = perceptron;
           net.trainParam.showWindow = false;
           net = train(net, trainingData', trainingLabels);
@@ -219,7 +219,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         case 'lda' % linear discriminant analysis (Fisher's linear discriminant)
           y = classify(testingData, trainingData, trainingLabels, settings.lda.type);
 
-        case 'perceptron' % linear perceptron
+        case 'perc' % linear perceptron
           y = net(testingData');
           
         case 'ann' % artificial neural networks
@@ -240,14 +240,14 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         y = str2double(y{1});
       end
       
+      correctPredictions(foldIds) = y == testingLabels';
+      class(foldIds) = y;
+      
     catch err
       errors{sub} = err;
-      y = NaN;
+      class(foldIds) = NaN;
       fprintf('Subset %d could not be classified because of internal error.\n', sub)
     end
-    
-    correctPredictions(foldIds) = y == testingLabels';
-    class(foldIds) = y;
     
     fprintf('Subset %d/%d done. Actual performance: %.2f%% \n', sub, kFold, sum(correctPredictions)/sum(sub >= CVindices)*100);
   end

@@ -4,7 +4,8 @@
 %% initialization
 FCdata = fullfile('data','data_FC_190subjects.mat');
 filename = 'exp_main_pca20';
-mkdir('results',filename)
+expfolder = fullfile('exp','experiments');
+mkdir(expfolder,filename)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SVM + PCA 20

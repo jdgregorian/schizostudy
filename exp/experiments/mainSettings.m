@@ -3,7 +3,8 @@
 %% initialization
 FCdata = fullfile('data','data_FC_190subjects.mat');
 filename = 'mainSettings';
-mkdir('results',filename)
+expfolder = fullfile('exp','experiments');
+mkdir(expfolder,filename)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SVM

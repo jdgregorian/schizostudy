@@ -1,5 +1,5 @@
 addpath(genpath('data'))
-addpath(genpath('results'))
+addpath(genpath('exp'))
 addpath(genpath('src'))
 addpath(genpath('test'))
 

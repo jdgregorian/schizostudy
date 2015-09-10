@@ -206,7 +206,16 @@ settings.dimReduction.nDim = 200;
 perf = classifyFC(FCdata,'knn',settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% logistic linear classifier
+%% logistic linear classifier - experimental
+clear settings
+
+
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+
+perf = classifyFC(FCdata,'llc',settings);
+
+%% logistic linear classifier - experimental
 clear settings
 
 for s=1:100

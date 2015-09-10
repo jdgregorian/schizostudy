@@ -2,4 +2,6 @@
 data/*
 results/*
 startupSchizo.m
+exp/experiments/*/
+exp/experiments/*.txt
 *~
