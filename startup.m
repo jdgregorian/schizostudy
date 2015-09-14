@@ -12,6 +12,7 @@ SCdata_old = fullfile('data','data_SC_203subjects.mat');
 fprintf('Checkout SVM toolbox.\n')
 
 fprintf('\nMost recent: \n')
+fprintf('    Change names of saved results to lower case\n')
 fprintf('    Rebuild experiment folder structure.\n')
 fprintf('    Solve Bayes methods according to Arbabshirani - meeting\n')
 fprintf('    ANN - good settings\n')
