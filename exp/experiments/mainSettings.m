@@ -247,7 +247,7 @@ clear settings
 settings.lda.type = 'diaglinear';
 settings.note = 'Default LDA settings.';
 
-perf = classifyFC(FCdata,'lda',settings, fullfile(filename,'LDA_linear.mat'));
+perf = classifyFC(FCdata,'lda',settings, fullfile(filename,'lda_linear.mat'));
 
 %% LDA + PCA 20
 clear settings
@@ -256,7 +256,7 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 settings.lda.type = 'diaglinear';
 
-perf = classifyFC(FCdata,'lda',settings, fullfile(filename,'LDA_linear_pca20.mat'));
+perf = classifyFC(FCdata,'lda',settings, fullfile(filename,'lda_linear_pca20.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN
@@ -266,7 +266,7 @@ settings.knn.k = 1;
 settings.knn.distance = 'euclidean';
 settings.note = 'Default settings of KNN classifier.';
 
-perf = classifyFC(FCdata,'knn',settings, fullfile(filename,'KNN_1.mat'));
+perf = classifyFC(FCdata,'knn',settings, fullfile(filename,'knn_1.mat'));
 
 %% KNN - k=3
 clear settings
@@ -274,7 +274,7 @@ clear settings
 settings.knn.k = 3;
 settings.knn.distance = 'euclidean';
 
-perf = classifyFC(FCdata,'knn',settings, fullfile(filename,'KNN_3.mat'));
+perf = classifyFC(FCdata,'knn',settings, fullfile(filename,'knn_3.mat'));
 
 %% KNN - k=3, kendall 200
 clear settings
@@ -284,7 +284,7 @@ settings.knn.distance = 'euclidean';
 settings.dimReduction.name = 'kendall';
 settings.dimReduction.nDim = 200;
 
-perf = classifyFC(FCdata,'knn',settings, fullfile(filename,'KNN_3_kendall_200.mat'));
+perf = classifyFC(FCdata,'knn',settings, fullfile(filename,'knn_3_kendall_200.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% logistic linear classifier + PCA 20
@@ -293,7 +293,7 @@ clear settings
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 
-perf = classifyFC(FCdata,'llc',settings, fullfile(filename,'LLC_pca20.mat'));
+perf = classifyFC(FCdata,'llc',settings, fullfile(filename,'llc_pca20.mat'));
 
 %% logistic linear classifier + PCA 50
 clear settings
@@ -301,7 +301,7 @@ clear settings
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 50;
 
-perf = classifyFC(FCdata,'llc',settings, fullfile(filename,'LLC_pca50.mat'));
+perf = classifyFC(FCdata,'llc',settings, fullfile(filename,'llc_pca50.mat'));
 
 %% logistic linear classifier + PCA 75
 clear settings
@@ -309,7 +309,7 @@ clear settings
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 75;
 
-perf = classifyFC(FCdata,'llc',settings, fullfile(filename,'LLC_pca75.mat'));
+perf = classifyFC(FCdata,'llc',settings, fullfile(filename,'llc_pca75.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% naive Bayes
@@ -318,7 +318,7 @@ clear settings
 settings.nb.distribution = 'normal';
 settings.note = 'Default naive Bayes settings.';
 
-perf = classifyFC(FCdata, 'nb', settings, fullfile(filename,'NB_default.mat'));
+perf = classifyFC(FCdata, 'nb', settings, fullfile(filename,'nb_default.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Artificial Neural Networks
