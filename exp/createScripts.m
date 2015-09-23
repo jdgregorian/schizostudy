@@ -1,111 +1,101 @@
-function createScripts(dataname, param, numOfMachines)
+function createScripts(dataname, expname, param)
 % Function for creating testing scripts for parameter testing
 % 
 % createScripts() - shows help
 % createScripts(filename) - creates script from file with structure param
 % createScripts(data,param) - creates script testing parameters in param
 %                             on data
-% createScripts(data,param,numOfMachines) - creates numOfMachines scripts
 
-  if nargin < 3
-    if nargin < 2
-      if nargin <1
-        help createScripts
-        return
-      end
-      filename = dataname;
-      eval(filename) % evaluate script with parametres
+  if nargin < 2
+    if nargin < 1
+      help createScripts
+      return
     end
-    numOfMachines = 1;
+    expname = dataname;
+    eval(expname) % evaluate script with parametres
   end
   
-% prepare variables to save file
+  methodParamID = find(strcmpi({param.name},'method'), 1);
+  
+  % no method set
+  if isempty(methodParamID)
+    fprintf('In parametres structure is missing field ''method''!\n')
+    return
+  end
+  
+  % extract methods from param
+  method = param(methodParamID).values;
+  param(methodParamID) = [];
+  
+  % marks positions of appropriate settings
   nParams = length(param);
-  for i = 1:nParams
-      nParamValues(i) = length(param(i).values);
+  nParamValues = zeros(1,nParams);
+  nMethods = length(method);
+  mySettings = zeros(nMethods,nParams);
+
+  for p = 1:nParams
+    nParamValues(p) = length(param(p).values);
   end
-  nCombinations = prod(nParamValues);
+  
+  for m = 1:nMethods
+    myCellSet = strfind({param.name}, [method{m},'.']);
+    for p = 1:nParams
+      if myCellSet{p} == 1
+        mySettings(m,p) = nParamValues(p);
+      end
+    end
+  end
+  
+  % count number of parameters combinations
+  nonMethodParams = sum(mySettings) == 0;
+  mySettings(:,nonMethodParams) = repmat(nParamValues(nonMethodParams),nMethods,1);
+  nCombinations = prod(mySettings + ~mySettings,2);
 
-  performance = NaN(nCombinations,1);
-  elapsedTime = NaN(nCombinations,1);
-  available = true(nCombinations,1);
+  % printing initialization
+  FID = fopen([expname,'.m'],'w');
+  
+  fprintf(FID,'%% Script for parametres testing in %s experiment.\n', expname);
+  fprintf(FID,'\n');
+  fprintf(FID,'%%%% initialization\n');
+  fprintf(FID,'FCdata = ''%s'';\n', dataname);
+  fprintf(FID,'filename = ''%s'';\n', expname);
+  fprintf(FID,'expfolder = fullfile(''exp'', ''experiments'');\n');
+  fprintf(FID,'mkdir(expfolder, filename);\n');
+  fprintf(FID,'\n');
+  fprintf(FID,'%s\n', char(37*ones(1,75)));
 
-  for i = 0:nCombinations - 1 % printing cycle
-    exactParamId = i; 
-    % extract appropriate values
-    for j = 1:nParams
-        ParamId = mod(exactParamId,nParamValues(j));
-        if ischar(param(j).values{ParamId+1})
-          eval(['settings(i+1).',param(j).name,' = ''',param(j).values{ParamId+1},''';'])
+  % printing settings cycle
+  for m = 1:nMethods
+    fprintf(FID,'%% %s\n', method{m});
+    fprintf(FID,'\n');
+    for p = 0:nCombinations{m} - 1
+      fprintf(FID,'%%%% %s\n', method{m});
+      fprintf(FID,'clear settings\n');
+      fprintf(FID,'\n');
+      parIDs = find(mySettings(m,:));
+      exactParamId = p; 
+      % TODO: finish printing algorithm
+      for j = 1:length(parIDs)
+        actualID = parIDs(j);
+        ParamId = mod(exactParamId,nParamValues(actualID));
+        if ischar(param(actualID).values{ParamId+1})
+          fprintf(FID,['settings(i+1).',param(actualID).name,' = ''',param(actualID).values{ParamId+1},''';']);
         else
-          eval(['settings(i+1).',param(j).name,' = ',num2str(param(j).values{ParamId+1}),';'])
+          fprintf(FID,['settings(i+1).',param(actualID).name,' = ',num2str(param(actualID).values{ParamId+1}),';']);
         end
-        exactParamId = (exactParamId-ParamId)/nParamValues(j);
+        exactParamId = (exactParamId-ParamId)/nParamValues(actualID);        
+      end
+      fprintf(FID,'perf = classifyFC(FCdata,''%s'',settings, fullfile(filename,''%s''));', ...
+                  method{m}, [expname, '_', method{m}, '_', num2str(p), '.mat']);
     end
-  end
-
-  % save created settings and variables
-  save(filename,'performance','settings','elapsedTime','FC','categoryValues');
-  fprintf('Settings saved to %s\n',filename)
-
-  % start new experiment
-  if newMode
-    if nargin < 3
-      filename = [fullfile('results','testCTparams'),num2str(randi(10^6)),'.mat'];
-    end
-
-    if nargin < 2 || strcmp(param,'default')
-      clear param
-      param(1).name = 'tree.MaxCat';
-      param(1).values = {0,1,5,10,20,50};% {100,400,1000};
-      param(end+1).name = 'tree.MergeLeaves';
-      param(end).values = {'on','off'}; % {0.5,0.8,1};
-      % param(end+1).name = 'tree.SampleWithReplacement';
-      % param(end).values = {'on','off'}; % {'on','off'};
-      % param(end+1).name = 'tree.NVarToSample';
-      % param(end).values = {10,50,100,500,2000,'all'}; % {100,500,1000,2000,'all'};
-      param(end+1).name = 'tree.MinLeaf';
-      param(end).values = {1,3,5,8}; % {1,3,8};
-
-      % fitctree params
-      % param(end+1).name = 'tree.CrossVal';
-      % param(end).values = {'on','off'}; % {'on','off'};
-      % param(end+1).name = 'tree.Prune';
-      % param(end).values = {'on','off'}; % {'on','off'};
-      param(end+1).name = 'tree.SplitCriterion';
-      param(end).values = {'gdi','twoing','deviance'}; % {'gdi','twoing','deviance'};
-      param(end+1).name = 'tree.Surrogate';
-      param(end).values = {'off','on','all'}; % {'off','on','all'};
-    end
-
+    fprintf(FID,'\n%s\n',char(37*ones(1,75)));
   end
   
-  % perform calculations
-  while any(available)
-    
-    load(filename)
-    
-    setId = find(available,1,'first');
-    available(setId) = false;
-    % mark setId settings as not available
-    save(filename,'available','-append')
-    
-    disp(settings(setId))
-    tic
-    perf = classifyFC(dataname,'mtltree',settings(setId));
-    elapsed = toc;
-    
-    % load again for actual data
-    load(filename)
-    performance(setId) = perf;
-    elapsedTime(setId) = elapsed;
-    save(filename,'performance','elapsedTime','-append');
-    fprintf('Results for settings number %d saved.\n',setId)
-  end
-  
-  if ~(any(available) && any(isnan(performance)))
-    fprintf('Experiment completed.\n')
-  else
-    fprintf('Available computations completed.\nCheck other machines if they still compute.\n')
-  end
+  % printing finalization
+  fprintf(FID,'%%%% final results listing\n');
+  fprintf(FID,'\n');
+  fprintf(FID,'listSettingsResults(fullfile(''results'', filename));\n');
+
+  fclose(FID);
+
 end
