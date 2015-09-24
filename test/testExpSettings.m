@@ -9,6 +9,7 @@ FCdata = fullfile('data','data_FC_190subjects.mat');
 clear settings
 
 settings.svm.kernel_function = 'linear';
+
 perf = classifyFC(FCdata,'svm',settings);
 
 %% linear - autoscale 'off'
@@ -16,12 +17,14 @@ clear settings
 
 settings.svm.kernel_function = 'linear';
 settings.svm.autoscale = false;
+
 perf = classifyFC(FCdata,'svm',settings);
 
 %% quadratic
 clear settings
 
 settings.svm.kernel_function = 'quadratic';
+
 perf = classifyFC(FCdata,'svm',settings);
 
 %% quadratic - autoscale 'off'
@@ -29,12 +32,14 @@ clear settings
 
 settings.svm.kernel_function = 'quadratic';
 settings.svm.autoscale = false;
+
 perf = classifyFC(FCdata,'svm',settings);
 
 %% polynomial
 clear settings
 
 settings.svm.kernel_function = 'polynomial'; 
+
 perf = classifyFC(FCdata,'svm',settings);
 
 %% polynomial - autoscale 'off'
@@ -42,6 +47,7 @@ clear settings
 
 settings.svm.kernel_function = 'polynomial';
 settings.svm.autoscale = false; 
+
 perf = classifyFC(FCdata,'svm',settings);
 
 %% rbf - autoscale 'on'

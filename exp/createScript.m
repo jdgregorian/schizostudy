@@ -1,19 +1,34 @@
-function createScripts(dataname, expname, param)
+function createScript(dataname, expname, param)
 % Function for creating testing scripts for parameter testing
 % 
-% createScripts() - shows help
-% createScripts(filename) - creates script from file with structure param
-% createScripts(data,param) - creates script testing parameters in param
-%                             on data
+% createScript() - shows help
+% createScript(filename) - creates script from file with structure param
+% createScript(dataname, param) - creates experimental script for testing 
+%                                 'param' parametres on 'dataname' data
+% createScript(dataname, expname, param) - creates 'expname' script
 
-  if nargin < 2
-    if nargin < 1
+  % initialize
+  switch nargin
+    case 0
       help createScripts
       return
-    end
-    expname = dataname;
-    eval(expname) % evaluate script with parametres
+    case 1
+      eval(dataname) % evaluate script with parametres
+      if ~exist('param', 'var')
+        error('Script %s does not include structure ''param''!', dataname)
+      end
+      if ~exist('expname', 'var')
+        separators = strfind(dataname,filesep);
+        expname = ['exp_',dataname(separators(end)+1:end-2)];
+      end
+    case 2
+      param = expname;
+      if ~exist('expname', 'var')
+        separators = strfind(dataname,filesep);
+        expname = ['exp_',dataname(separators(end)+1:end-2)];
+      end
   end
+  expfolder = fullfile('exp', 'experiments');
   
   methodParamID = find(strcmpi({param.name},'method'), 1);
   
@@ -52,23 +67,24 @@ function createScripts(dataname, expname, param)
   nCombinations = prod(mySettings + ~mySettings,2);
 
   % printing initialization
-  FID = fopen([expname,'.m'],'w');
+  FID = fopen([expfolder, filesep, expname, '.m'], 'w');
+  if FID == -1
+    error('Cannot open %s!', resultname)
+  end
   
   fprintf(FID,'%% Script for parametres testing in %s experiment.\n', expname);
   fprintf(FID,'\n');
   fprintf(FID,'%%%% initialization\n');
   fprintf(FID,'FCdata = ''%s'';\n', dataname);
   fprintf(FID,'filename = ''%s'';\n', expname);
-  fprintf(FID,'expfolder = fullfile(''exp'', ''experiments'');\n');
+  fprintf(FID,'expfolder = ''%s'';\n', expfolder);
   fprintf(FID,'mkdir(expfolder, filename);\n');
   fprintf(FID,'\n');
   fprintf(FID,'%s\n', char(37*ones(1,75)));
 
   % printing settings cycle
   for m = 1:nMethods
-    fprintf(FID,'%% %s\n', method{m});
-    fprintf(FID,'\n');
-    for p = 0:nCombinations{m} - 1
+    for p = 0:nCombinations(m) - 1
       fprintf(FID,'%%%% %s\n', method{m});
       fprintf(FID,'clear settings\n');
       fprintf(FID,'\n');
@@ -79,22 +95,24 @@ function createScripts(dataname, expname, param)
         actualID = parIDs(j);
         ParamId = mod(exactParamId,nParamValues(actualID));
         if ischar(param(actualID).values{ParamId+1})
-          fprintf(FID,['settings(i+1).',param(actualID).name,' = ''',param(actualID).values{ParamId+1},''';']);
+          val = [char(39), param(actualID).values{ParamId+1}, char(39)];
         else
-          fprintf(FID,['settings(i+1).',param(actualID).name,' = ',num2str(param(actualID).values{ParamId+1}),';']);
+          val = num2str(param(actualID).values{ParamId+1});
         end
+        fprintf(FID,'settings.%s = %s;\n', param(actualID).name, val);
         exactParamId = (exactParamId-ParamId)/nParamValues(actualID);        
       end
-      fprintf(FID,'perf = classifyFC(FCdata,''%s'',settings, fullfile(filename,''%s''));', ...
-                  method{m}, [expname, '_', method{m}, '_', num2str(p), '.mat']);
+      fprintf(FID,'\n');
+      fprintf(FID,'classifyFC(FCdata, ''%s'', settings, fullfile(filename, ''%s''));\n\n', ...
+                  method{m}, [expname, '_', method{m}, '_', num2str(p+1), '.mat']);
     end
-    fprintf(FID,'\n%s\n',char(37*ones(1,75)));
+    fprintf(FID,'%s\n',char(37*ones(1,75)));
   end
   
   % printing finalization
   fprintf(FID,'%%%% final results listing\n');
   fprintf(FID,'\n');
-  fprintf(FID,'listSettingsResults(fullfile(''results'', filename));\n');
+  fprintf(FID,'listSettingsResults(fullfile(expfolder, filename));\n');
 
   fclose(FID);
 

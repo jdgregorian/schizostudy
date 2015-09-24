@@ -31,8 +31,12 @@ function listSettingsResults(folder)
   end
 
   % printing results to txt file
-  fprintf('Printing results to %s...\n', resultname)
   FID = fopen(resultname,'w');
+  if FID == -1
+    error('Cannot open %s!', resultname)
+  end
+  fprintf('Printing results to %s...\n', resultname)
+  
   fprintf(FID,'---------------------------------------------------------------------------------\n');
   fprintf(FID,'------------------------- LIST OF TEST SETTINGS RESULTS -------------------------\n');
   fprintf(FID,'---------------------------------------------------------------------------------\n');
