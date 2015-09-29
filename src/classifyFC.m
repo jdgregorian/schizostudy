@@ -1,12 +1,26 @@
-function [performance, FC, categoryValues] = classifyFC(data, method, settings, filename)
+function [performance, FC, categoryValues, class] = classifyFC(data, method, settings, filename)
 % classifyFC(data, method, settings, filename) classifies functional 
 % (structural) connectivity data in 'data' by 'method' with additional
 % settings to method.
+%
+% Input:
 %
 % data     - path to datafile | string
 % method   - method used to classification | string
 % settings - settings of chosen method | structure
 % filename - name of file with results (optional) | string
+%          - if empty no saving is done
+%
+% Output:
+%
+% performance    - performance of chosen classifier with appropriate 
+%                  settings
+% FC             - functional connectivity matrix used for computations
+% categoryValues - labels of data in connectivity matrix from 'data'
+% class          - labels of data assigned by classifier
+%
+% See Also:
+% classifier
 
   if nargin < 3
       settings = [];

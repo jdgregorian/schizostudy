@@ -2,6 +2,7 @@ addpath(genpath('data'))
 addpath(genpath('exp'))
 addpath(genpath('src'))
 addpath(genpath('test'))
+addpath(genpath(fullfile('vendor','prtools')))
 
 FCdata = fullfile('data','data_FC_190subjects.mat');
 FCdata_old = fullfile('data','data_FC_203subjects.mat');

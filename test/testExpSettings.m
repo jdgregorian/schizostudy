@@ -196,9 +196,35 @@ clear settings
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
-settings.lda.type = 'diaglinear';
+settings.lda.type = 'linear';
 
-perf = classifyFC(FCdata,'lda',settings);
+[perf, ~, ~, classLDA] = classifyFC(FCdata,'lda',settings);
+
+%% linear discriminant classifier (PRTools)
+clear settings
+
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+settings.ldc.prior = [0.5;0.5];
+
+[perf, ~, ~, classLDC] = classifyFC(FCdata,'ldc',settings);
+
+%% linear discriminant classifier (PRTools)
+clear settings
+
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+settings.ldc.prior = [90;100]/190;
+
+[perf, ~, ~, classLDC] = classifyFC(FCdata,'ldc',settings);
+
+%% Fisher's linear discriminant (PRTools)
+clear settings
+
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+
+[perf, ~, ~, classFisher] = classifyFC(FCdata,'fisher',settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN

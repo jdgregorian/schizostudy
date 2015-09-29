@@ -23,8 +23,9 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %             'nb'      - naive Bayes
 %             'knn'     - k-nearest neighbours
 %             'llc'     - logistic linear classifier
-%             'lda'     - linear discriminant analysis (Fisher's linear 
-%                         discriminant)
+%             'lda'     - linear discriminant analysis
+%             'ldc'     - linear discriminant classifier (PRTools) 
+%             'fisher'  - Fisher's linear discriminant fisherc (PRTools)
 %             'ann'     - artificial neural network
 %             'rbf'     - radial basis function network
 %             'perc'    - linear perceptron
@@ -41,6 +42,9 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %  correctPredictions - correctness of classifications | boolean vector
 %  errors             - errors of individual subsets | cell array of
 %                       MException
+%
+% See Also:
+% classifyFC
 
   % default value
   performance = NaN;
@@ -90,9 +94,22 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         warning('Logistic linear classifier do not accept additional settings.')
       end
       
-    case 'lda' % linear discriminant analysis (Fisher's linear discriminant)
+    case 'lda' % linear discriminant analysis
       settings.lda = defopts(settings, 'lda', []);
       settings.lda.type = defopts(settings.lda, 'type', 'linear');
+      
+    case 'ldc' % linear discriminant classifier (PRTools)
+      prwaitbar off
+      settings.ldc = defopts(settings, 'ldc', []);
+      settings.ldc.R = defopts(settings.ldc, 'R', 0);
+      settings.ldc.S = defopts(settings.ldc, 'S', 0);
+      settings.ldc.prior = defopts(settings.ldc, 'prior', [0.5; 0.5]);
+      
+    case 'fisher' % Fisher's linear discriminant fisherc (PRTools)
+      prwaitbar off
+      if isfield(settings,'fisher')
+        warning('Linear perceptron do not accept additional settings.')
+      end
     
     case 'perc' % linear perceptron
       if isfield(settings,'perc')
@@ -165,6 +182,15 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 
         case 'llc' % logistic linear classifier
           LLC = mnrfit(trainingData, trainingLabels' + 1);
+          
+        case 'ldc' % linear discriminant classifier (PRTools)
+          toolData = prdataset(trainingData, trainingLabels');
+          toolData.prior = settings.ldc.prior;
+          LDCw = ldc(toolData, settings.ldc.R, settings.ldc.S);
+          
+        case 'fisher' % Fisher's linear discriminant fisherc (PRTools)
+          toolData = prdataset(trainingData, trainingLabels');
+          fisher = fisherc(toolData);
 
         case 'nb' % naive Bayes
           NB = NaiveBayes.fit(trainingData, trainingLabels, cellset{:});
@@ -216,9 +242,17 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         case 'llc' % logistic linear classifier
           y = arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0, 1:size(testingData,1));
 
-        case 'lda' % linear discriminant analysis (Fisher's linear discriminant)
+        case 'lda' % linear discriminant analysis
           y = classify(testingData, trainingData, trainingLabels, settings.lda.type);
-
+          
+        case 'ldc' % linear discriminant classifier (PRTools)
+          toolTestingData = prdataset(testingData);
+          y = toolTestingData*LDCw*labeld;
+          
+        case 'fisher' % Fisher's linear discriminant fisherc (PRTools)
+          toolTestingData = prdataset(testingData);
+          y = toolTestingData*fisher*labeld;
+          
         case 'perc' % linear perceptron
           y = net(testingData');
           
