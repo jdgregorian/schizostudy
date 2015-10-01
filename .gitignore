@@ -5,4 +5,5 @@ startupSchizo.m
 exp/experiments/*/
 exp/experiments/*.txt
 test/sys/.creator
+test/test.m
 *~

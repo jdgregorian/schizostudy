@@ -207,16 +207,17 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 settings.ldc.prior = [0.5;0.5];
 
-[perf, ~, ~, classLDC] = classifyFC(FCdata,'ldc',settings);
+[perf, ~, ~, classLDC_equal] = classifyFC(FCdata,'ldc',settings);
 
 %% linear discriminant classifier (PRTools)
 clear settings
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
-settings.ldc.prior = [90;100]/190;
+% settings.ldc.prior = [90;100]/190;
+settings.prior = 'LDC with no settings';
 
-[perf, ~, ~, classLDC] = classifyFC(FCdata,'ldc',settings);
+[perf, ~, ~, classLDC_none] = classifyFC(FCdata,'ldc',settings);
 
 %% Fisher's linear discriminant (PRTools)
 clear settings

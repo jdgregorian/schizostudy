@@ -17,23 +17,29 @@ function listSettingsResults(folder)
   data = cell(nFiles,1);
   performance = cell(nFiles,1);
   avgPerformance = zeros(nFiles,1);
+  nEmptyFiles = 0;
   
   fprintf('Loading data...\n')
   for f = 1:nFiles
     variables = load([folder filesep fileList(f).name], 'settings', 'method', 'data', 'performance', 'avgPerformance');
     if all(isfield(variables,{'settings', 'method', 'data', 'performance', 'avgPerformance'}))
-      settings{f} = variables.settings;
-      method{f} = variables.method;
-      data{f} = variables.data;
-      performance{f} = variables.performance;
-      avgPerformance(f) = variables.avgPerformance;
+      settings{f - nEmptyFiles} = variables.settings;
+      method{f - nEmptyFiles} = variables.method;
+      data{f - nEmptyFiles} = variables.data;
+      performance{f - nEmptyFiles} = variables.performance;
+      avgPerformance(f - nEmptyFiles) = variables.avgPerformance;
+    else
+      nEmptyFiles = nEmptyFiles + 1;
     end
   end
+  
+  % use only non-empty fields
+  nFiles = nFiles - nEmptyFiles;
 
   % printing results to txt file
   FID = fopen(resultname,'w');
   if FID == -1
-    error('Cannot open %s!', resultname)
+    error('Cannot open %s !', resultname)
   end
   fprintf('Printing results to %s...\n', resultname)
   

@@ -185,7 +185,11 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
           
         case 'ldc' % linear discriminant classifier (PRTools)
           toolData = prdataset(trainingData, trainingLabels');
-          toolData.prior = settings.ldc.prior;
+          if isempty(settings.ldc.prior)
+            toolData.prior = [sum(~trainingLabels); sum(trainingLabels)]/length(trainingLabels);
+          else
+            toolData.prior = settings.ldc.prior;
+          end
           LDCw = ldc(toolData, settings.ldc.R, settings.ldc.S);
           
         case 'fisher' % Fisher's linear discriminant fisherc (PRTools)
