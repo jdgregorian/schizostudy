@@ -239,6 +239,16 @@ settings.qda.type = 'quadratic';
 
 [perf, ~, ~, classQDA] = classifyFC(FCdata,'qda',settings);
 
+%% quadratic discriminant analysis (PRTools)
+clear settings
+
+settings.implementation = 'prtools';
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+settings.qda.prior = [0.5;0.5];
+
+[perf, ~, ~, classlda_equal] = classifyFC(FCdata,'qda',settings);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN
 clear settings
