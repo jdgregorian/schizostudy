@@ -24,7 +24,6 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %             'knn'     - k-nearest neighbours
 %             'llc'     - logistic linear classifier
 %             'lda'     - linear discriminant analysis
-%             'ldc'     - linear discriminant classifier (PRTools) 
 %             'fisher'  - Fisher's linear discriminant fisherc (PRTools)
 %             'ann'     - artificial neural network
 %             'rbf'     - radial basis function network
@@ -57,69 +56,88 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     end
   end
   
+  settings.implementation = defopts(settings, 'implementation', 'matlab');
+  if strcmpi(method, 'fisher') % Fisher is implemented only in PRTools
+    settings.implementation = 'prtools';
+  end
+  prt = any(strcmpi(settings.implementation, {'prtools', 'prt'}));
+  
   % settings before the main loop
-  switch method
-    case 'svm' % support vector machine
-      settings.svm = defopts(settings, 'svm', []);
-      cellset = cellSettings(settings.svm);
-      
-    case {'rf', 'mrf'} % forests
-      settings.forest = defopts(settings, 'forest', []);
-      % gain number of trees 
-      nTrees = defopts(settings.forest, 'nTrees', 11);
-      
-      if strcmpi(method, 'mrf')
-          cellset = cellSettings(settings.forest, {'nTrees'});
-      end
-      
-    case {'lintree', 'mtltree', 'svmtree'} % trees
-      settings.tree = defopts(settings, 'tree', []);
-      
-      if strcmpi(method, 'mtltree')
-        cellset = cellSettings(settings.tree);
-      end
-      
-    case 'nb' % naive Bayes
-      settings.nb = defopts(settings, 'nb', []);
-      cellset = cellSettings(settings.nb);
-      
-    case 'knn' % k-nearest neighbours
-      settings.knn = defopts(settings, 'knn', []);
-      settings.knn.k = defopts(settings.knn, 'k', 1);
-      settings.knn.distance = defopts(settings.knn, 'distance', 'euclidean');
-      settings.knn.rule = defopts(settings.knn, 'rule', 'nearest');
-      
-    case 'llc' % logistic linear classifier
-      if isfield(settings,'llc')
-        warning('Logistic linear classifier do not accept additional settings.')
-      end
-      
-    case 'lda' % linear discriminant analysis
-      settings.lda = defopts(settings, 'lda', []);
-      settings.lda.type = defopts(settings.lda, 'type', 'linear');
-      
-    case 'ldc' % linear discriminant classifier (PRTools)
-      prwaitbar off
-      settings.ldc = defopts(settings, 'ldc', []);
-      settings.ldc.R = defopts(settings.ldc, 'R', 0);
-      settings.ldc.S = defopts(settings.ldc, 'S', 0);
-      settings.ldc.prior = defopts(settings.ldc, 'prior', [0.5; 0.5]);
-      
-    case 'fisher' % Fisher's linear discriminant fisherc (PRTools)
-      prwaitbar off
-      if isfield(settings,'fisher')
-        warning('Linear perceptron do not accept additional settings.')
-      end
-    
-    case 'perc' % linear perceptron
-      if isfield(settings,'perc')
-        warning('Linear perceptron do not accept additional settings.')
-      end
-      
-    case 'ann' % artificial neural network
-      settings.ann = defopts(settings, 'ann', []);
-      settings.ann.hiddenSizes = 10;
-      settings.ann.trainFcn = 'trainscg';
+  if prt
+    prwaitbar off
+    switch method
+      case 'lda' % linear discriminant classifier (PRTools)
+        settings.lda = defopts(settings, 'lda', []);
+        settings.lda.R = defopts(settings.lda, 'R', 0);
+        settings.lda.S = defopts(settings.lda, 'S', 0);
+        settings.lda.prior = defopts(settings.lda, 'prior', [0.5; 0.5]);
+        
+      case 'fisher' % Fisher's linear discriminant fisherc (PRTools)
+        if isfield(settings,'fisher')
+          warning('Linear perceptron do not accept additional settings.')
+        end
+        
+      otherwise
+        fprintf('There is no %s method from PRTools implemented!\n', method)
+        performance = NaN;
+        class = NaN;
+        correctPredictions = NaN;
+        errors{1} = ['There is no ', method,' method from PRTools implemented!'];
+        return
+         
+    end
+  else %if any(strcmpi(settings.implementation, {'matlab', 'mtl'}))
+    switch method
+      case 'svm' % support vector machine
+        settings.svm = defopts(settings, 'svm', []);
+        cellset = cellSettings(settings.svm);
+
+      case {'rf', 'mrf'} % forests
+        settings.forest = defopts(settings, 'forest', []);
+        % gain number of trees 
+        nTrees = defopts(settings.forest, 'nTrees', 11);
+
+        if strcmpi(method, 'mrf')
+            cellset = cellSettings(settings.forest, {'nTrees'});
+        end
+
+      case {'lintree', 'mtltree', 'svmtree'} % trees
+        settings.tree = defopts(settings, 'tree', []);
+
+        if strcmpi(method, 'mtltree')
+          cellset = cellSettings(settings.tree);
+        end
+
+      case 'nb' % naive Bayes
+        settings.nb = defopts(settings, 'nb', []);
+        cellset = cellSettings(settings.nb);
+
+      case 'knn' % k-nearest neighbours
+        settings.knn = defopts(settings, 'knn', []);
+        settings.knn.k = defopts(settings.knn, 'k', 1);
+        settings.knn.distance = defopts(settings.knn, 'distance', 'euclidean');
+        settings.knn.rule = defopts(settings.knn, 'rule', 'nearest');
+
+      case 'llc' % logistic linear classifier
+        if isfield(settings,'llc')
+          warning('Logistic linear classifier do not accept additional settings.')
+        end
+
+      case 'lda' % linear discriminant analysis
+        settings.lda = defopts(settings, 'lda', []);
+        settings.lda.type = defopts(settings.lda, 'type', 'linear');
+
+      case 'perc' % linear perceptron
+        if isfield(settings,'perc')
+          warning('Linear perceptron do not accept additional settings.')
+        end
+
+      case 'ann' % artificial neural network
+        settings.ann = defopts(settings, 'ann', []);
+        settings.ann.hiddenSizes = 10;
+        settings.ann.trainFcn = 'trainscg';
+        
+    end
   end
   
   % dimension reduction outside the LOO loop
@@ -160,61 +178,65 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     try % one error should not cancel full computation
 
       % training
-      switch method
-        case 'svm' % support vector machine classifier
-          SVM = svmtrain(trainingData, trainingLabels, cellset{:});
-  %         SVM = fitcsvm(trainingSet,trainingIndices,cellset{:});
+      if prt % PRTools implementations
+        toolData = prdataset(trainingData, trainingLabels');
+        switch method
+          case 'lda' % linear discriminant classifier
+            if isempty(settings.lda.prior)
+              toolData.prior = [sum(~trainingLabels); sum(trainingLabels)]/length(trainingLabels);
+            else
+              toolData.prior = settings.lda.prior;
+            end
+            trainedPRClassifier = ldc(toolData, settings.lda.R, settings.lda.S);
 
-        case 'mrf' % matlab random forest
-          Forest = TreeBagger(nTrees, trainingData, trainingLabels, cellset{:});
+          case 'fisher' % Fisher's linear discriminant fisherc
+            trainedPRClassifier = fisherc(toolData);
+            
+        end
+      else % pure matlab implementations
+        switch method
+          case 'svm' % support vector machine classifier
+            SVM = svmtrain(trainingData, trainingLabels, cellset{:});
+    %         SVM = fitcsvm(trainingSet,trainingIndices,cellset{:});
 
-        case 'rf' % random forest
-          Forest = RandomForest(trainingData, trainingLabels, nTrees, settings.forest);
+          case 'mrf' % matlab random forest
+            Forest = TreeBagger(nTrees, trainingData, trainingLabels, cellset{:});
 
-        case 'lintree' % linear tree
-          Forest = LinearTree(trainingData, trainingLabels, settings.tree);
+          case 'rf' % random forest
+            Forest = RandomForest(trainingData, trainingLabels, nTrees, settings.forest);
 
-        case 'svmtree' % SVM tree
-          Forest = SVMTree(trainingData, trainingLabels, settings.tree);
+          case 'lintree' % linear tree
+            Forest = LinearTree(trainingData, trainingLabels, settings.tree);
 
-        case 'mtltree' % matlab classification tree
-          Forest = ClassificationTree.fit(trainingData, trainingLabels, cellset{:});
+          case 'svmtree' % SVM tree
+            Forest = SVMTree(trainingData, trainingLabels, settings.tree);
 
-        case 'llc' % logistic linear classifier
-          LLC = mnrfit(trainingData, trainingLabels' + 1);
-          
-        case 'ldc' % linear discriminant classifier (PRTools)
-          toolData = prdataset(trainingData, trainingLabels');
-          if isempty(settings.ldc.prior)
-            toolData.prior = [sum(~trainingLabels); sum(trainingLabels)]/length(trainingLabels);
-          else
-            toolData.prior = settings.ldc.prior;
-          end
-          LDCw = ldc(toolData, settings.ldc.R, settings.ldc.S);
-          
-        case 'fisher' % Fisher's linear discriminant fisherc (PRTools)
-          toolData = prdataset(trainingData, trainingLabels');
-          fisher = fisherc(toolData);
+          case 'mtltree' % matlab classification tree
+            Forest = ClassificationTree.fit(trainingData, trainingLabels, cellset{:});
 
-        case 'nb' % naive Bayes
-          NB = NaiveBayes.fit(trainingData, trainingLabels, cellset{:});
+          case 'llc' % logistic linear classifier
+            LLC = mnrfit(trainingData, trainingLabels' + 1);
 
-        case 'perc' % linear perceptron
-          net = perceptron;
-          net.trainParam.showWindow = false;
-          net = train(net, trainingData', trainingLabels);
+          case 'nb' % naive Bayes
+            NB = NaiveBayes.fit(trainingData, trainingLabels, cellset{:});
 
-        case 'ann' % artificial neural networks
-          net = patternnet(settings.ann.hiddenSizes, settings.ann.trainFcn);
-          net.trainParam.showWindow = false;
-          indLabels = ind2vec(trainingLabels+1);
-%           indLabels = trainingLabels;
-          net = train(net, trainingData', indLabels);
-          
-        case 'rbf' % radial basis function network
-          indLabels = ind2vec(trainingLabels + 1);
-          net = newpnn(trainingData', indLabels);
+          case 'perc' % linear perceptron
+            net = perceptron;
+            net.trainParam.showWindow = false;
+            net = train(net, trainingData', trainingLabels);
 
+          case 'ann' % artificial neural networks
+            net = patternnet(settings.ann.hiddenSizes, settings.ann.trainFcn);
+            net.trainParam.showWindow = false;
+            indLabels = ind2vec(trainingLabels+1);
+  %           indLabels = trainingLabels;
+            net = train(net, trainingData', indLabels);
+
+          case 'rbf' % radial basis function network
+            indLabels = ind2vec(trainingLabels + 1);
+            net = newpnn(trainingData', indLabels);
+            
+        end
       end
 
       % prediction
@@ -228,52 +250,50 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       testingLabels = labels(foldIds);
 
       % predict according to the method
-      switch method
-        case 'svm' % support vector machine classifier
-          y = svmclassify(SVM, testingData);
-  %         y = predict(SVM,transData);
+      if prt % PRTools implementation
+        toolTestingData = prdataset(testingData);
+        y = toolTestingData*trainedPRClassifier*labeld;
+           
+      else % pure matlab implementation
+        switch method
+          case 'svm' % support vector machine classifier
+            y = svmclassify(SVM, testingData);
+    %         y = predict(SVM,transData);
 
-        case {'rf', 'mrf', 'lintree', 'svmtree', 'mtltree'} % tree based methods
-          y = predict(Forest, testingData);
+          case {'rf', 'mrf', 'lintree', 'svmtree', 'mtltree'} % tree based methods
+            y = predict(Forest, testingData);
 
-        case 'nb' % naive Bayes
-          y = predict(NB, testingData);
+          case 'nb' % naive Bayes
+            y = predict(NB, testingData);
 
-        case 'knn' % k-nearest neighbours
-          y = knnclassify(testingData, trainingData, trainingLabels, ...
-            settings.knn.k, settings.knn.distance, settings.knn.rule);
+          case 'knn' % k-nearest neighbours
+            y = knnclassify(testingData, trainingData, trainingLabels, ...
+              settings.knn.k, settings.knn.distance, settings.knn.rule);
 
-        case 'llc' % logistic linear classifier
-          y = arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0, 1:size(testingData,1));
+          case 'llc' % logistic linear classifier
+            y = arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0, 1:size(testingData,1));
 
-        case 'lda' % linear discriminant analysis
-          y = classify(testingData, trainingData, trainingLabels, settings.lda.type);
-          
-        case 'ldc' % linear discriminant classifier (PRTools)
-          toolTestingData = prdataset(testingData);
-          y = toolTestingData*LDCw*labeld;
-          
-        case 'fisher' % Fisher's linear discriminant fisherc (PRTools)
-          toolTestingData = prdataset(testingData);
-          y = toolTestingData*fisher*labeld;
-          
-        case 'perc' % linear perceptron
-          y = net(testingData');
-          
-        case 'ann' % artificial neural networks
-          y = net(testingData');
-          y = vec2ind(y) - 1;
-%           y = round(y);
-          
-        case 'rbf' % radial basis function network
-          y = sim(net, testingData');
-          y = vec2ind(y)-1;
+          case 'lda' % linear discriminant analysis
+            y = classify(testingData, trainingData, trainingLabels, settings.lda.type);
 
-        otherwise
-          fprintf('Wrong method format!!!\n')
-          return
+          case 'perc' % linear perceptron
+            y = net(testingData');
+
+          case 'ann' % artificial neural networks
+            y = net(testingData');
+            y = vec2ind(y) - 1;
+  %           y = round(y);
+
+          case 'rbf' % radial basis function network
+            y = sim(net, testingData');
+            y = vec2ind(y)-1;
+
+          otherwise
+            fprintf('Wrong setting of method or implementation!!!\n')
+            return
+        end
       end
-
+      
       if iscell(y)
         y = str2double(y{1});
       end

@@ -200,28 +200,31 @@ settings.lda.type = 'linear';
 
 [perf, ~, ~, classLDA] = classifyFC(FCdata,'lda',settings);
 
+%% linear discriminant analysis (PRTools)
+clear settings
+
+settings.implementation = 'prtools';
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+settings.lda.prior = [0.5;0.5];
+
+[perf, ~, ~, classlda_equal] = classifyFC(FCdata,'lda',settings);
+
 %% linear discriminant classifier (PRTools)
 clear settings
 
+settings.implementation = 'prtools';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
-settings.ldc.prior = [0.5;0.5];
+% settings.lda.prior = [90;100]/190;
+settings.prior = 'lda with no settings';
 
-[perf, ~, ~, classLDC_equal] = classifyFC(FCdata,'ldc',settings);
-
-%% linear discriminant classifier (PRTools)
-clear settings
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
-% settings.ldc.prior = [90;100]/190;
-settings.prior = 'LDC with no settings';
-
-[perf, ~, ~, classLDC_none] = classifyFC(FCdata,'ldc',settings);
+[perf, ~, ~, classlda_none] = classifyFC(FCdata,'lda',settings);
 
 %% Fisher's linear discriminant (PRTools)
 clear settings
 
+settings.implementation = 'prtools';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 
