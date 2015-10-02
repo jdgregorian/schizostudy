@@ -24,6 +24,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %             'knn'     - k-nearest neighbours
 %             'llc'     - logistic linear classifier
 %             'lda'     - linear discriminant analysis
+%             'qda'     - quadratic discriminant analysis
 %             'fisher'  - Fisher's linear discriminant fisherc (PRTools)
 %             'ann'     - artificial neural network
 %             'rbf'     - radial basis function network
@@ -126,7 +127,21 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       case 'lda' % linear discriminant analysis
         settings.lda = defopts(settings, 'lda', []);
         settings.lda.type = defopts(settings.lda, 'type', 'linear');
-
+        if all(~strcmpi(settings.lda.type, {'linear', 'diaglinear'}))
+          fprintf('Not possible matlab LDA settings.\n')
+          fprintf('Switching to LDA type ''linear''.\n')
+          settings.lda.type = 'linear';
+        end
+        
+      case 'qda' % quadratic discriminant analysis
+        settings.qda = defopts(settings, 'qda', []);
+        settings.qda.type = defopts(settings.qda, 'type', 'quadratic');
+        if all(~strcmpi(settings.qda.type, {'quadratic', 'diagquadratic'}))
+          fprintf('Not possible matlab QDA settings.\n')
+          fprintf('Switching to QDA type ''quadratic''.\n')
+          settings.qda.type = 'quadratic';
+        end
+        
       case 'perc' % linear perceptron
         if isfield(settings,'perc')
           warning('Linear perceptron do not accept additional settings.')
@@ -274,7 +289,25 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
             y = arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0, 1:size(testingData,1));
 
           case 'lda' % linear discriminant analysis
-            y = classify(testingData, trainingData, trainingLabels, settings.lda.type);
+            if strcmpi(settings.lda.type, 'linear') && (size(trainingData, 1) - 2 < size(trainingData, 2))
+              fprintf('LDA type ''linear'' would cause indefinite covariance matrix in this case.\n')
+              fprintf('Switching to ''diaglinear''.\n')
+              LDAtype = 'diaglinear';
+            else
+              LDAtype = settings.lda.type;
+            end
+            y = classify(testingData, trainingData, trainingLabels, LDAtype);
+            
+          case 'qda' % quadratic discriminant analysis
+            smallerClassSize = min([sum(trainingLabels), sum(~trainingLabels)]);
+            if strcmpi(settings.qda.type, 'quadratic') && (smallerClassSize - 1 < size(trainingData, 2))
+              fprintf('QDA type ''quadratic'' would cause indefinite covariance matrix in this case.\n')
+              fprintf('Switching to ''diagquadratic''.\n')
+              QDAtype = 'diagquadratic';
+            else
+              QDAtype = settings.qda.type;
+            end
+            y = classify(testingData, trainingData, trainingLabels, QDAtype);
 
           case 'perc' % linear perceptron
             y = net(testingData');

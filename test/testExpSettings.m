@@ -195,8 +195,8 @@ perf = classifyFC(FCdata,'mtltree',settings);
 clear settings
 
 settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
-settings.lda.type = 'linear';
+settings.dimReduction.nDim = 187;
+settings.lda.type = 'diaglinear';
 
 [perf, ~, ~, classLDA] = classifyFC(FCdata,'lda',settings);
 
@@ -229,6 +229,15 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 
 [perf, ~, ~, classFisher] = classifyFC(FCdata,'fisher',settings);
+
+%% quadratic discriminant analysis
+clear settings
+
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 89;
+settings.qda.type = 'quadratic';
+
+[perf, ~, ~, classQDA] = classifyFC(FCdata,'qda',settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN
