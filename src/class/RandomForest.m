@@ -9,10 +9,10 @@ classdef RandomForest
     performances   % array of performances
     perfType       % type of performance of predictors to weight prediction
     FBoot          % fraction of input data used to training
-    TreeType       % type of the tree (stump, linear)
+    TreeType       % type of the tree (stump, linear, matlab, svm)
     trainingData   % data used for forest training
     trainingLabels % labels used for forest training
-    learning       % learning algorithm
+    learning       % learning algorithm (bagging, boosting)
   end
     
 methods
@@ -49,18 +49,16 @@ methods
       switch RF.learning
         case {'bag', 'bagging'} % bagging
           useInd = randi(Ndatause, 1, Ndatause);
-          datause = data(useInd,:);
-          labeluse = labels(useInd);
+
         case 'boosting' % boosting
-          datause = data(useInd,:);
-          labeluse = labels(useInd);
+          % boosting will be changed according to different boosting strategies
         otherwise
           warning('Wrong learning algorithm name! Switching to bagging...')
           RF.learning = 'bagging';
           useInd = randi(Ndatause,1,Ndatause);
-          datause = data(useInd,:);
-          labeluse = labels(useInd);
       end
+      datause = data(useInd,:);
+      labeluse = labels(useInd);
       
       % tree training
       switch RF.TreeType
@@ -114,7 +112,8 @@ methods
         y = round(double(pred));
         correctPred = y'==perfLabels;
         RF.performances(T) = sum((correctPred))/length(perfLabels);
-        if strcmpi(RF.learning,'boosting')
+        if strcmpi(RF.learning,'boosting') 
+        % TODO: will be changed according to different boosting strategies by using weights
           nNotCorrect = sum(~correctPred);
           useInd(end+1:end+nNotCorrect) = find(~correctPred);
         end

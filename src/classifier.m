@@ -81,7 +81,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         end
         
       otherwise
-        fprintf('There is no %s method from PRTools implemented!\n', method)
+        warning('There is no %s method from PRTools implemented!', method)
         performance = NaN;
         class = NaN;
         correctPredictions = NaN;
@@ -130,8 +130,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         settings.lda = defopts(settings, 'lda', []);
         settings.lda.type = defopts(settings.lda, 'type', 'linear');
         if all(~strcmpi(settings.lda.type, {'linear', 'diaglinear'}))
-          fprintf('Not possible matlab LDA settings.\n')
-          fprintf('Switching to LDA type ''linear''.\n')
+          warning('Not possible matlab LDA settings. Switching to LDA type ''linear''...\n')
           settings.lda.type = 'linear';
         end
         
@@ -139,8 +138,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         settings.qda = defopts(settings, 'qda', []);
         settings.qda.type = defopts(settings.qda, 'type', 'quadratic');
         if all(~strcmpi(settings.qda.type, {'quadratic', 'diagquadratic'}))
-          fprintf('Not possible matlab QDA settings.\n')
-          fprintf('Switching to QDA type ''quadratic''.\n')
+          warning('Not possible matlab QDA settings. Switching to LDA type ''quadratic''...\n')
           settings.qda.type = 'quadratic';
         end
         
@@ -296,8 +294,8 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 
           case 'lda' % linear discriminant analysis
             if strcmpi(settings.lda.type, 'linear') && (size(trainingData, 1) - 2 < size(trainingData, 2))
-              fprintf('LDA type ''linear'' would cause indefinite covariance matrix in this case.\n')
-              fprintf('Switching to ''diaglinear''.\n')
+              fprintf(['LDA type ''linear'' would cause indefinite covariance ',...
+                       'matrix in this case.\nSwitching to ''diaglinear''...\n'])
               LDAtype = 'diaglinear';
             else
               LDAtype = settings.lda.type;
@@ -307,8 +305,8 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
           case 'qda' % quadratic discriminant analysis
             smallerClassSize = min([sum(trainingLabels), sum(~trainingLabels)]);
             if strcmpi(settings.qda.type, 'quadratic') && (smallerClassSize - 1 < size(trainingData, 2))
-              fprintf('QDA type ''quadratic'' would cause indefinite covariance matrix in this case.\n')
-              fprintf('Switching to ''diagquadratic''.\n')
+              fprintf(['QDA type ''quadratic'' would cause indefinite covariance ',...
+                       'matrix in this case.\nSwitching to ''diagquadratic''...\n'])
               QDAtype = 'diagquadratic';
             else
               QDAtype = settings.qda.type;
@@ -415,11 +413,7 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
       nDim = defopts(settings.dimReduction, 'nDim', dim);    % maximum of chosen dimensions
       alpha = defopts(settings.dimReduction, 'alpha', 0.05); % significance level
       
-      t2 = zeros(1,dim);
-      p = zeros(1,dim);
-      for d = 1:dim
-        [t2(d), p(d)] = ttest2(data(logical(indices),d),data(~logical(indices),d),'Alpha',alpha);
-      end
+      [t2, p] = ttest2(data(logical(indices),:),data(~logical(indices),:),'Alpha',alpha, 'Vartype','unequal');
       
       reducedData = data(:,logical(t2)); % reduction by ttest
 

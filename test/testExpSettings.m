@@ -234,7 +234,7 @@ settings.dimReduction.nDim = 20;
 clear settings
 
 settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 89;
+settings.dimReduction.nDim = 150;
 settings.qda.type = 'quadratic';
 
 [perf, ~, ~, classQDA] = classifyFC(FCdata,'qda',settings);
