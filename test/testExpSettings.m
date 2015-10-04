@@ -206,7 +206,7 @@ clear settings
 settings.implementation = 'prtools';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
-settings.lda.prior = [0.5;0.5];
+settings.lda.prior = [0.5,0.5];
 
 [perf, ~, ~, classlda_equal] = classifyFC(FCdata,'lda',settings);
 
@@ -216,7 +216,7 @@ clear settings
 settings.implementation = 'prtools';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
-% settings.lda.prior = [90;100]/190;
+% settings.lda.prior = [];
 settings.prior = 'lda with no settings';
 
 [perf, ~, ~, classlda_none] = classifyFC(FCdata,'lda',settings);
@@ -245,7 +245,7 @@ clear settings
 settings.implementation = 'prtools';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
-settings.qda.prior = [0.5;0.5];
+% settings.qda.prior = [0.5, 0.5];
 
 [perf, ~, ~, classlda_equal] = classifyFC(FCdata,'qda',settings);
 

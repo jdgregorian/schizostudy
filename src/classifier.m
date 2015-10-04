@@ -67,17 +67,13 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
   if prt % PRTools implementations
     prwaitbar off
     switch method
-      case 'lda' % linear discriminant classifier
-        settings.lda = defopts(settings, 'lda', []);
-        settings.lda.R = defopts(settings.lda, 'R', 0);
-        settings.lda.S = defopts(settings.lda, 'S', 0);
-        settings.lda.prior = defopts(settings.lda, 'prior', [0.5; 0.5]);
-        
-      case 'qda' % quadratic discriminant classifier
-        settings.qda = defopts(settings, 'qda', []);
-        settings.qda.R = defopts(settings.qda, 'R', 0);
-        settings.qda.S = defopts(settings.qda, 'S', 0);
-        settings.qda.prior = defopts(settings.qda, 'prior', [0.5; 0.5]);
+      case {'lda', 'qda'} % linear or quadratic discriminant classifier
+        settings.da = defopts(settings, method, []);
+        settings.da.R = defopts(settings.da, 'R', 0);
+        settings.da.S = defopts(settings.da, 'S', 0);
+        if ~isfield(settings.da, 'prior')
+          settings.da.prior = [0.5, 0.5];
+        end
         
       case 'fisher' % Fisher's linear discriminant fisherc (PRTools)
         if isfield(settings,'fisher')
@@ -202,23 +198,18 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       if prt % PRTools implementations
         toolData = prdataset(trainingData, trainingLabels');
         switch method
-          case 'lda' % linear discriminant classifier
-            if isempty(settings.lda.prior)
+          case {'lda', 'qda'} % linear or quadratic discriminant classifier
+            if isempty(settings.da.prior)
               toolData.prior = [sum(~trainingLabels); sum(trainingLabels)]/length(trainingLabels);
             else
-              toolData.prior = settings.lda.prior;
+              toolData.prior = settings.da.prior;
             end
-            trainedPRClassifier = ldc(toolData, settings.lda.R, settings.lda.S);
+            if strcmp(method, 'lda') % linear discriminant classifier
+              trainedPRClassifier = ldc(toolData, settings.da.R, settings.da.S);
+            else % quadratic discriminant classifier
+              trainedPRClassifier = qdc(toolData, settings.da.R, settings.da.S);
+            end
             
-          case 'qda' % quadratic discriminant classifier
-            % TODO: qda priors - error: input must be in 2D
-%             if isempty(settings.qda.prior)
-%               toolData.prior = [sum(~trainingLabels); sum(trainingLabels)]/length(trainingLabels);
-%             else
-%               toolData.prior = settings.qda.prior;
-%             end
-            trainedPRClassifier = qdc(toolData, settings.qda.R, settings.qda.S);
-
           case 'fisher' % Fisher's linear discriminant fisherc
             trainedPRClassifier = fisherc(toolData);
             
