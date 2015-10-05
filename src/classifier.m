@@ -142,6 +142,10 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
           settings.qda.type = 'quadratic';
         end
         
+      case 'rda' % regularized discriminant analysis (RDA 14)
+        settings.rda = defopts(settings, 'rda', []);
+        settings.rda.alpha = defopts(settings.rda, 'alpha', 0.999999);
+        
       case 'perc' % linear perceptron
         if isfield(settings,'perc')
           warning('Linear perceptron do not accept additional settings.')
@@ -312,6 +316,9 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
               QDAtype = settings.qda.type;
             end
             y = classify(testingData, trainingData, trainingLabels, QDAtype);
+            
+          case 'rda' % regularized discriminant analysis (RDA 14)
+            y = rda(trainingData, trainingLabels, testingData, settings.rda.alpha);
 
           case 'perc' % linear perceptron
             y = net(testingData');

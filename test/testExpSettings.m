@@ -249,6 +249,17 @@ settings.dimReduction.nDim = 20;
 
 [perf, ~, ~, classlda_equal] = classifyFC(FCdata,'qda',settings);
 
+%% regularized discriminant analysis (RDA 14)
+clear settings
+
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+settings.note = 'Default RDA';
+
+tic
+perf = classifyFC(FCdata,'rda',settings);
+toc
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN
 clear settings

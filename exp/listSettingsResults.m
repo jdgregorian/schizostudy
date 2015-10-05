@@ -18,6 +18,7 @@ function listSettingsResults(folder)
   performance = cell(nFiles,1);
   avgPerformance = zeros(nFiles,1);
   nEmptyFiles = 0;
+  usefulFiles = true(nFiles,1);
   
   fprintf('Loading data...\n')
   for f = 1:nFiles
@@ -30,11 +31,13 @@ function listSettingsResults(folder)
       avgPerformance(f - nEmptyFiles) = variables.avgPerformance;
     else
       nEmptyFiles = nEmptyFiles + 1;
+      usefulFiles(f) = false;
     end
   end
   
   % use only non-empty fields
   nFiles = nFiles - nEmptyFiles;
+  fileList = fileList(usefulFiles);
 
   % printing results to txt file
   FID = fopen(resultname,'w');
@@ -83,13 +86,48 @@ function printSettings(FID, settings)
   for sf = 1:length(settingsSF)
     valueSF = eval(['settings.', settingsSF{sf}]);
     fprintf(FID,'    settings.%s = ', settingsSF{sf});
-    if iscell(valueSF)
-      fprintf(FID,'{ ');
-      for c = 1:length(valueSF) % works only for 1D cell array
-        printVal(FID, valueSF{c})
-        fprintf(FID,' ');
+    % array settings
+    if numel(valueSF) > 1 && ~ischar(valueSF)
+      % cell array
+      if iscell(valueSF)
+        fprintf(FID,'{ ');
+        % first row
+        printVal(FID, valueSF{1,1})
+        for c = 2:size(valueSF,2)
+          fprintf(FID,', ');
+          printVal(FID, valueSF{1,c})
+        end
+        % rest of rows
+        for r = 2:size(valueSF,1)
+          fprintf(FID,'; ');
+          printVal(FID, valueSF{r,1})
+          for c = 2:size(valueSF,2)
+            fprintf(FID,', ');
+            printVal(FID, valueSF{r,c})
+          end
+        end
+        fprintf(FID,'}');
+      % other arrays
+      else
+        fprintf(FID,'[ ');
+        % first row
+        printVal(FID, valueSF(1,1))
+        for c = 2:size(valueSF,2)
+          fprintf(FID,', ');
+          printVal(FID, valueSF(1,c))
+        end
+        % rest of rows
+        for r = 2:size(valueSF,1)
+          fprintf(FID,'; ');
+          printVal(FID, valueSF(r,1))
+          for c = 2:size(valueSF,2)
+            fprintf(FID,', ');
+            printVal(FID, valueSF(r,c))
+          end
+        end
+        fprintf(FID,']');
       end
-      fprintf(FID,'}');
+    % non-array value
     else
       printVal(FID, valueSF);
     end
