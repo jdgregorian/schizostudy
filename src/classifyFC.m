@@ -1,4 +1,4 @@
-function [performance, FC, categoryValues, class] = classifyFC(data, method, settings, filename)
+function [performance, preparedData, preparedLabels, class] = classifyFC(data, method, settings, filename)
 % classifyFC(data, method, settings, filename) classifies functional 
 % (structural) connectivity data in 'data' by 'method' with additional
 % settings to method.
@@ -15,8 +15,8 @@ function [performance, FC, categoryValues, class] = classifyFC(data, method, set
 %
 % performance    - performance of chosen classifier with appropriate 
 %                  settings
-% FC             - functional connectivity matrix used for computations
-% categoryValues - labels of data in connectivity matrix from 'data'
+% preparedData   - functional connectivity data used for computations
+% preparedLabels - labels of data in 'preparedData' matrix from 'data'
 % class          - labels of data assigned by classifier
 %
 % See Also:
@@ -32,34 +32,25 @@ function [performance, FC, categoryValues, class] = classifyFC(data, method, set
   method = lower(method);
 
   % prepare data
+  
   loadedData = load(data);
-  if isfield(loadedData,'FC') % functional connectivity
-    FC = loadedData.FC;
-  elseif isfield(loadedData,'SC') % structural connectivity
-    FC = loadedData.SC;
+  % functional or structural connectivity data
+  if isfield(loadedData,'FC') || isfield(loadedData,'SC') 
+    [preparedData, preparedLabels] = loadFC(loadedData);
+  % one matrix and one vector of data 
+  elseif length(fieldnames(loadedData)) == 2 
+    [preparedData, preparedLabels] = loadDataLabels(loadedData);
+    if isempty(preparedData) || isempty(preparedLabels)
+      warning('Wrong input format or file!')
+      performance = NaN;
+      return
+    end
   else
-    fprintf('Wrong connectivity matrix!')
+    warning('Wrong input format or file!')
     performance = NaN;
-    FC = [];
-    categoryValues = [];
+    preparedData = [];
+    preparedLabels = [];
     return
-  end
-  if isfield(loadedData,'categoryValues')
-    categoryValues = loadedData.categoryValues;
-  else
-    indicesPatients = loadedData.indices_patients;
-    categoryValues = zeros(1,size(FC,1));
-    categoryValues(indicesPatients) = 1;
-  end
-  Nsubjects = length(categoryValues);
-  matDim = size(FC,2);
-
-  % transform 3D FC matrix to matrix where each subject has its own row
-  % and each feature one column
-  vectorFC = NaN(Nsubjects,matDim*(matDim-1)/2);
-  for i = 1:Nsubjects
-      oneFC = shiftdim(FC(i,:,:),1);
-      vectorFC(i,:) = transpose(nonzeros(triu(oneFC+5)-6*eye(matDim)))-5;
   end
 
   % test classification by chosen method for 'iteration' times
@@ -72,7 +63,7 @@ function [performance, FC, categoryValues, class] = classifyFC(data, method, set
     if iteration > 1
       fprintf('Iteration %d:\n',i)
     end
-    [performance(i), class{i}, correctPredictions{i}, errors{i}] = classifier(method, vectorFC, categoryValues, settings);
+      [performance(i), class{i}, correctPredictions{i}, errors{i}] = classifier(method, preparedData, preparedLabels, settings);
   end
   avgPerformance = mean(performance);
 
@@ -82,4 +73,84 @@ function [performance, FC, categoryValues, class] = classifyFC(data, method, set
   if nargin == 4
     save(fullfile('exp','experiments',filename), 'settings', 'method', 'data', 'performance', 'avgPerformance', 'class', 'correctPredictions', 'errors')
   end
+end
+
+function [data, labels] = loadFC(loadedData)
+% Loading FC datafile
+
+  if isfield(loadedData,'FC') % functional connectivity
+    FC = loadedData.FC;
+  else % structural connectivity
+    FC = loadedData.SC;
+  end
+  if isfield(loadedData,'categoryValues')
+    labels = loadedData.categoryValues;
+  else
+    indicesPatients = loadedData.indices_patients;
+    labels = zeros(1,size(FC,1));
+    labels(indicesPatients) = 1;
+  end
+
+  Nsubjects = length(labels);
+  matDim = size(FC,2);
+
+  % transform 3D FC matrix to matrix where each subject has its own row
+  % and each feature one column
+  data = NaN(Nsubjects,matDim*(matDim-1)/2);
+  for i = 1:Nsubjects
+      oneFC = shiftdim(FC(i,:,:),1);
+      data(i,:) = transpose(nonzeros(triu(oneFC+5)-6*eye(matDim)))-5;
+  end
+end
+
+function [data, labels] = loadDataLabels(loadedData)
+% Loading data with one vector of labels and one matrix of features
+
+  data = [];
+  labels = [];
+  
+  names = fieldnames(loadedData);
+  value1 = getfield(loadedData, names{1});
+  value2 = getfield(loadedData, names{2});
+  
+  % matrix and vector filter
+  if ismatrix(value1) && isvector(value2)
+    matrix = value1;
+    vector = value2;
+  elseif ismatrix(value2) && isvector(value1)
+    matrix = value2;
+    vector = value1;
+  else
+    return
+  end
+  
+  
+  vectorLength = length(vector);
+  classes = double(unique(vector));
+  if size(matrix, 1) ~= vectorLength % correct shape filter
+    return
+  elseif vectorLength < 2 % small data filter
+    warning('Data size is only %d. Cannot perform classification!', vectorLength)
+    return
+  elseif length(classes) ~= 2 % non-binary classification filter
+    warning('ClassifyFC performs only binary classification.')
+    return
+  else
+    data = double(matrix);
+    vector(double(vector) == classes(1)) = 0;
+    vector(double(vector) == classes(2)) = 1;
+    if size(vector,1) > size(vector,2)
+      labels = vector';
+    else
+      labels = vector;
+    end
+  end
+end
+
+function loadTrainTestData(foldername, dataname, labelname)
+% Loading training and testing data
+%
+% Only for David's format - two folders 'training' and 'testing' containing
+% .mat file 'GraphAndData' with matrix of features 'dataname' and vector of
+% labels 'labelname'.
 end

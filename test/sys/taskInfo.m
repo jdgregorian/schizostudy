@@ -4,6 +4,7 @@ fprintf('Error printing in listSettingsResults\n')
 fprintf('Improve methods by using CV during training?\n')
 fprintf('Documentation\n')
 fprintf('RDA speed up\n')
+fprintf('Labels in column or independent?\n')
 
 fprintf('\nMost recent: \n')
 fprintf('    Is Fisher similar to LDC?\n')

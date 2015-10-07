@@ -1,8 +1,9 @@
-% Script for testing main settings of classifiers
+% Script for testing main settings of classifiers on Arabshirani's data
+% style prepared all data
 
 %% initialization
-FCdata = fullfile('data','data_FC_190subjects.mat');
-filename = 'mainSettings';
+FCdata = fullfile('data','arbabshirani','loo','adCorrAbs','180subj_all.mat');
+filename = 'arbi_all_loo';
 expfolder = fullfile('exp','experiments');
 mkdir(expfolder,filename)
 
