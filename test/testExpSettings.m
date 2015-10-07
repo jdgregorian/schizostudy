@@ -150,7 +150,7 @@ clear settings
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 
-perf = classifyFC(FCdata,'linTree');
+perf = classifyFC(FCdata,'linTree', settings);
 
 %% linear tree mahal + pca
 clear settings

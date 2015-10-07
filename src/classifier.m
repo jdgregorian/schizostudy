@@ -367,17 +367,21 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
   defSet.name = 'none';
   settings.dimReduction = defopts(settings,'dimReduction',defSet);
   settings.transformPrediction = false;
+  nDim = defopts(settings.dimReduction, 'nDim', dim);
+  if nDim > dim
+    nDim = dim;  % maximum of chosen dimensions
+  end
   
   switch settings.dimReduction.name
     case 'pca'
       % principle compopnent analysis feature reduction
       fprintf('Starting dimension reduction by PCA...\n')
-      nDim = defopts(settings.dimReduction,'nDim',Nsubjects-1); % maximum of chosen dimensions
       if nDim > Nsubjects-1
         nDim = Nsubjects-1;
       end
       
       [settings.dimReduction.transMatrix, transData] = pca(data);
+      nDim = min(size(transData,2), nDim);
       reducedData = transData(:,1:nDim);
       
       settings.transformPrediction = true;
@@ -387,7 +391,6 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
       % Kendall tau rank coefficient feature reduction
       % (according to Hui 2009)
       fprintf('Starting dimension reduction using Kendall tau rank coefficients...\n')
-      nDim = defopts(settings.dimReduction, 'nDim', dim); % maximum of chosen dimensions
       treshold = defopts(settings.dimReduction, 'treshold', -1); % minimal Kendall tau rank value
       
       nOne = sum(indices);
@@ -417,7 +420,6 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
     case 'ttest'
       % t-test feature reduction
       fprintf('Starting dimension reduction using t-test...\n')
-      nDim = defopts(settings.dimReduction, 'nDim', dim);    % maximum of chosen dimensions
       alpha = defopts(settings.dimReduction, 'alpha', 0.05); % significance level
       
       [t2, p] = ttest2(data(logical(indices),:),data(~logical(indices),:),'Alpha',alpha, 'Vartype','unequal');
@@ -440,7 +442,6 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
       %    Choose median value in each dimension, count how many
       %    individuals has greater or lower value
       fprintf('Starting dimension reduction using median difference coefficients...\n')
-      nDim = defopts(settings.dimReduction, 'nDim', dim);    % maximum of chosen dimensions
       nOnes = sum(indices);
       nZeros = Nsubjects - nOnes;
       minDif = defopts(settings.dimReduction, 'minDif', 2*abs(nOnes-nZeros)); % minimum number of differences
