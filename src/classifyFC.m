@@ -5,7 +5,8 @@ function [performance, preparedData, preparedLabels, class] = classifyFC(data, m
 %
 % Input:
 %
-% data     - path to datafile | string
+% data     - path to datafile or folder with training and testing folders 
+%            | string
 % method   - method used to classification | string
 % settings - settings of chosen method | structure
 % filename - name of file with results (optional) | string
@@ -32,25 +33,29 @@ function [performance, preparedData, preparedLabels, class] = classifyFC(data, m
   method = lower(method);
 
   % prepare data
-  
-  loadedData = load(data);
-  % functional or structural connectivity data
-  if isfield(loadedData,'FC') || isfield(loadedData,'SC') 
-    [preparedData, preparedLabels] = loadFC(loadedData);
-  % one matrix and one vector of data 
-  elseif length(fieldnames(loadedData)) == 2 
-    [preparedData, preparedLabels] = loadDataLabels(loadedData);
-    if isempty(preparedData) || isempty(preparedLabels)
+  if isdir(data)
+    dataname = defopts(settings, 'datamatrix','adCorrAbs');
+    [preparedData, preparedLabels] = loadTrainTestData(data, dataname, 'anId');
+  else
+    loadedData = load(data);
+    % functional or structural connectivity data
+    if isfield(loadedData,'FC') || isfield(loadedData,'SC') 
+      [preparedData, preparedLabels] = loadFC(loadedData);
+    % one matrix and one vector of data 
+    elseif length(fieldnames(loadedData)) == 2 
+      [preparedData, preparedLabels] = loadDataLabels(loadedData);
+      if isempty(preparedData) || isempty(preparedLabels)
+        warning('Wrong input format or file!')
+        performance = NaN;
+        return
+      end
+    else
       warning('Wrong input format or file!')
       performance = NaN;
+      preparedData = [];
+      preparedLabels = [];
       return
     end
-  else
-    warning('Wrong input format or file!')
-    performance = NaN;
-    preparedData = [];
-    preparedLabels = [];
-    return
   end
 
   % test classification by chosen method for 'iteration' times
@@ -147,10 +152,19 @@ function [data, labels] = loadDataLabels(loadedData)
   end
 end
 
-function loadTrainTestData(foldername, dataname, labelname)
+function [data, labels] = loadTrainTestData(foldername, dataname, labelname)
 % Loading training and testing data
 %
 % Only for David's format - two folders 'training' and 'testing' containing
 % .mat file 'GraphAndData' with matrix of features 'dataname' and vector of
 % labels 'labelname'.
+  loadedTrainData = load(fullfile(foldername, 'training', 'GraphAndData'));
+  loadedTestData = load(fullfile(foldername, 'testing', 'GraphAndData'));
+  
+  value= getfield(loadedTrainData, dataname);
+  data{1} = value(:,:,1);
+  value = getfield(loadedTestData, dataname);
+  data{2} = value(:,:,1);
+  labels{1} = (getfield(loadedTrainData, labelname))';
+  labels{2} = (getfield(loadedTestData, labelname))';
 end

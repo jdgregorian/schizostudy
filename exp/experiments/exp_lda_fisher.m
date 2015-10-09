@@ -1,7 +1,7 @@
 % experiment for similarity testing of lda and Fisher from PRTools
 
 FCdata = fullfile('data','data_FC_190subjects.mat');
-filename = 'exp_lda_Fisher';
+filename = 'exp_lda_fisher';
 expfolder = fullfile('exp','experiments');
 mkdir(expfolder,filename)
 

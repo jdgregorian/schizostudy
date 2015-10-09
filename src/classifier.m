@@ -29,9 +29,11 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %             'ann'     - artificial neural network
 %             'rbf'     - radial basis function network
 %             'perc'    - linear perceptron
-%  data     - input data matrix (1st dim - single data, 2nd data dimension)
-%             | double matrix
-%  labels   - class labels for each data | double vector
+%  data     - input data matrix (rows - datapoints, columns - data 
+%             dimension) or 1x2 cell array {training, testing} data 
+%             | double matrix, cell array
+%  labels   - class labels for each data or 1x2 cell array {training,
+%             testing} labels | double vector, cell array
 %  settings - structure of additional settings for classifier function
 %
 % Output:
@@ -62,6 +64,18 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     settings.implementation = 'prtools';
   end
   prt = any(strcmpi(settings.implementation, {'prtools', 'prt'}));
+  
+  % mode check
+  trainTestMode = iscell(data) && iscell(labels);
+  if trainTestMode
+    % considering only two data matrices and two label vectors in cell
+    % arrays
+    trainSize = length(labels{1});
+    data = [data{1};data{2}];
+    labels = [labels{1},labels{2}];
+  else
+    trainSize = 0;
+  end
   
   % settings before the main loop
   if prt % PRTools implementations
@@ -168,21 +182,28 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
   % data scaling to zero mean and unit variance
   settings.autoscale = defopts(settings, 'autoscale', false);
   if settings.autoscale
-    mx    = mean(data);
-    stdx  = std(data);
-    data    = (data-mx(ones(Nsubjects,1),:))./stdx(ones(Nsubjects,1),:);
+    mx   = mean(data);
+    stdx = std(data);
+    data = (data-mx(ones(Nsubjects,1),:))./stdx(ones(Nsubjects,1),:);
   end
-  
-  % count cross-validation
-  class = zeros(1, Nsubjects);
-  correctPredictions = zeros(1, Nsubjects);
-  errors = cell(1,Nsubjects);
-  kFold = defopts(settings, 'crossval', 'loo');
-  if strcmpi(kFold,'loo') || (kFold > Nsubjects)
-    kFold = Nsubjects;
-    CVindices = 1:Nsubjects;
-  else
-    CVindices = crossvalind('kfold', Nsubjects, kFold);
+
+  if trainTestMode
+    class = zeros(1, Nsubjects - trainSize);
+    correctPredictions = zeros(1, Nsubjects - trainSize);
+    errors = cell(1);
+    kFold = 1;
+    CVindices = [zeros(1,trainSize), ones(1,Nsubjects - trainSize)];
+  else % count cross-validation
+    class = zeros(1, Nsubjects);
+    correctPredictions = zeros(1, Nsubjects);
+    errors = cell(1,Nsubjects);
+    kFold = defopts(settings, 'crossval', 'loo');
+    if strcmpi(kFold,'loo') || (kFold > Nsubjects)
+      kFold = Nsubjects;
+      CVindices = 1:Nsubjects;
+    else
+      CVindices = crossvalind('kfold', Nsubjects, kFold);
+    end
   end
     
   for sub = 1:kFold
@@ -342,8 +363,13 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         y = str2double(y{1});
       end
       
-      correctPredictions(foldIds) = y == testingLabels';
-      class(foldIds) = y;
+      if trainTestMode
+        correctPredictions = y == testingLabels';
+        class = y;
+      else
+        correctPredictions(foldIds) = y == testingLabels';
+        class(foldIds) = y;
+      end
       
     catch err
       errors{sub} = err;
@@ -351,15 +377,26 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       fprintf('Subset %d could not be classified because of internal error.\n', sub)
     end
     
-    fprintf('Subset %d/%d done. Actual performance: %.2f%% \n', sub, kFold, sum(correctPredictions)/sum(sub >= CVindices)*100);
+    if ~trainTestMode
+      fprintf('Subset %d/%d done. Actual performance: %.2f%% \n', sub, kFold, sum(correctPredictions)/sum(sub >= CVindices)*100);
+    end
   end
 
-  performance = sum(correctPredictions)/Nsubjects;
+  performance = sum(correctPredictions)/(Nsubjects-trainSize);
  
 end
 
 function [reducedData,settings] = reduceDim(data, indices, settings)
 % function for dimension reduction specified in settings
+
+  if iscell(data) && iscell(indices)
+    nDatasets = length(data);
+    dataId = cellfun(@length, indices); % remember sizes of data
+    dataId = arrayfun(@(x) x*ones(dataId(x),1),1:nDatasets, 'UniformOutput', false);
+    dataId = cat(1, dataId{:});
+    data = cat(1, data{:});
+    indices = cat(2, indices{:});
+  end
   
   [Nsubjects, dim] = size(data);
   
@@ -474,6 +511,14 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
     otherwise
       error('Wrong dimReduction property name!!!')
       
+  end
+  
+  if exist('dataId','var')
+    redData = reducedData;
+    reducedData = cell(1,nDatasets);
+    for i = 1:nDatasets
+      reducedData{i} = redData(i == dataId,:);
+    end
   end
 
 end
