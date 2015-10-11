@@ -25,6 +25,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %             'llc'     - logistic linear classifier
 %             'lda'     - linear discriminant analysis
 %             'qda'     - quadratic discriminant analysis
+%             'rda'     - regularized discriminant analysis (RDA 14)
 %             'fisher'  - Fisher's linear discriminant fisherc (PRTools)
 %             'ann'     - artificial neural network
 %             'rbf'     - radial basis function network

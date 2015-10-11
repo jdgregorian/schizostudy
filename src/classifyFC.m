@@ -68,7 +68,7 @@ function [performance, preparedData, preparedLabels, class] = classifyFC(data, m
     if iteration > 1
       fprintf('Iteration %d:\n',i)
     end
-      [performance(i), class{i}, correctPredictions{i}, errors{i}] = classifier(method, preparedData, preparedLabels, settings);
+    [performance(i), class{i}, correctPredictions{i}, errors{i}] = classifier(method, preparedData, preparedLabels, settings);
   end
   avgPerformance = mean(performance);
 
@@ -165,6 +165,6 @@ function [data, labels] = loadTrainTestData(foldername, dataname, labelname)
   data{1} = value(:,:,1);
   value = getfield(loadedTestData, dataname);
   data{2} = value(:,:,1);
-  labels{1} = (getfield(loadedTrainData, labelname))';
-  labels{2} = (getfield(loadedTestData, labelname))';
+  labels{1} = (getfield(loadedTrainData, labelname))' - 1;
+  labels{2} = (getfield(loadedTestData, labelname))' - 1;
 end

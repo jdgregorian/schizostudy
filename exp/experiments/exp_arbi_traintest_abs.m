@@ -1,8 +1,10 @@
-% Script for testing main settings of classifiers
+% Script for testing main settings of classifiers on Arabshirani's
+% style-prepared data using training and testing dataset with absolute 
+% values of correlations.
 
 %% initialization
-FCdata = fullfile('data','data_FC_190subjects.mat');
-filename = 'mainSettings';
+FCdata = fullfile('data','arbabshirani');
+filename = 'exp_arbi_traintest_abs';
 expfolder = fullfile('exp','experiments');
 mkdir(expfolder,filename)
 
