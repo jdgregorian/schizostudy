@@ -316,6 +316,7 @@ perf = classifyFC(FCdata, 'perc', settings);
 clear settings
 
 settings.note = 'ANN';
+settings.ann.hiddenSizes = [];
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 

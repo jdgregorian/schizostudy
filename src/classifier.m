@@ -73,7 +73,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     % arrays
     trainSize = length(labels{1});
     data = [data{1};data{2}];
-    labels = [labels{1},labels{2}];
+    labels = [labels{1};labels{2}];
   else
     trainSize = 0;
   end
@@ -90,9 +90,9 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
           settings.da.prior = [0.5, 0.5];
         end
         
-      case 'fisher' % Fisher's linear discriminant fisherc (PRTools)
+      case 'fisher' % Fisher's linear discriminant - fisherc (PRTools)
         if isfield(settings,'fisher')
-          warning('Linear perceptron do not accept additional settings.')
+          warning('Fisher''s linear discriminant do not accept additional settings.')
         end
         
       otherwise
@@ -168,8 +168,12 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 
       case 'ann' % artificial neural network
         settings.ann = defopts(settings, 'ann', []);
-        settings.ann.hiddenSizes = 10;
-        settings.ann.trainFcn = 'trainscg';
+        settings.ann.hiddenSizes = defopts(settings.ann, 'hiddenSizes', []);
+        settings.ann.trainFcn = defopts(settings.ann, 'trainFcn', 'trainscg');
+        
+      case 'rbf' % radial basis function network
+        settings.rbf = defopts(settings, 'rbf', []);
+        settings.rbf.spread = defopts(settings.rbf, 'spread', 0.1);
         
     end
   end
@@ -220,7 +224,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 
       % training
       if prt % PRTools implementations
-        toolData = prdataset(trainingData, trainingLabels');
+        toolData = prdataset(trainingData, trainingLabels);
         switch method
           case {'lda', 'qda'} % linear or quadratic discriminant classifier
             if isempty(settings.da.prior)
@@ -248,19 +252,19 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
             Forest = TreeBagger(nTrees, trainingData, trainingLabels, cellset{:});
 
           case 'rf' % random forest
-            Forest = RandomForest(trainingData, trainingLabels, nTrees, settings.forest);
+            Forest = RandomForest(trainingData, trainingLabels', nTrees, settings.forest);
 
           case 'lintree' % linear tree
-            Forest = LinearTree(trainingData, trainingLabels, settings.tree);
+            Forest = LinearTree(trainingData, trainingLabels', settings.tree);
 
           case 'svmtree' % SVM tree
-            Forest = SVMTree(trainingData, trainingLabels, settings.tree);
+            Forest = SVMTree(trainingData, trainingLabels', settings.tree);
 
           case 'mtltree' % matlab classification tree
             Forest = ClassificationTree.fit(trainingData, trainingLabels, cellset{:});
 
           case 'llc' % logistic linear classifier
-            LLC = mnrfit(trainingData, trainingLabels' + 1);
+            LLC = mnrfit(trainingData, trainingLabels + 1);
 
           case 'nb' % naive Bayes
             NB = NaiveBayes.fit(trainingData, trainingLabels, cellset{:});
@@ -268,18 +272,18 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
           case 'perc' % linear perceptron
             net = perceptron;
             net.trainParam.showWindow = false;
-            net = train(net, trainingData', trainingLabels);
+            net = train(net, trainingData', trainingLabels');
 
           case 'ann' % artificial neural networks
             net = patternnet(settings.ann.hiddenSizes, settings.ann.trainFcn);
             net.trainParam.showWindow = false;
-            indLabels = ind2vec(trainingLabels+1);
+            indLabels = ind2vec(trainingLabels'+1);
   %           indLabels = trainingLabels;
             net = train(net, trainingData', indLabels);
 
           case 'rbf' % radial basis function network
-            indLabels = ind2vec(trainingLabels + 1);
-            net = newpnn(trainingData', indLabels);
+            indLabels = ind2vec(trainingLabels' + 1);
+            net = newpnn(trainingData', indLabels, settings.rbf.spread);
             
         end
       end
@@ -316,7 +320,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
               settings.knn.k, settings.knn.distance, settings.knn.rule);
 
           case 'llc' % logistic linear classifier
-            y = arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0, 1:size(testingData,1));
+            y = (arrayfun(@(x) (LLC(1) + testingData(x,:)*LLC(2:end)) < 0, 1:size(testingData,1)))';
 
           case 'lda' % linear discriminant analysis
             if strcmpi(settings.lda.type, 'linear') && (size(trainingData, 1) - 2 < size(trainingData, 2))
@@ -343,16 +347,16 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
             y = rda(trainingData, trainingLabels, testingData, settings.rda.alpha);
 
           case 'perc' % linear perceptron
-            y = net(testingData');
+            y = (net(testingData'))';
 
           case 'ann' % artificial neural networks
             y = net(testingData');
-            y = vec2ind(y) - 1;
+            y = (vec2ind(y) - 1)';
   %           y = round(y);
 
           case 'rbf' % radial basis function network
             y = sim(net, testingData');
-            y = vec2ind(y)-1;
+            y = (vec2ind(y)-1)';
 
           otherwise
             fprintf('Wrong setting of method or implementation!!!\n')
@@ -365,10 +369,10 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       end
       
       if trainTestMode
-        correctPredictions = y == testingLabels';
+        correctPredictions = y == testingLabels;
         class = y;
       else
-        correctPredictions(foldIds) = y == testingLabels';
+        correctPredictions(foldIds) = y == testingLabels;
         class(foldIds) = y;
       end
       
@@ -396,14 +400,15 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
     dataId = arrayfun(@(x) x*ones(dataId(x),1),1:nDatasets, 'UniformOutput', false);
     dataId = cat(1, dataId{:});
     data = cat(1, data{:});
-    indices = cat(2, indices{:});
+    indices = cat(1, indices{:});
   end
   
   [Nsubjects, dim] = size(data);
   
   % dimension reduction
   defSet.name = 'none';
-  settings.dimReduction = defopts(settings,'dimReduction',defSet);
+  settings.dimReduction = defopts(settings, 'dimReduction', defSet);
+  settings.dimReduction.name = defopts(settings.dimReduction, 'name', defSet.name);
   settings.transformPrediction = false;
   nDim = defopts(settings.dimReduction, 'nDim', dim);
   if nDim > dim
@@ -486,8 +491,8 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
       
       medData = median(data,1);
       greaterSub = data > repmat(medData,Nsubjects,1);
-      greaterOnes = sum(greaterSub & repmat(indices',1,dim),1);
-      greaterZeros = sum(greaterSub & repmat(~indices',1,dim),1);
+      greaterOnes = sum(greaterSub & repmat(indices,1,dim),1);
+      greaterZeros = sum(greaterSub & repmat(~indices,1,dim),1);
       % count median difference coefficient
       nDif = abs(greaterOnes - greaterZeros) + abs(nOnes - nZeros - greaterOnes + greaterZeros);
       

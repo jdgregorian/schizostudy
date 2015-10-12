@@ -92,7 +92,7 @@ function [data, labels] = loadFC(loadedData)
     labels = loadedData.categoryValues;
   else
     indicesPatients = loadedData.indices_patients;
-    labels = zeros(1,size(FC,1));
+    labels = zeros(size(FC,1),1);
     labels(indicesPatients) = 1;
   end
 
@@ -144,7 +144,7 @@ function [data, labels] = loadDataLabels(loadedData)
     data = double(matrix);
     vector(double(vector) == classes(1)) = 0;
     vector(double(vector) == classes(2)) = 1;
-    if size(vector,1) > size(vector,2)
+    if size(vector,1) < size(vector,2)
       labels = vector';
     else
       labels = vector;
@@ -165,6 +165,6 @@ function [data, labels] = loadTrainTestData(foldername, dataname, labelname)
   data{1} = value(:,:,1);
   value = getfield(loadedTestData, dataname);
   data{2} = value(:,:,1);
-  labels{1} = (getfield(loadedTrainData, labelname))' - 1;
-  labels{2} = (getfield(loadedTestData, labelname))' - 1;
+  labels{1} = getfield(loadedTrainData, labelname) - 1;
+  labels{2} = getfield(loadedTestData, labelname) - 1;
 end
