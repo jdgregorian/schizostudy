@@ -1,9 +1,10 @@
-% Script for testing main settings of classifiers on Arabshirani's data
-% style prepared testing data
+% Script for testing main settings of classifiers on Arabshirani's
+% style-prepared data using training and testing dataset with absolute 
+% values of correlations.
 
 %% initialization
-FCdata = fullfile('data','arbabshirani','loo','adCorrAbs','80subj_testing.mat');
-filename = 'arbi_testing_loo';
+FCdata = fullfile('data','arbabshirani');
+filename = 'exp_arbab_traintest_abs';
 expfolder = fullfile('exp','experiments');
 mkdir(expfolder,filename)
 
@@ -400,12 +401,12 @@ classifyFC(FCdata, 'ann', settings, fullfile(filename,'ann_pca189.mat'));
 %% ANN - Arbabshirani's settings
 clear settings
 
-settings.note = 'ANN';
+settings.note = 'ANN with Arbabshirani''s settings.';
 settings.ann.hiddenSizes = [6 6 6]; % [4 4 4] - on reduced
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 
-classifyFC(FCdata, 'ann', settings);
+classifyFC(FCdata, 'ann', settings, fullfile(filename,'ann_arbab.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% final results listing

@@ -6,8 +6,14 @@ function listSettingsResults(folder)
     help listSettingsResults
     return
   end
+  if ~isdir(folder)
+    warning('Folder %s does not exist! Results cannot be printed!', folder)
+    return
+  end
   
-  resultname = [folder, '.txt'];
+  folderPos = strfind(folder, filesep);
+  foldername = folder(folderPos(end) + 1 : end);
+  resultname = [folder, filesep, foldername, '.txt'];
   fileList = dir([folder, filesep, '*.mat']);
   nFiles = length(fileList);
   
@@ -17,18 +23,23 @@ function listSettingsResults(folder)
   data = cell(nFiles,1);
   performance = cell(nFiles,1);
   avgPerformance = zeros(nFiles,1);
+  errors = cell(nFiles,1);
   nEmptyFiles = 0;
   usefulFiles = true(nFiles,1);
   
   fprintf('Loading data...\n')
+  neededVariables = {'settings', 'method', 'data', 'performance', 'avgPerformance', 'errors'};
   for f = 1:nFiles
-    variables = load([folder filesep fileList(f).name], 'settings', 'method', 'data', 'performance', 'avgPerformance');
-    if all(isfield(variables,{'settings', 'method', 'data', 'performance', 'avgPerformance'}))
+    variables = load([folder filesep fileList(f).name], neededVariables{:});
+    if all(isfield(variables, neededVariables(1:end-1)))
       settings{f - nEmptyFiles} = variables.settings;
       method{f - nEmptyFiles} = variables.method;
       data{f - nEmptyFiles} = variables.data;
       performance{f - nEmptyFiles} = variables.performance;
       avgPerformance(f - nEmptyFiles) = variables.avgPerformance;
+      if isfield(variables, 'errors')
+        errors{f-nEmptyFiles} = variables.errors;
+      end
     else
       nEmptyFiles = nEmptyFiles + 1;
       usefulFiles(f) = false;
@@ -46,6 +57,7 @@ function listSettingsResults(folder)
   end
   fprintf('Printing results to %s...\n', resultname)
   
+  % list header printing
   fprintf(FID,'---------------------------------------------------------------------------------\n');
   fprintf(FID,'------------------------- LIST OF TEST SETTINGS RESULTS -------------------------\n');
   fprintf(FID,'---------------------------------------------------------------------------------\n');
@@ -55,16 +67,20 @@ function listSettingsResults(folder)
   fprintf(FID,'\n');
   
   for f = 1:nFiles
+    % file header printing
     fprintf(FID,'\n---------------------------------------------------------------------------------\n\n');
     fprintf(FID,'  Method: %s %s Performance: %.2f%%\n', method{f}, ...
       char(ones(1, 48 - length(method{f}))*32) ,avgPerformance(f)*100);
     fprintf(FID,'  File: %s\n', fileList(f).name);
     fprintf(FID,'  Data: %s\n', data{f});
     fprintf(FID,'\n');
+    
+    % settings printing
     fprintf(FID,'  Settings:\n');
     fprintf(FID,'\n');
     printSettings(FID, settings{f});
     
+    % performances printing
     nPerf = length(performance{f});
     if nPerf > 1
       fprintf(FID,'\n  Performances per iterations: \n');
@@ -73,6 +89,9 @@ function listSettingsResults(folder)
       end
       fprintf(FID,'\n');
     end
+    
+    % error printing
+    printErrors(FID, errors{f});
   end
   
   fclose(FID);
@@ -182,4 +201,47 @@ function sf = subfields(ThisStruct)
    end
    sf(deletesf) = []; % delete structure names
 
+end
+
+function printErrors(FID, errors)
+% Function prints errors of classifiers in all iterations if there were
+% any.
+  
+  if isempty(errors)
+    return
+  end
+  
+  nIter = length(errors);
+  errMatrix = cell(length(errors{1}), nIter);
+  for i = 1:nIter
+    errMatrix(:, i) = errors{i}';
+  end
+  errId = ~cellfun( @(x) isempty(x), errMatrix);
+  if any(any(errId)) % if there was an error
+    [rId, cId] = find(errId);
+    errList(1) = errors{cId(1)}{rId(1)};
+    errList = errList(1);
+    errCounter = 1;
+    for err = 2:length(rId)
+      actualErr = errors{cId(err)}{rId(err)};
+      inList = arrayfun(@(x) x == actualErr, errList);
+      if any(inList)
+        errCounter(inList) = errCounter(inList) + 1;
+      else
+        errList(end+1) = actualErr;
+        errCounter(end+1) = 1;
+      end
+    end
+    
+    % printing
+    if nIter > 1
+      fprintf(FID,'\n  Errors (in %d iterations):\n', nIter);
+    else
+      fprintf(FID,'\n  Errors:\n');
+    end
+    for err = 1:length(errList)
+      fprintf(FID,'    (%d): %s\n', errCounter(err), errList(err).message);
+    end
+  end
+  
 end

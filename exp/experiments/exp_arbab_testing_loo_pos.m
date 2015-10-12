@@ -1,9 +1,10 @@
-% Script for testing main settings of classifiers on Arabshirani's data
-% style prepared testing data using only positive correlations. 
+% Script for testing main settings of classifiers on Arabshirani's
+% style-prepared data using testing dataset with positive correlations 
+% in loo.
 
 %% initialization
 FCdata = fullfile('data','arbabshirani','loo','adCorrPos','80subj_testing.mat');
-filename = 'arbi_testing_loo_pos';
+filename = 'exp_arbab_testing_loo_pos';
 expfolder = fullfile('exp','experiments');
 mkdir(expfolder,filename)
 
