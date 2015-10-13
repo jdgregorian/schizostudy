@@ -125,11 +125,11 @@ perf = classifyFC(FCdata,'rf',settings);
 %% linear trees - experimental
 clear settings
 
-settings.dimReduction.name = 'ttest';
-settings.dimReduction.nDim = 200;
-settings.forest.learning = 'boosting';
-settings.forest.TreeType = 'matlab';
-settings.forest.MinLeaf = 10;
+    settings.iteration = 10;
+    settings.forest.nTrees = 11;
+    settings.forest.TreeType = 'linear';
+    settings.forest.learning = 'bagging';
+    settings.forest.distance = Inf;
 
 perf = classifyFC(FCdata,'rf',settings);
 

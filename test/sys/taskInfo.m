@@ -7,7 +7,7 @@ fprintf('Labels in column or independent?\n')
 fprintf('Generating TeX files with results\n')
 
 fprintf('\nMost recent: \n')
-fprintf('    Fix linear trees acccording to PCA 20 testing errors.\n')
+fprintf('    Fix infoGainSet - seems that till row 36 is everything OK, maybe I counting is the reason\n')
 fprintf('    Is Fisher similar to LDC?\n')
 fprintf('    ANN - good settings - Filip Dechterenko?\n')
 fprintf('    RBF - good settings - Filip Dechterenko?\n')

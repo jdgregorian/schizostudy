@@ -341,16 +341,17 @@ methods (Static)
         S(1,d).splitOne = mean(B,1);
 
         % count indexes
-        zeroDist = LinearTree.pdistance(actualData,S(1,d).splitZero,dis);
-        oneDist = LinearTree.pdistance(actualData,S(1,d).splitOne,dis);
+        zeroDist = LinearTree.pdistance(actualData, S(1,d).splitZero, dis);
+        oneDist = LinearTree.pdistance(actualData, S(1,d).splitOne, dis);
 
       end
 
-      dataIndZ{:,d} = dataID(zeroDist<oneDist);
-      dataIndO{:,d} = dataID(zeroDist>=oneDist); 
+      % split data according to distance
+      dataIndZ{:,d} = dataID(zeroDist < oneDist);
+      dataIndO{:,d} = dataID(zeroDist >= oneDist); 
 
       % count information gain
-      I(1,d) = infoGainSet(dataIndZ{:,d},dataIndO{:,d},labels, weights);
+      I(1,d) = infoGainSet(dataIndZ{:,d}, dataIndO{:,d}, labels, weights);
       
     end
       
