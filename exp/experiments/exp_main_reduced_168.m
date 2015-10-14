@@ -291,7 +291,7 @@ clear settings
 
 settings.note = 'Default RBF';
 
-perf = classifyFC(FCdata, 'rbf', settings, fullfile(filename, 'rbf_default.mat');
+perf = classifyFC(FCdata, 'rbf', settings, fullfile(filename, 'rbf_default.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% final results listing
