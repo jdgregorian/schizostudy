@@ -4,7 +4,7 @@ fprintf('Improve methods by using CV during training?\n')
 fprintf('Documentation\n')
 fprintf('RDA speed up\n')
 fprintf('Labels in column or independent?\n')
-fprintf('Generating TeX files with results\n')
+fprintf('Generating TeX files with results - adjust returnResults?\n')
 
 fprintf('\nMost recent: \n')
 fprintf('    Fix infoGainSet - seems that till row 36 is everything OK, maybe ''I'' counting is the reason\n')
