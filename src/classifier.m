@@ -72,10 +72,20 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     % considering only two data matrices and two label vectors in cell
     % arrays
     trainSize = length(labels{1});
-    data = [data{1};data{2}];
-    labels = [labels{1};labels{2}];
+    data = [data{1}; data{2}];
+    % transpone label vectors if necessary
+    if size(labels{1}, 1) < size(labels{1}, 2)
+      labels{1} = labels{1}';
+    end
+    if size(labels{2}, 1) < size(labels{2}, 2)
+      labels{2} = labels{2}';
+    end
+    labels = [labels{1}; labels{2}];
   else
     trainSize = 0;
+    if size(labels, 1) < size(labels, 2)
+      labels = labels';
+    end
   end
   
   % settings before the main loop

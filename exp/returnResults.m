@@ -1,6 +1,9 @@
 function performances = returnResults(folders)
 % performances = returnResults('folders') lists results of FC performance testing 
 % in 'folders' cellarray to 'performance'. 
+%
+% See Also:
+% listSettingsResults
 
   if nargin == 0 || isempty(folders)
     help listSettingsResults

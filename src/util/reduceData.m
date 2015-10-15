@@ -1,5 +1,13 @@
 function reduceData(data, subjectOut, regionOut)
 % Reduce connectivity matrix and indices vectors and save dataset.
+% 
+% Input:
+%   data       - name of datafile with connectivity matrix | string
+%   subjectOut - subjects to remove from matrix | double vector
+%   regionOut  - regions to remove from matrix | double vector
+%
+% See Also:
+% csvexport
 
   % check input
   if nargin < 3

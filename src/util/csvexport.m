@@ -1,10 +1,15 @@
-function csvexport(data,matrix,filename)
-% exports matrix from MAT file 'data' to csv file in filename
-% data, filename - strings
-% matrix - char, or double
+function csvexport(data, matrix, filename)
+% Exports matrix from MAT file 'data' to csv file in 'filename'
+% Input:
+%   data     - name of source file | string
+%   matrix   - matrix (or its name) to export | double (string)
+%   filename - name of output file | string
 %
-% example:
+% Example:
 % csvexport('data\data_FC_203subjects.mat','FC','data\schizo.csv')
+%
+% See Also:
+% reduceData
 
 if nargin == 2
   filename = [data(1:end-3),'csv'];

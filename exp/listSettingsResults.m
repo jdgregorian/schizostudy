@@ -1,6 +1,9 @@
 function listSettingsResults(folder)
 % listSettingsResults(FOLDER) lists results of FC performance testing 
 % in FOLDER to txt file. 
+%
+% See Also:
+% returnResults
 
   if nargin == 0
     help listSettingsResults
