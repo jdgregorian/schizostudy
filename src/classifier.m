@@ -17,6 +17,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %             'svm'     - support vector machine
 %             'rf'      - random forest
 %             'mrf'     - MATLAB random forest
+%             'dectree' - decision tree (PRTools)
 %             'lintree' - tree using linear distance based decision splits
 %             'mtltree' - MATLAB classification tree
 %             'svmtree' - tree using linear svm based decision splits
@@ -60,11 +61,18 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     end
   end
   
+  % implementation settings
   settings.implementation = defopts(settings, 'implementation', 'matlab');
-  if strcmpi(method, 'fisher') % Fisher is implemented only in PRTools
+  % Fisher and decision tree are implemented only in PRTools
+  if any(strcmpi(method, {'fisher', 'dectree'}))
     settings.implementation = 'prtools';
   end
   prt = any(strcmpi(settings.implementation, {'prtools', 'prt'}));
+  
+  % prior settings
+  if ~isfield(settings, 'prior')
+    settings.prior = [0.5, 0.5];
+  end
   
   % mode check
   trainTestMode = iscell(data) && iscell(labels);
@@ -92,17 +100,40 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
   if prt % PRTools implementations
     prwaitbar off
     switch method
+      case 'dectree' % decision tree (treec)
+        settings.tree = defopts(settings, 'tree', []);
+        settings.tree.crit = defopts(settings.tree, 'crit', 'infcrit');
+        settings.tree.prune = defopts(settings.tree, 'prune', 0);
+        if settings.tree.prune < -1
+          warning('This implementation does not support pruning level lower than -1. Switching to 0.')
+          settings.tree.prune = 0;
+        end
+        
+      case 'rf' % random forest (randomforestc or adaboostc)
+        settings.forest = defopts(settings, 'forest', []);
+        settings.forest.nTrees = defopts(settings.forest, 'nTrees', 11);
+        settings.forest.N = defopts(settings.forest, 'N', 1);
+        settings.forest.learning = defopts(settings.forest, 'learning', 'bagging');
+        settings.forest.rule = defopts(settings.forest, 'rule', 'wvotec');
+        
       case {'lda', 'qda'} % linear or quadratic discriminant classifier
         settings.da = defopts(settings, method, []);
         settings.da.R = defopts(settings.da, 'R', 0);
         settings.da.S = defopts(settings.da, 'S', 0);
-        if ~isfield(settings.da, 'prior')
-          settings.da.prior = [0.5, 0.5];
+        
+      case 'fisher' % Fisher's linear discriminant (fisherc)
+        if isfield(settings,'fisher')
+          warning('Fisher''s linear discriminant (PRTools) do not accept additional settings.')
         end
         
-      case 'fisher' % Fisher's linear discriminant - fisherc (PRTools)
-        if isfield(settings,'fisher')
-          warning('Fisher''s linear discriminant do not accept additional settings.')
+      case 'nb' % naive Bayes
+        if isfield(settings,'nb')
+          warning('Naive Bayes (PRTools) do not accept additional settings.')
+        end
+        
+      case 'llc' % logistic linear classifier (loglc)
+        if isfield(settings,'llc')
+          warning('Logistic linear classifier (PRTools) do not accept additional settings.')
         end
         
       otherwise
@@ -123,7 +154,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       case {'rf', 'mrf'} % forests
         settings.forest = defopts(settings, 'forest', []);
         % gain number of trees 
-        nTrees = defopts(settings.forest, 'nTrees', 11);
+        settings.forest.nTrees = defopts(settings.forest, 'nTrees', 11);
 
         if strcmpi(method, 'mrf')
             cellset = cellSettings(settings.forest, {'nTrees'});
@@ -138,6 +169,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 
       case 'nb' % naive Bayes
         settings.nb = defopts(settings, 'nb', []);
+        settings.nb.prior = defopts(settings, 'prior', 'uniform');
         cellset = cellSettings(settings.nb);
 
       case 'knn' % k-nearest neighbours
@@ -235,34 +267,51 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       % training
       if prt % PRTools implementations
         toolData = prdataset(trainingData, trainingLabels);
+        if isempty(settings.prior)
+          toolData.prior = [sum(~trainingLabels); sum(trainingLabels)]/length(trainingLabels);
+        else
+          toolData.prior = settings.prior;
+        end
         switch method
-          case {'lda', 'qda'} % linear or quadratic discriminant classifier
-            if isempty(settings.da.prior)
-              toolData.prior = [sum(~trainingLabels); sum(trainingLabels)]/length(trainingLabels);
+          case 'dectree' % decision tree
+            trainedPRClassifier = treec(toolData, settings.tree.crit, settings.tree.prune);
+            
+          case 'rf' % random forest
+            if strcmpi(settings.forest.learning, 'bagging')
+              prwarning off
+              trainedPRClassifier = randomforestc(toolData, settings.forest.nTrees, settings.forest.N);
             else
-              toolData.prior = settings.da.prior;
+              % eval solution is not optimal -> find better syntax
+              eval(['trainedPRClassifier = adaboostc(toolData, treec, settings.forest.nTrees, ', settings.forest.rule, ');'])
             end
-            if strcmp(method, 'lda') % linear discriminant classifier
-              trainedPRClassifier = ldc(toolData, settings.da.R, settings.da.S);
-            else % quadratic discriminant classifier
-              trainedPRClassifier = qdc(toolData, settings.da.R, settings.da.S);
-            end
+            
+          case 'lda' % linear discriminant classifier
+            trainedPRClassifier = ldc(toolData, settings.da.R, settings.da.S);
+            
+          case 'qda' % quadratic discriminant classifier
+            trainedPRClassifier = qdc(toolData, settings.da.R, settings.da.S);
             
           case 'fisher' % Fisher's linear discriminant fisherc
             trainedPRClassifier = fisherc(toolData);
+            
+          case 'nb' % naive Bayes
+            trainedPRClassifier = naivebc(toolData, gaussm);
+            
+          case 'llc' % logistic linear classifier
+            trainedPRClassifier = loglc(toolData);
             
         end
       else % pure matlab implementations
         switch method
           case 'svm' % support vector machine classifier
             SVM = svmtrain(trainingData, trainingLabels, cellset{:});
-    %         SVM = fitcsvm(trainingSet,trainingIndices,cellset{:});
+    %         SVM = fitcsvm(trainingData, trainingLabels, cellset{:});
 
           case 'mrf' % matlab random forest
-            Forest = TreeBagger(nTrees, trainingData, trainingLabels, cellset{:});
+            Forest = TreeBagger(settings.forest.nTrees, trainingData, trainingLabels, cellset{:});
 
           case 'rf' % random forest
-            Forest = RandomForest(trainingData, trainingLabels', nTrees, settings.forest);
+            Forest = RandomForest(trainingData, trainingLabels', settings.forest.nTrees, settings.forest);
 
           case 'lintree' % linear tree
             Forest = LinearTree(trainingData, trainingLabels', settings.tree);
@@ -288,7 +337,6 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
             net = patternnet(settings.ann.hiddenSizes, settings.ann.trainFcn);
             net.trainParam.showWindow = false;
             indLabels = ind2vec(trainingLabels'+1);
-  %           indLabels = trainingLabels;
             net = train(net, trainingData', indLabels);
 
           case 'rbf' % radial basis function network

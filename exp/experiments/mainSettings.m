@@ -246,6 +246,24 @@ settings.note = 'Default MATLAB classification tree settings.';
 
 classifyFC(FCdata,'mtltree',settings, fullfile(filename,'mtlTree.mat'));
 
+%% PRTools classification tree - information gain criterion
+clear settings
+
+settings.implementation = 'prtools';
+settings.tree.crit = 'infcrit';
+settings.note = 'Default settings of PRTools decision tree using information gain criterion.';
+
+classifyFC(FCdata, 'dectree', settings, fullfile(filename, 'dectree_inf.mat'));
+
+%% PRTools classification tree - Fisher criterion
+clear settings
+
+settings.implementation = 'prtools';
+settings.note = 'PRTools decision tree using Fisher criterion.';
+settings.tree.crit = 'fishcrit';
+
+classifyFC(FCdata, 'dectree', settings, fullfile(filename, 'dectree_fish.mat'));
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% LDA - diaglinear
 clear settings
@@ -366,6 +384,13 @@ settings.dimReduction.nDim = 75;
 
 classifyFC(FCdata,'llc',settings, fullfile(filename,'llc_pca75.mat'));
 
+%% logistic linear classifier (PRTools)
+clear settings
+
+settings.note = 'Default logistic linear classifier settings in PRTools.';
+
+classifyFC(FCdata,'llc',settings, fullfile(filename,'llc_prtools.mat'));
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% naive Bayes
 clear settings
@@ -374,6 +399,14 @@ settings.nb.distribution = 'normal';
 settings.note = 'Default naive Bayes settings.';
 
 classifyFC(FCdata, 'nb', settings, fullfile(filename,'nb_default.mat'));
+
+%% naive Bayes (PRTools)
+clear settings
+
+settings.implementation = 'prtools';
+settings.note = 'Default PRTools naive Bayes settings.';
+
+classifyFC(FCdata, 'nb', settings, fullfile(filename,'nb_prtools.mat'));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Artificial Neural Networks

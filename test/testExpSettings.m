@@ -142,6 +142,24 @@ settings.iteration = 10;
 
 perf = classifyFC(FCdata,'rf',settings);
 
+%% random forest (PRTools)
+clear settings
+
+settings.forest.nTrees = 11;
+settings.implementation = 'prtools';
+settings.iteration = 10;
+
+perf = classifyFC(FCdata,'rf',settings);
+
+%% random forest (PRTools)
+clear settings
+
+settings.forest.nTrees = 11;
+settings.forest.learning = 'boosting';
+settings.implementation = 'prtools';
+
+perf = classifyFC(FCdata,'rf',settings);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Trees
 % linear tree + pca
@@ -185,10 +203,31 @@ toc
 %% MATLAB classification tree
 clear settings
 
-settings.tree.MaxCat = 0;
-settings.tree.MinLeaf = 10;
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
 
 perf = classifyFC(FCdata,'mtltree',settings);
+
+%% PRTools classification tree
+clear settings
+
+settings.implementation = 'prtools';
+settings.note = 'Default settings of PRTools decision tree';
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+
+perf = classifyFC(FCdata,'dectree',settings);
+
+%% PRTools classification tree - Fisher
+clear settings
+
+settings.implementation = 'prtools';
+settings.note = 'PRTools decision tree using Fisher criterion';
+settings.tree.crit = 'fishcrit';
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+
+perf = classifyFC(FCdata,'dectree',settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% linear discriminant analysis
@@ -272,7 +311,7 @@ settings.dimReduction.nDim = 200;
 perf = classifyFC(FCdata,'knn',settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% logistic linear classifier - experimental
+%% logistic linear classifier
 clear settings
 
 
@@ -281,24 +320,28 @@ settings.dimReduction.nDim = 20;
 
 perf = classifyFC(FCdata,'llc',settings);
 
-%% logistic linear classifier - experimental
+%% logistic linear classifier - PRTools
 clear settings
 
-for s=1:100
-  settings(s).dimReduction.name = 'pca';
-  settings(s).dimReduction.nDim = s+50;
-  tic
-  perf(s) = classifyFC(FCdata,'llc',settings(s));
-  elapsedtime = toc;
-end
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
+settings.implementation = 'prtools';
 
-save(fullfile('results','llc_pca_dim_50plus.mat'),'perf','settings','elapsedtime')
+perf = classifyFC(FCdata,'llc',settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% naive Bayes
 clear settings
 
 settings.note = 'Default';
+
+perf = classifyFC(FCdata, 'nb', settings);
+
+%% naive Bayes (PRTools)
+clear settings
+
+settings.implementation = 'prtools';
+settings.note = 'Default PRTools';
 
 perf = classifyFC(FCdata, 'nb', settings);
 
