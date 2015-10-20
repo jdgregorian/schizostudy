@@ -33,8 +33,8 @@
     pLeft = [PzeroZ./PallZ, PzeroO./PallZ]; % zero goes to the left child
     pRight = [PoneZ./PallO, PoneO./PallO];  % one goes to the right child
         
-    I = shannonEntropy(pFull) - PallZ./Ndata.*shannonEntropy(pLeft)...
-        - PallO./Ndata.*shannonEntropy(pRight);
+    I = shannonEntropy(pFull) - PallZ.*shannonEntropy(pLeft)...
+        - PallO.*shannonEntropy(pRight);
     I(isnan(I)) = 0;
   end
   

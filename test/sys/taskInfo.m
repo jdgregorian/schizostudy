@@ -6,7 +6,6 @@ fprintf('Labels in column or independent?\n')
 fprintf('Generating TeX files with results - adjust returnResults?\n')
 
 fprintf('\nMost recent: \n')
-fprintf('    Fix infoGainSet - seems that till row 36 is everything OK, maybe ''I'' counting is the reason\n')
 fprintf('    Is Fisher similar to LDC?\n')
 fprintf('    ANN - good settings - Filip Dechterenko?\n')
 fprintf('    RBF - good settings - Filip Dechterenko?\n')
