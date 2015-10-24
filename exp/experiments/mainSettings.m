@@ -387,6 +387,7 @@ classifyFC(FCdata,'llc',settings, fullfile(filename,'llc_pca75.mat'));
 %% logistic linear classifier (PRTools)
 clear settings
 
+settings.implementation = 'prtools';
 settings.note = 'Default logistic linear classifier settings in PRTools.';
 
 classifyFC(FCdata,'llc',settings, fullfile(filename,'llc_prtools.mat'));
