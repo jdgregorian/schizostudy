@@ -367,4 +367,4 @@ classifyFC(FCdata, 'rbf', settings, fullfile(filename, ['rbf_default', datamark,
 
 %% final results listing
 
-listSettingsResults(fullfile(expfolder, filename]));
+listSettingsResults(fullfile(expfolder, filename));
