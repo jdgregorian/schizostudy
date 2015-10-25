@@ -34,8 +34,7 @@ function [performance, preparedData, preparedLabels, class] = classifyFC(data, m
 
   % prepare data
   if isdir(data)
-    dataname = defopts(settings, 'datamatrix','adCorrAbs');
-    [preparedData, preparedLabels] = loadTrainTestData(data, dataname, 'anId');
+    [preparedData, preparedLabels] = loadTrainTestData(data);
   else
     loadedData = load(data);
     % functional or structural connectivity data
@@ -114,21 +113,10 @@ function [data, labels] = loadDataLabels(loadedData)
   data = [];
   labels = [];
   
-  names = fieldnames(loadedData);
-  value1 = getfield(loadedData, names{1});
-  value2 = getfield(loadedData, names{2});
-  
-  % matrix and vector filter
-  if ismatrix(value1) && isvector(value2)
-    matrix = value1;
-    vector = value2;
-  elseif ismatrix(value2) && isvector(value1)
-    matrix = value2;
-    vector = value1;
-  else
+  [vector, matrix] = vectOrMat(loadedData);
+  if isempty(vector) || isempty(matrix)
     return
   end
-  
   
   vectorLength = length(vector);
   classes = double(unique(vector));
@@ -152,19 +140,42 @@ function [data, labels] = loadDataLabels(loadedData)
   end
 end
 
-function [data, labels] = loadTrainTestData(foldername, dataname, labelname)
+function [data, labels] = loadTrainTestData(foldername)
 % Loading training and testing data
 %
 % Only for David's format - two folders 'training' and 'testing' containing
 % .mat file 'GraphAndData' with matrix of features 'dataname' and vector of
 % labels 'labelname'.
-  loadedTrainData = load(fullfile(foldername, 'training', 'GraphAndData'));
-  loadedTestData = load(fullfile(foldername, 'testing', 'GraphAndData'));
+  trainDataList = dir(fullfile(foldername, '*_training.mat'));
+  testDataList = dir(fullfile(foldername, '*_testing.mat'));
+  loadedTrainData = load(fullfile(foldername, trainDataList.name));
+  loadedTestData = load(fullfile(foldername, testDataList.name));
   
-  value= getfield(loadedTrainData, dataname);
-  data{1} = value(:,:,1);
-  value = getfield(loadedTestData, dataname);
-  data{2} = value(:,:,1);
-  labels{1} = getfield(loadedTrainData, labelname) - 1;
-  labels{2} = getfield(loadedTestData, labelname) - 1;
+  [labels{1}, data{1}] = vectOrMat(loadedTrainData);
+  [labels{2}, data{2}] = vectOrMat(loadedTestData);
+  
+  labels{1} = labels{1} - 1;
+  labels{2} = labels{2} - 1;
+end
+
+function [vector, matrix] = vectOrMat(datafile)
+% Loads vector and matrix from datafile
+  vector = [];
+  matrix = [];
+
+  names = fieldnames(datafile);
+  value1 = getfield(datafile, names{1});
+  value2 = getfield(datafile, names{2});
+  
+  % matrix and vector filter
+  if ismatrix(value1) && isvector(value2)
+    matrix = value1;
+    vector = value2;
+  elseif ismatrix(value2) && isvector(value1)
+    matrix = value2;
+    vector = value1;
+  else
+    return
+  end
+  
 end

@@ -3,7 +3,7 @@
 % correlations.
 
 %% initialization
-FCdata = fullfile('data','arbabshirani');
+FCdata = fullfile('data', 'arbabshirani', 'traintest', 'adCorrPos');
 filename = 'exp_arbab_traintest_pos';
 expfolder = fullfile('exp','experiments');
 mkdir(expfolder,filename)
