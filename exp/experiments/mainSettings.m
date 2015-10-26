@@ -1,9 +1,21 @@
 % Script for testing main settings of classifiers
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% initialization
-FCdata = fullfile('data','data_FC_190subjects.mat');
-filename = 'mainSettings';
-expfolder = fullfile('exp','experiments');
+if ~exist('FCdata', 'var')
+  FCdata = fullfile('data','data_FC_190subjects.mat');
+end
+if ~exist('filename', 'var')
+  filename = 'mainSettings';
+end
+if ~exist('expfolder', 'var')
+  expfolder = fullfile('exp','experiments');
+end 
+if ~exist('datamark', 'var')
+  datamark = '';
+else
+  datamark = ['_', datamark];
+end
 mkdir(expfolder,filename)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -13,7 +25,7 @@ clear settings
 
 settings.svm.kernel_function = 'linear';
 
-classifyFC(FCdata,'svm',settings,fullfile(filename,'svm_linear.mat'));
+classifyFC(FCdata, 'svm', settings, fullfile(filename, 'svm_linear.mat'));
 
 %% linear - autoscale 'off'
 clear settings
