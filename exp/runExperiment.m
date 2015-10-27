@@ -21,39 +21,15 @@ function runExperiment(settingFiles, data, expname)
   end
   expfolder = fullfile('exp','experiments');
   
+  scriptname = fullfile(expfolder, expname, [expname, '.m']);
   % if experiment was not created yet
-  if ~isdir(fullfile(expfolder, expname))
-    mkdir(fullfile(expfolder, expname))
-    % load all settings
-    [settings, resultNames] = loadSettings(settingFiles);
-    
-    % print settings with data to .m file
-    FID = fopen(fullfile(expfolder, expname, [expname, '.m']),'w');
-    assert(FID ~= -1, 'Cannot open %s !', expname)
-    fprintf('Printing settings to %s...\n', expname)
-    
-    fprintf(FID, '%% Script for experiment %s\n', expname);
-    fprintf(FID, '%% Created on %s\n', char(datetime));
-    fprintf(FID, '\n');
-    
-    nData = length(data);
-    nSettings = length(settings);
-    for d = 1:nData
-      slashes = strfind(data{d}, filesep);
-      datamark = ['_', data{d}(slashes(end)+1:end-4)];
-      for s = 1:nSettings
-        fprintf(FID, '%%%% %d/%d\n\n', s + (d-1)*nSettings, nData*nSettings);
-        fprintf(FID, 'FCdata = ''%s'';\n', data{d});
-        fprintf(FID, 'datamark = ''%s'';\n', datamark);
-        fprintf(FID, 'filename = ''%s'';\n', expname);
-        fprintf(FID, '\n');
-        fprintf(FID, '%s\n', settings{s});
-      end
-    end
-    
-    fclose(FID);
-    
+  if ~isdir(fullfile(expfolder, expname)) || ~exist(scriptname, 'file')
+    createExperiment(expfolder, expname, settingFiles, data)
   end
+  
+  % run experiment
+  [settings, resultNames] = loadSettings(scriptname);
+  
   
 end
 
@@ -76,5 +52,42 @@ function [settings, resultNames] = loadSettings(settingFiles)
   classFCrow = cellfun(@(x) x(strfind(x,'classifyFC'):end), settings, 'UniformOutput', false);
   % extract names of results of settings
   resultNames = cellfun(@(x) x(strfind(x, 'filename,')+9 : strfind(x, '));')-1 ), classFCrow, 'UniformOutput', false);
+  
+end
+
+function createExperiment(expfolder, expname, settingFiles, data)
+% function creates M-file containing all necessary settings to run the
+% experiment
+
+  mkdir(fullfile(expfolder, expname))
+  % load all settings
+  [settings, resultNames] = loadSettings(settingFiles);
+
+  % print settings with data to .m file
+  FID = fopen(fullfile(expfolder, expname, [expname, '.m']),'w');
+  assert(FID ~= -1, 'Cannot open %s !', expname)
+  fprintf('Printing settings to %s...\n', expname)
+
+  fprintf(FID, '%% Script for experiment %s\n', expname);
+  fprintf(FID, '%% Created on %s\n', char(datetime));
+  fprintf(FID, '\n');
+
+  nData = length(data);
+  nSettings = length(settings);
+  for d = 1:nData
+    slashes = strfind(data{d}, filesep);
+    datamark = ['_', data{d}(slashes(end)+1:end-4)];
+    for s = 1:nSettings
+      fprintf(FID, '%%%% %d/%d\n\n', s + (d-1)*nSettings, nData*nSettings);
+      fprintf(FID, 'FCdata = ''%s'';\n', data{d});
+      fprintf(FID, 'datamark = ''%s'';\n', datamark);
+      fprintf(FID, 'filename = ''%s'';\n', expname);
+      fprintf(FID, '\n');
+      resName = eval(resultNames{s}); % TODO: write resName instead of ['name',datamark,'.mat'] to classifyFC row 
+      fprintf(FID, '%s\n', settings{s});
+    end
+  end
+
+  fclose(FID);  
   
 end
