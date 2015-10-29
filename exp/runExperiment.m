@@ -19,17 +19,27 @@ function runExperiment(settingFiles, data, expname)
   if ~iscell(data)
     data = {data};
   end
-  expfolder = fullfile('exp','experiments');
   
-  scriptname = fullfile(expfolder, expname, [expname, '.m']);
+  expfolder = fullfile('exp','experiments');
+  foldername = fullfile(expfolder, expname);
+  scriptname = fullfile(foldername, [expname, '.m']);
+  
   % if experiment was not created yet
-  if ~isdir(fullfile(expfolder, expname)) || ~exist(scriptname, 'file')
+  if ~isdir(foldername) || ~exist(scriptname, 'file')
     createExperiment(expfolder, expname, settingFiles, data)
   end
   
   % run experiment
-  [settings, resultNames] = loadSettings(scriptname);
+  [settings, resultNames] = loadSettings({scriptname});
   
+  finishedTasks = dir(fullfile(foldername, '*.mat'));
+  runningTasks = dir(fullfile(foldername, 'running'));
+  if length(runningTasks) > 2
+    runningTasks = runningTasks(3:end);
+  end
+  
+  % TODO: compare running and finished tasks with resultNames
+  %       then start the following settings until there is no free task
   
 end
 
@@ -49,7 +59,7 @@ function [settings, resultNames] = loadSettings(settingFiles)
   settings = cellfun(@(x) ['%', x], settings, 'UniformOutput', false);
   
   % extract row with classifyFC function call
-  classFCrow = cellfun(@(x) x(strfind(x,'classifyFC'):end), settings, 'UniformOutput', false);
+  classFCrow = cellfun(@(x) x(strfind(x, 'classifyFC'):end), settings, 'UniformOutput', false);
   % extract names of results of settings
   resultNames = cellfun(@(x) x(strfind(x, 'filename,')+9 : strfind(x, '));')-1 ), classFCrow, 'UniformOutput', false);
   
@@ -59,12 +69,17 @@ function createExperiment(expfolder, expname, settingFiles, data)
 % function creates M-file containing all necessary settings to run the
 % experiment
 
-  mkdir(fullfile(expfolder, expname))
+  foldername = fullfile(expfolder, expname);
+  mkdir(foldername)
+  
   % load all settings
   [settings, resultNames] = loadSettings(settingFiles);
+  % split settings and row containing classifyFC function
+  classFCrow = cellfun(@(x) x(strfind(x, 'classifyFC'):end), settings, 'UniformOutput', false);
+  settings = cellfun(@(x) x(1:strfind(x, 'classifyFC')-1), settings, 'UniformOutput', false);
 
   % print settings with data to .m file
-  FID = fopen(fullfile(expfolder, expname, [expname, '.m']),'w');
+  FID = fopen(fullfile(foldername, [expname, '.m']),'w');
   assert(FID ~= -1, 'Cannot open %s !', expname)
   fprintf('Printing settings to %s...\n', expname)
 
@@ -74,20 +89,25 @@ function createExperiment(expfolder, expname, settingFiles, data)
 
   nData = length(data);
   nSettings = length(settings);
+  % data dependent settings printing
   for d = 1:nData
     slashes = strfind(data{d}, filesep);
-    datamark = ['_', data{d}(slashes(end)+1:end-4)];
+    datamark = ['_', data{d}(slashes(end)+1:end-4)]; % needed for new classifyFC row
     for s = 1:nSettings
       fprintf(FID, '%%%% %d/%d\n\n', s + (d-1)*nSettings, nData*nSettings);
       fprintf(FID, 'FCdata = ''%s'';\n', data{d});
-      fprintf(FID, 'datamark = ''%s'';\n', datamark);
       fprintf(FID, 'filename = ''%s'';\n', expname);
       fprintf(FID, '\n');
-      resName = eval(resultNames{s}); % TODO: write resName instead of ['name',datamark,'.mat'] to classifyFC row 
-      fprintf(FID, '%s\n', settings{s});
+      % create new classifyFC row
+      actualClassFCrow = [classFCrow{s}(1:strfind(classFCrow{s}, 'filename,') + 9) , '''', eval(resultNames{s}), '''));'];
+      fprintf(FID, '%s', settings{s});
+      fprintf(FID, '%s\n\n', actualClassFCrow);
     end
   end
 
   fclose(FID);  
+  
+  % create directory for marking running tasks
+  mkdir(foldername, 'running')
   
 end
