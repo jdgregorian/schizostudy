@@ -29,17 +29,45 @@ function runExperiment(settingFiles, data, expname)
     createExperiment(expfolder, expname, settingFiles, data)
   end
   
-  % run experiment
+  % find available settings
   [settings, resultNames] = loadSettings({scriptname});
-  
+  resultNames = cellfun(@eval, resultNames, 'UniformOutput', false);
   finishedTasks = dir(fullfile(foldername, '*.mat'));
   runningTasks = dir(fullfile(foldername, 'running'));
   if length(runningTasks) > 2
     runningTasks = runningTasks(3:end);
+  else
+    runningTasks = [];
   end
+  availableTaskID = cellfun(@(x) ~any(strcmp(x, [runningTasks, finishedTasks])), resultNames);
   
-  % TODO: compare running and finished tasks with resultNames
-  %       then start the following settings until there is no free task
+  % run available tasks
+  while any(availableTaskID)
+    currentID = find(availableTaskID, 1, 'first');
+    availableTaskNames = resultNames{currentID};
+    taskRunFolder = fullfile(foldername, 'running', availableTaskNames(1:end-4));
+    created = mkdir(taskRunFolder);
+    % succesful creation
+    if created
+      availableSettings = settings{currentID};
+      try
+        eval(availableSettings)
+      catch
+        if isdir(taskRunFolder)
+          rmdir(taskRunFolder, 's')
+        end
+      end
+    end
+    
+    % update task lists
+    finishedTasks = dir(fullfile(foldername, '*.mat'));
+    runningTasks = dir(fullfile(foldername, 'running'));
+    if length(runningTasks) > 2
+      runningTasks = runningTasks(3:end);
+    end
+    availableTaskID = cellfun(@(x) ~any(strcmp(x, [runningTasks, finishedTasks])), resultNames);
+  
+  end
   
 end
 
@@ -99,7 +127,7 @@ function createExperiment(expfolder, expname, settingFiles, data)
       fprintf(FID, 'filename = ''%s'';\n', expname);
       fprintf(FID, '\n');
       % create new classifyFC row
-      actualClassFCrow = [classFCrow{s}(1:strfind(classFCrow{s}, 'filename,') + 9) , '''', eval(resultNames{s}), '''));'];
+      actualClassFCrow = [classFCrow{s}(1:strfind(classFCrow{s}, 'filename,') + 8) , ' ''', eval(resultNames{s}), '''));'];
       fprintf(FID, '%s', settings{s});
       fprintf(FID, '%s\n\n', actualClassFCrow);
     end
