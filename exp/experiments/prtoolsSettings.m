@@ -1,6 +1,7 @@
 % Script containing main settings of PRTools classifiers
 %
-% Needs variables 'FCdata', 'filename', 'expfolder' and 'datamark' defined before run.
+% Variables 'FCdata', 'filename', 'expfolder' and 'datamark' should be 
+% defined before run.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% initialization

@@ -73,12 +73,29 @@ function createScript(dataname, expname, param)
   end
   
   fprintf(FID,'%% Script for parametres testing in %s experiment.\n', expname);
+  fprintf(FID,'%%\n');
+  fprintf(FID,'%% Variables ''FCdata'', ''filename'', ''expfolder'' and ''datamark'' should be\n');
+  fprintf(FID,'%% defined before run.\n');
+  fprintf(FID,'%%\n');
+  fprintf(FID,'%% Created on %s\n', datestr(now));
   fprintf(FID,'\n');
+  fprintf(FID,'%s\n', char(37*ones(1,75)));
   fprintf(FID,'%%%% initialization\n');
-  fprintf(FID,'FCdata = ''%s'';\n', dataname);
-  fprintf(FID,'filename = ''%s'';\n', expname);
-  fprintf(FID,'expfolder = ''%s'';\n', expfolder);
-  fprintf(FID,'mkdir(expfolder, filename);\n');
+  fprintf(FID,'if ~exist(''FCdata'', ''var'')\n');
+  fprintf(FID,'  FCdata = fullfile(''data'', ''data_FC_190subjects.mat'');\n');
+  fprintf(FID,'end\n');
+  fprintf(FID,'if ~exist(''filename'', ''var'')\n');
+  fprintf(FID,'  filename = ''%sSettings'';\n', expname);
+  fprintf(FID,'end\n');
+  fprintf(FID,'if ~exist(''expfolder'', ''var'')\n');
+  fprintf(FID,'  expfolder = fullfile(''exp'', ''experiments'');\n');
+  fprintf(FID,'end \n');
+  fprintf(FID,'if ~exist(''datamark'', ''var'')\n');
+  fprintf(FID,'  datamark = '''';\n');
+  fprintf(FID,'else\n');
+  fprintf(FID,'  datamark = [''_'', datamark];\n');
+  fprintf(FID,'end\n');
+  fprintf(FID,'mkdir(expfolder,filename)\n');
   fprintf(FID,'\n');
   fprintf(FID,'%s\n', char(37*ones(1,75)));
 
@@ -103,10 +120,10 @@ function createScript(dataname, expname, param)
         exactParamId = (exactParamId-ParamId)/nParamValues(actualID);        
       end
       fprintf(FID,'\n');
-      fprintf(FID,'classifyFC(FCdata, ''%s'', settings, fullfile(filename, ''%s''));\n\n', ...
-                  method{m}, [expname, '_', method{m}, '_', num2str(p+1), '.mat']);
+      fprintf(FID,'classifyFC(FCdata, ''%s'', settings, fullfile(filename, [''%s'', datamark, ''.mat'']));\n\n', ...
+                  method{m}, [expname, '_', method{m}, '_', num2str(p+1)]);
     end
-    fprintf(FID,'%s\n',char(37*ones(1,75)));
+    fprintf(FID,'%s\n', char(37*ones(1,75)));
   end
   
   % printing finalization

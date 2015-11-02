@@ -99,91 +99,33 @@ settings.svm.autoscale = false;
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_mlp_noauto', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Trees
-% linear tree
+%% PRTools classification tree - information gain criterion
 clear settings
 
-settings.note = 'Default lineartree settings.';
+settings.implementation = 'prtools';
+settings.tree.crit = 'infcrit';
+settings.note = 'Default settings of PRTools decision tree using information gain criterion.';
 
-classifyFC(FCdata,'linTree',settings, fullfile(filename, ['linTree', datamark, '.mat']));
+classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_inf',datamark,'.mat']));
 
-%% linear tree + PCA 20
+%% PRTools classification tree - Fisher criterion
 clear settings
 
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
+settings.implementation = 'prtools';
+settings.note = 'PRTools decision tree using Fisher criterion.';
+settings.tree.crit = 'fishcrit';
 
-classifyFC(FCdata,'linTree',settings, fullfile(filename, ['linTree_pca20', datamark, '.mat']));
-
-%% linear tree mahal
-clear settings
-
-settings.tree.distance = 'mahal';
-
-classifyFC(FCdata,'linTree',settings, fullfile(filename, ['linTree_mahal', datamark, '.mat']));
-
-%% linear tree mahal + PCA 20
-clear settings
-
-settings.tree.distance = 'mahal';
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
-
-classifyFC(FCdata,'linTree',settings, fullfile(filename, ['linTree_mahal_pca20', datamark, '.mat']));
-
-%% SVM tree
-clear settings
-
-settings.note = 'Default settings of SVMTree.';
-
-classifyFC(FCdata,'svmtree', settings, fullfile(filename, ['svmTree', datamark, '.mat']));
-
-%% MATLAB classification tree
-clear settings
-
-settings.note = 'Default MATLAB classification tree settings.';
-
-classifyFC(FCdata,'mtltree',settings, fullfile(filename, ['mtlTree', datamark, '.mat']));
+classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_fish',datamark,'.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% LDA - diaglinear
-clear settings
-
-settings.lda.type = 'diaglinear';
-settings.note = 'LDA settings with diaglinear.';
-
-classifyFC(FCdata,'lda',settings, fullfile(filename, ['lda_diaglinear', datamark, '.mat']));
-
-%% LDA - linear
-clear settings
-
-settings.lda.type = 'linear';
-
-classifyFC(FCdata,'lda',settings, fullfile(filename, ['lda_linear', datamark, '.mat']));
-
-%% LDA (PRTools)
+%% LDA (PRTools) - should be from MATLAB but it cannot handle high dimension
 clear settings
 
 settings.implementation = 'prtools';
 settings.lda.prior = [0.5,0.5];
 settings.note = 'Default settings of PRTools LDA.';
 
-classifyFC(FCdata,'lda',settings, fullfile(filename, [ 'lda_prtools', datamark, '.mat']));
-
-%% QDA - diagquadratic
-clear settings
-
-settings.qda.type = 'diagquadratic';
-
-classifyFC(FCdata,'qda',settings, fullfile(filename, [ 'qda_diagquadratic', datamark, '.mat']));
-
-%% QDA - quadratic
-clear settings
-
-settings.qda.type = 'quadratic';
-
-classifyFC(FCdata,'qda',settings, fullfile(filename, ['qda_quadratic', datamark, '.mat']));
+classifyFC(FCdata, 'lda', settings, fullfile(filename, ['lda_prtools', datamark, '.mat']));
 
 %% QDA (PRTools)
 clear settings
@@ -192,14 +134,8 @@ settings.implementation = 'prtools';
 settings.qda.prior = [0.5,0.5];
 settings.note = 'Default settings of PRTools QDA.';
 
-classifyFC(FCdata,'qda',settings, fullfile(filename, [ 'qda_prtools', datamark, '.mat']));
+classifyFC(FCdata, 'qda', settings, fullfile(filename, ['qda_prtools', datamark, '.mat']));
 
-%% RDA (RDA 14)
-clear settings
-
-settings.note = 'Default RDA (14).';
-
-classifyFC(FCdata,'rda',settings, fullfile(filename, [ 'rda_default', datamark, '.mat']));
 
 %% Fisher's linear discriminant (PRTools)
 clear settings
@@ -207,7 +143,7 @@ clear settings
 settings.implementation = 'prtools';
 settings.note = 'Fisher''s linear discriminant (PRTools) has no settings.';
 
-classifyFC(FCdata,'fisher',settings, fullfile(filename, [ 'fisher', datamark, '.mat']));
+classifyFC(FCdata,'fisher',settings, fullfile(filename, ['fisher', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN
@@ -220,29 +156,22 @@ settings.note = 'Default settings of KNN classifier.';
 classifyFC(FCdata,'knn',settings, fullfile(filename, ['knn_1', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% logistic linear classifier + PCA 20
+%% logistic linear classifier (PRTools)
 clear settings
 
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
+settings.implementation = 'prtools';
+settings.note = 'Default logistic linear classifier settings in PRTools.';
 
-classifyFC(FCdata,'llc',settings, fullfile(filename, ['llc_pca20', datamark, '.mat']));
-
-%% logistic linear classifier
-clear settings
-
-settings.note = 'Default settings of logistic linear classifier.';
-
-classifyFC(FCdata,'llc',settings, fullfile(filename, ['llc_default', datamark, '.mat']));
+classifyFC(FCdata,'llc',settings, fullfile(filename,['llc',datamark,'.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% naive Bayes
+%% naive Bayes (PRTools)
 clear settings
 
-settings.nb.distribution = 'normal';
-settings.note = 'Default naive Bayes settings.';
+settings.implementation = 'prtools';
+settings.note = 'Default PRTools naive Bayes settings.';
 
-classifyFC(FCdata, 'nb', settings, fullfile(filename, ['nb_default', datamark, '.mat']));
+classifyFC(FCdata, 'nb', settings, fullfile(filename,['nb',datamark,'.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Artificial Neural Networks
