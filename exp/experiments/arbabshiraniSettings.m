@@ -1,7 +1,7 @@
-% Script for testing settings of classifiers on Arabshirani's
-% style-prepared data.
+% Script for testing Arbabshirani's settings of classifiers 
 %
-% Needs variables 'FCdata', 'filename' and 'expfolder' defined before run.
+% Variables 'FCdata', 'filename', 'expfolder' and 'datamark' should be 
+% defined before run.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% initialization
@@ -97,93 +97,6 @@ settings.svm.kernel_function = 'mlp';
 settings.svm.autoscale = false;
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_mlp_noauto', datamark, '.mat']));
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Random forest
-% MATLAB classification forest - 11 trees
-clear settings
-
-settings.forest.nTrees = 11;
-settings.iteration = 10;
-settings.note = 'Default settings of MATLAB classification forest with 11 trees.';
-
-classifyFC(FCdata,'mrf',settings, fullfile(filename, ['mrf_11t', datamark, '.mat']));
-
-%% RF - 11 linear trees
-clear settings
-
-settings.forest.nTrees = 11;
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'bagging';
-settings.iteration = 10;
-
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t', datamark, '.mat']));
-
-%% RF - 11 linear trees + pca(20)
-clear settings
-
-settings.forest.nTrees = 11;
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'bagging';
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
-settings.iteration = 10;
-
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t_pca20', datamark, '.mat']));
-
-%% RF - 11 linear trees - distance mahal
-clear settings
-
-settings.forest.nTrees = 11;
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'bagging';
-settings.forest.distance = 'mahal';
-settings.iteration = 10;
-
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t_mahal', datamark, '.mat']));
-
-%% RF - 11 linear trees - distance Inf
-clear settings
-
-settings.forest.nTrees = 11;
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'bagging';
-settings.forest.distance = Inf;
-settings.iteration = 10;
-
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t_distInf', datamark, '.mat']));
-
-%% RF - 11 linear trees - distance 1
-clear settings
-
-settings.forest.nTrees = 11;
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'bagging';
-settings.forest.distance = 1;
-settings.iteration = 10;
-
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t_dist1', datamark, '.mat']));
-
-%% RF - 11 linear trees - boosting, maxSplit = 10
-clear settings
-
-settings.forest.nTrees = 11;
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'boosting';
-settings.forest.maxSplit = 10;
-settings.forest.distance = 2;
-
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t_boost_10split', datamark, '.mat']));
-
-%% RF - 11 svm trees
-clear settings
-
-settings.forest.nTrees = 11;
-settings.forest.TreeType = 'svm';
-settings.forest.learning = 'bagging';
-settings.iteration = 10;
-
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_svm_11t', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Trees

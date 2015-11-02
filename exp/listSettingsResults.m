@@ -63,7 +63,7 @@ function listSettingsResults(folder)
   fprintf(FID,'------------------------- LIST OF TEST SETTINGS RESULTS -------------------------\n');
   fprintf(FID,'---------------------------------------------------------------------------------\n');
   fprintf(FID,'\n\n');
-  fprintf(FID,'      Created %s in folder %s.\n', datestr(now), folder);
+  fprintf(FID,'      Created on %s in folder %s.\n', datestr(now), folder);
   fprintf(FID,'      Number of files: %d\n', nFiles);
   fprintf(FID,'\n');
   

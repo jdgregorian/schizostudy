@@ -1,5 +1,13 @@
 function runExperiment(settingFiles, data, expname)
-% Runs experiment 'expname'
+% Tests settings in 'settingFiles' od 'data' and names the experiment as 
+% 'expname'.
+%
+% Input:
+%    settingFiles - m-file or cell array of m-files with settings of
+%                   classifiers
+%    data         - char or cell array of char containing path(s) to data
+%                   that should be tested
+%    expname      - name of the experiment
 
   % initialization
   if nargin < 1
@@ -7,7 +15,7 @@ function runExperiment(settingFiles, data, expname)
     return
   end
   if nargin < 2
-    data = fullfile('data','data_FC_190subjects.mat');
+    data = fullfile('data', 'data_FC_190subjects.mat');
     if nargin < 3
       expname = ['exp_', data, '_', char(datetime)];
     end
@@ -20,7 +28,7 @@ function runExperiment(settingFiles, data, expname)
     data = {data};
   end
   
-  expfolder = fullfile('exp','experiments');
+  expfolder = fullfile('exp', 'experiments');
   foldername = fullfile(expfolder, expname);
   scriptname = fullfile(foldername, [expname, '.m']);
   
@@ -32,43 +40,49 @@ function runExperiment(settingFiles, data, expname)
   % find available settings
   [settings, resultNames] = loadSettings({scriptname});
   resultNames = cellfun(@eval, resultNames, 'UniformOutput', false);
-  finishedTasks = dir(fullfile(foldername, '*.mat'));
-  runningTasks = dir(fullfile(foldername, 'running'));
-  if length(runningTasks) > 2
-    runningTasks = runningTasks(3:end);
-  else
-    runningTasks = [];
-  end
-  availableTaskID = cellfun(@(x) ~any(strcmp(x, [runningTasks, finishedTasks])), resultNames);
+  availableTaskID = updateTaskList(foldername, resultNames);
+  nTasks = length(availableTaskID);
   
   % run available tasks
-  while any(availableTaskID)
+  attempts = 0;
+  while any(availableTaskID) && (attempts < nTasks + 1)
     currentID = find(availableTaskID, 1, 'first');
-    availableTaskNames = resultNames{currentID};
-    taskRunFolder = fullfile(foldername, 'running', availableTaskNames(1:end-4));
-    created = mkdir(taskRunFolder);
+    availableTaskName = resultNames{currentID};
+    taskRunFolder = fullfile(foldername, 'running', availableTaskName(1:end-4));
+    [created, ~, messID] = mkdir(taskRunFolder);
     % succesful creation
-    if created
+    if created && ~strcmp(messID, 'MATLAB:MKDIR:DirectoryExists')
       availableSettings = settings{currentID};
-      try
-        eval(availableSettings)
-      catch
-        if isdir(taskRunFolder)
-          rmdir(taskRunFolder, 's')
-        end
-      end
+      secureEval(availableSettings)
+      rmdir(taskRunFolder, 's')
+      attempts = 0;
+    else
+      attempts = attempts + 1;
     end
     
     % update task lists
-    finishedTasks = dir(fullfile(foldername, '*.mat'));
-    runningTasks = dir(fullfile(foldername, 'running'));
-    if length(runningTasks) > 2
-      runningTasks = runningTasks(3:end);
-    end
-    availableTaskID = cellfun(@(x) ~any(strcmp(x, [runningTasks, finishedTasks])), resultNames);
-  
+    availableTaskID = updateTaskList(foldername, resultNames);
   end
   
+  fprintf('No other tasks available.\n')
+  
+  if length(dir(fullfile(foldername, 'running'))) == 2
+    rmdir(fullfile(foldername, 'running'))
+  end
+  
+end
+
+function availableTaskID = updateTaskList(foldername, resultNames)
+% updates info about finished and running tasks
+
+  finishedTasks = dir(fullfile(foldername, '*.mat'));
+  finishedTaskNames = arrayfun(@(x) x.name(1:end-4), finishedTasks, 'UniformOutput', false);
+  runningTasks = dir(fullfile(foldername, 'running'));
+  if length(runningTasks) > 2
+    runningTasks = runningTasks(3:end);
+  end
+  availableTaskID = cellfun(@(x) ~any(strcmp(x(1:end-4), [{runningTasks.name}'; finishedTaskNames])), resultNames);
+
 end
 
 function [settings, resultNames] = loadSettings(settingFiles)
@@ -107,12 +121,12 @@ function createExperiment(expfolder, expname, settingFiles, data)
   settings = cellfun(@(x) x(1:strfind(x, 'classifyFC')-1), settings, 'UniformOutput', false);
 
   % print settings with data to .m file
-  FID = fopen(fullfile(foldername, [expname, '.m']),'w');
+  FID = fopen(fullfile(foldername, [expname, '.m']), 'w');
   assert(FID ~= -1, 'Cannot open %s !', expname)
   fprintf('Printing settings to %s...\n', expname)
 
   fprintf(FID, '%% Script for experiment %s\n', expname);
-  fprintf(FID, '%% Created on %s\n', char(datetime));
+  fprintf(FID, '%% Created on %s\n', datestr(now));
   fprintf(FID, '\n');
 
   nData = length(data);
@@ -120,7 +134,12 @@ function createExperiment(expfolder, expname, settingFiles, data)
   % data dependent settings printing
   for d = 1:nData
     slashes = strfind(data{d}, filesep);
-    datamark = ['_', data{d}(slashes(end)+1:end-4)]; % needed for new classifyFC row
+    if isdir(data{d})
+      datamark = data{d}(5:end);
+      datamark(slashes - 4) = '_';
+    else
+      datamark = ['_', data{d}(slashes(end)+1:end-4)]; % needed for new classifyFC row
+    end
     for s = 1:nSettings
       fprintf(FID, '%%%% %d/%d\n\n', s + (d-1)*nSettings, nData*nSettings);
       fprintf(FID, 'FCdata = ''%s'';\n', data{d});
@@ -138,4 +157,10 @@ function createExperiment(expfolder, expname, settingFiles, data)
   % create directory for marking running tasks
   mkdir(foldername, 'running')
   
+end
+
+function secureEval(expression)
+% function for secure evaluation of 'expression' without any influence on
+% current code
+  eval(expression)
 end
