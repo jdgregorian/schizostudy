@@ -63,19 +63,29 @@ function [performance, preparedData, preparedLabels, class] = classifyFC(data, m
   class = cell(1,iteration);
   correctPredictions = cell(1,iteration);
   errors = cell(1,iteration);
+  elapsedTime = zeros(1,iteration);
   for i = 1:iteration
     if iteration > 1
       fprintf('Iteration %d:\n',i)
     end
+    tic
     [performance(i), class{i}, correctPredictions{i}, errors{i}] = classifier(method, preparedData, preparedLabels, settings);
+    elapsedTime(i) = toc;
   end
   avgPerformance = mean(performance);
 
-  fprintf('Method %s had %.2f%% performance in average (%d iterations) on data %s.\n', method, avgPerformance*100, iteration, data);
+  fprintf('Method %s had %.2f%% performance in average (%d iterations) on data %s.\nAnd lasted %.2f seconds.\n', ...
+          method, avgPerformance*100, iteration, data, sum(elapsedTime));
   
   % save results
   if nargin == 4
-    save(fullfile('exp','experiments',filename), 'settings', 'method', 'data', 'performance', 'avgPerformance', 'class', 'correctPredictions', 'errors')
+    resultFileName = fullfile('exp', 'experiments', filename);
+    foldername = strfind(resultFileName, filesep);
+    foldername = resultFileName(1 : foldername(end) - 1);
+    if ~isdir(foldername)
+      mkdir(foldername)
+    end
+    save(resultFileName, 'settings', 'method', 'data', 'performance', 'avgPerformance', 'class', 'correctPredictions', 'errors', 'elapsedTime')
   end
 end
 
