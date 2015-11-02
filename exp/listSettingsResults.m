@@ -55,9 +55,7 @@ function listSettingsResults(folder)
 
   % printing results to txt file
   FID = fopen(resultname,'w');
-  if FID == -1
-    error('Cannot open %s !', resultname)
-  end
+  assert(FID ~= -1, 'Cannot open %s !', resultname)
   fprintf('Printing results to %s...\n', resultname)
   
   % list header printing

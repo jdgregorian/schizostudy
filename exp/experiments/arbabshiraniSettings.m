@@ -6,7 +6,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% initialization
 if ~exist('FCdata', 'var')
-  FCdata = fullfile('data','data_FC_190subjects', datamark, '.mat');
+  FCdata = fullfile('data','data_FC_190subjects.mat');
 end
 if ~exist('filename', 'var')
   filename = 'arbabshiraniSettings';
@@ -19,6 +19,7 @@ if ~exist('datamark', 'var')
 else
   datamark = ['_', datamark];
 end
+mkdir(expfolder,filename)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SVM
@@ -27,7 +28,7 @@ clear settings
 
 settings.svm.kernel_function = 'linear';
 
-classifyFC(FCdata,'svm',settings,fullfile(filename, ['svm_linear', datamark, '.mat']));
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear', datamark, '.mat']));
 
 %% linear - autoscale 'off'
 clear settings

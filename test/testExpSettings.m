@@ -315,8 +315,9 @@ perf = classifyFC(FCdata,'knn',settings);
 clear settings
 
 
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
+% settings.dimReduction.name = 'pca';
+% settings.dimReduction.nDim = 20;
+settings.note = '';
 
 perf = classifyFC(FCdata,'llc',settings);
 
