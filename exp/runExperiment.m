@@ -21,17 +21,17 @@ function runExperiment(settingFiles, data, expname)
     eval(settingFiles)
   end
   
-  if ~exist(data, 'var')
+  if ~exist('data', 'var')
     data = fullfile('data', 'data_FC_190subjects.mat');
   end
-  if ~exist(expname, 'var')
+  if ~exist('expname', 'var')
     expname = ['exp_', data, '_', char(datetime)];
   end
   
-  if ~iscell(settingFiles)
+  if ~iscell('settingFiles')
     settingFiles = {settingFiles};
   end
-  if ~iscell(data)
+  if ~iscell('data')
     data = {data};
   end
   

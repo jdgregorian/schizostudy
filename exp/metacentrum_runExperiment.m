@@ -15,9 +15,9 @@ function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfM
 % See Also:
 % runExperiment createExperiment
 
-  cd(fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), 'prg', 'schizostudy'))
+%  cd(fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), 'prg', 'schizostudy'))
   
-  startup
+%  startup
 
   % initialization
   if nargin < 1
@@ -28,16 +28,16 @@ function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfM
     eval(settingFiles)
   end
   
-  if ~exist(data, 'var')
+  if ~exist('data', 'var')
     data = fullfile('data', 'data_FC_190subjects.mat');
   end
-  if ~exist(expname, 'var')
+  if ~exist('expname', 'var')
     expname = ['exp_', data, '_', char(datetime)];
   end
-  if ~exist(walltime, 'var')
+  if ~exist('walltime', 'var')
     walltime = '4h';
   end
-  if ~exist(numOfMachines, 'var')
+  if ~exist('numOfMachines', 'var')
     numOfMachines = 10;
   end
   
