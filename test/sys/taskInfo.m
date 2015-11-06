@@ -7,7 +7,7 @@ fprintf('Generating TeX files with results - adjust returnResults?\n')
 fprintf('Split MATLAB and PRTools settings?\n')
 
 fprintf('\nMost recent: \n')
-fprintf('    Prepare testing kit for multiple machines - test on kmlinux, prepare for metacentrum\n')
+fprintf('    Metacentrum: Findout why it cannot find classifyFC\n')
 fprintf('    Is Fisher similar to LDC?\n')
 fprintf('    ANN - good settings - Filip Dechterenko?\n')
 fprintf('    RBF - good settings - Filip Dechterenko?\n')

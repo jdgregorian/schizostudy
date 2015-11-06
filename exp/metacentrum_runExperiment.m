@@ -27,7 +27,9 @@ function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfM
   if nargin == 1
     eval(settingFiles)
   end
-  
+ 
+  metafolder = [filesep, fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), 'prg', 'schizostudy')];
+ 
   if ~exist('data', 'var')
     data = fullfile('data', 'data_FC_190subjects.mat');
   end
@@ -35,10 +37,10 @@ function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfM
     expname = ['exp_', data, '_', char(datetime)];
   end
   if ~exist('walltime', 'var')
-    walltime = '4h';
+    walltime = '4h'; 
   end
   if ~exist('numOfMachines', 'var')
-    numOfMachines = 10;
+    numOfMachines = 10; 
   end
   
   if ~iscell(settingFiles)
@@ -51,10 +53,26 @@ function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfM
   expfolder = fullfile('exp', 'experiments');
   foldername = fullfile(expfolder, expname);
   scriptname = fullfile(foldername, [expname, '.m']);
-  
+
+  % data check
+  missing = ~((cellfun(@(x) exist(x, 'file'), data)) | (cellfun(@isdir, data)));
+  fprintf('missing: %d\n', missing)
+
+  % omit missing data
+  if all(missing)
+    error('There is no data for computing. Check if all data files and folders are correctly specified.')
+  elseif any(missing)
+    fprintf('Omitting missing data files:\n')
+    cellfun(@(x) fprintf('%s\n', x), data(missing))
+    fprintf('\n')
+    data = data(~missing);
+  end  
+
   % if experiment was not created yet
   if ~isdir(foldername) || ~exist(scriptname, 'file')
+    data = cellfun(@(x) fullfile(metafolder, x), data, 'UniformOutput', false);
     createExperiment(expfolder, expname, settingFiles, data)
+    fprintf('Experiment created\n')
   end
   
   % metacentrum settings
@@ -74,7 +92,9 @@ function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfM
   % job settings
   cl = parallel.cluster.Torque;
   pause(2);
-  mkdir(fullfile(foldername,'matlab_jobs'))
+  if ~isdir(fullfile(foldername, 'matlab_jobs'))
+    mkdir(fullfile(foldername,'matlab_jobs'))
+  end
   cl.JobStorageLocation = fullfile(foldername,'matlab_jobs');
   cl.ClusterMatlabRoot = matlabroot;
   cl.OperatingSystem = 'unix';

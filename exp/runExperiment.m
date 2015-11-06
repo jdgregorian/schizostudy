@@ -1,4 +1,4 @@
-function runExperiment(settingFiles, data, expname)
+function runExperiment(settingFiles, data, expname, metacentrum)
 % Tests settings in 'settingFiles' od 'data' and names the experiment as 
 % 'expname'.
 %
@@ -8,6 +8,7 @@ function runExperiment(settingFiles, data, expname)
 %    data          - char or cell array of char containing path(s) to data
 %                    that should be tested
 %    expname       - name of the experiment
+%    metacentrum   - whether the experiment is running on metacentrum | logical
 %
 % See Also:
 % metacentrum_runExperiment createExperiment
@@ -27,6 +28,9 @@ function runExperiment(settingFiles, data, expname)
   if ~exist('expname', 'var')
     expname = ['exp_', data, '_', char(datetime)];
   end
+  if ~exist('metacentrum', 'var')
+    metacentrum = false;
+  end
   
   if ~iscell('settingFiles')
     settingFiles = {settingFiles};
@@ -35,16 +39,25 @@ function runExperiment(settingFiles, data, expname)
     data = {data};
   end
   
-  expfolder = fullfile('exp', 'experiments');
+  if metacentrum
+    metafolder = [filesep, fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), 'prg', 'schizostudy')]; 
+  else
+    metafolder = '';
+  end
+  expfolder = fullfile(metafolder, 'exp', 'experiments');  
   foldername = fullfile(expfolder, expname);
   scriptname = fullfile(foldername, [expname, '.m']);
+
+  ftest = fopen(fullfile(foldername, ['run_log_', char(datetime), '.txt']), 'w');
   
   % if experiment was not created yet
   if ~isdir(foldername) || ~exist(scriptname, 'file')
+    fprintf(ftest, 'Creating experiment...\n');
     createExperiment(expfolder, expname, settingFiles, data)
   end
   
   % find available settings
+  fprintf(ftest, 'Finding available settings...\n');
   [settings, resultNames] = loadSettings({scriptname});
   resultNames = cellfun(@eval, resultNames, 'UniformOutput', false);
   availableTaskID = updateTaskList(foldername, resultNames);
@@ -54,14 +67,20 @@ function runExperiment(settingFiles, data, expname)
   attempts = 0;
   while any(availableTaskID) && (attempts < nTasks + 1)
     currentID = find(availableTaskID, 1, 'first');
+    fprintf(ftest, 'Running task with ID: %d\n', currentID);
     availableTaskName = resultNames{currentID};
+    fprintf(ftest, 'Available task name: %s\n', availableTaskName);
     taskRunFolder = fullfile(foldername, 'running', availableTaskName(1:end-4));
     [created, ~, messID] = mkdir(taskRunFolder);
     % succesful creation
     if created && ~strcmp(messID, 'MATLAB:MKDIR:DirectoryExists')
+      fprintf(ftest, 'Directory ''running'' created.\n');
       availableSettings = settings{currentID};
+      fprintf(ftest, 'Trying to evaluate following settings:\n %s\n', availableSettings);
       secureEval(availableSettings)
+      fprintf(ftest, 'Settings successfully computed.\n');
       rmdir(taskRunFolder, 's')
+      mkdir(fullfile(foldername, char(datetime)))
       attempts = 0;
     else
       attempts = attempts + 1;
@@ -72,11 +91,14 @@ function runExperiment(settingFiles, data, expname)
   end
   
   fprintf('No other tasks available.\n')
+  fprintf(ftest, 'No other tasks available.\n');
   
   if length(dir(fullfile(foldername, 'running'))) == 2
     rmdir(fullfile(foldername, 'running'))
   end
   
+  fclose(ftest)
+
 end
 
 function availableTaskID = updateTaskList(foldername, resultNames)
