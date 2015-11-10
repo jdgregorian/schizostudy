@@ -81,7 +81,7 @@ function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfM
 
   % licence loop
   while 1
-    tf = license('checkout','Distrib_Computing_Toolbox');
+    [tf, ~] = license('checkout','Distrib_Computing_Toolbox');
     if tf == 1
       break
     end
