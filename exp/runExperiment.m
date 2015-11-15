@@ -1,6 +1,9 @@
-function runExperiment(settingFiles, data, expname, metacentrum)
-% Tests settings in 'settingFiles' od 'data' and names the experiment as 
+function runExperiment(experimentFile, data, expname, metacentrum)
+% runExperiment(settingFiles, data, expname, metacentrum) tests 
+% settings in 'settingFiles' on 'data' and names the experiment as 
 % 'expname'.
+%
+% runExperiment(experimentFile) runs experiment set in 'experimentFile'
 %
 % Input:
 %    settingFiles  - m-file or cell array of m-files with settings of
@@ -19,7 +22,9 @@ function runExperiment(settingFiles, data, expname, metacentrum)
     return
   end
   if nargin == 1
-    eval(settingFiles)
+    eval(experimentFile)
+  else
+    settingFiles = experimentFile;
   end
   
   if ~exist('data', 'var')
@@ -48,7 +53,7 @@ function runExperiment(settingFiles, data, expname, metacentrum)
   foldername = fullfile(expfolder, expname);
   scriptname = fullfile(foldername, [expname, '.m']);
 
-  ftest = fopen(fullfile(foldername, ['run_log_', char(datetime), '.txt']), 'w');
+  ftest = fopen(fullfile(foldername, ['run_log_', datestr(clock), '.txt']), 'w');
   
   % if experiment was not created yet
   if ~isdir(foldername) || ~exist(scriptname, 'file')
@@ -97,7 +102,7 @@ function runExperiment(settingFiles, data, expname, metacentrum)
     rmdir(fullfile(foldername, 'running'))
   end
   
-  fclose(ftest)
+  fclose(ftest);
 
 end
 

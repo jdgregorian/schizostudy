@@ -167,25 +167,3 @@ function [data, labels] = loadTrainTestData(foldername)
   labels{1} = labels{1} - 1;
   labels{2} = labels{2} - 1;
 end
-
-function [vector, matrix] = vectOrMat(datafile)
-% Loads vector and matrix from datafile
-  vector = [];
-  matrix = [];
-
-  names = fieldnames(datafile);
-  value1 = getfield(datafile, names{1});
-  value2 = getfield(datafile, names{2});
-  
-  % matrix and vector filter
-  if ismatrix(value1) && isvector(value2)
-    matrix = value1;
-    vector = value2;
-  elseif ismatrix(value2) && isvector(value1)
-    matrix = value2;
-    vector = value1;
-  else
-    return
-  end
-  
-end
