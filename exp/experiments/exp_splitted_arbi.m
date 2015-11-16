@@ -14,3 +14,4 @@ settingFiles = {arbisettings};
 data = {Abs1, Abs2, Abs3, Pos1, Pos2, Pos3};
 expname = 'exp_splitted_arbi';
 
+runExperiment(settingFiles, data, expname)

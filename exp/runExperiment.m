@@ -37,10 +37,10 @@ function runExperiment(experimentFile, data, expname, metacentrum)
     metacentrum = false;
   end
   
-  if ~iscell('settingFiles')
+  if ~iscell(settingFiles)
     settingFiles = {settingFiles};
   end
-  if ~iscell('data')
+  if ~iscell(data)
     data = {data};
   end
   
@@ -53,7 +53,12 @@ function runExperiment(experimentFile, data, expname, metacentrum)
   foldername = fullfile(expfolder, expname);
   scriptname = fullfile(foldername, [expname, '.m']);
 
-  ftest = fopen(fullfile(foldername, ['run_log_', datestr(clock), '.txt']), 'w');
+  mkdir(fullfile(foldername, 'log'))
+  ftest = fopen(fullfile(foldername, 'log', ['run_log_', strrep(datestr(clock), ':', '_'), '.txt']), 'w');
+  if ftest ==-1
+    warning('Cannot open log file!')
+    ftest = 1;
+  end
   
   % if experiment was not created yet
   if ~isdir(foldername) || ~exist(scriptname, 'file')
@@ -85,7 +90,6 @@ function runExperiment(experimentFile, data, expname, metacentrum)
       secureEval(availableSettings)
       fprintf(ftest, 'Settings successfully computed.\n');
       rmdir(taskRunFolder, 's')
-      mkdir(fullfile(foldername, char(datetime)))
       attempts = 0;
     else
       attempts = attempts + 1;

@@ -93,9 +93,9 @@ function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfM
   cl = parallel.cluster.Torque;
   pause(2);
   if ~isdir(fullfile(foldername, 'matlab_jobs'))
-    mkdir(fullfile(foldername,'matlab_jobs'))
+    mkdir(fullfile(foldername, 'matlab_jobs'))
   end
-  cl.JobStorageLocation = fullfile(foldername,'matlab_jobs');
+  cl.JobStorageLocation = fullfile(foldername, 'matlab_jobs');
   cl.ClusterMatlabRoot = matlabroot;
   cl.OperatingSystem = 'unix';
   cl.ResourceTemplate = pbs_params;
@@ -106,17 +106,6 @@ function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfM
 
   % tasks creating
   for id = 1:numOfMachines
-%     [bbParams, sgParams] = getParamsFromIndex(id, bbParamDef, sgParamDef, cmParamDef);
-%     fileID = [num2str(bbParams.functions(end)) '_' num2str(bbParams.dimensions(end)) 'D_' num2str(id)];
-%     if (isfield(sgParams, 'modelType'))
-%       model = sgParams.modelType;
-%     else
-%       model = 'NONE';
-%     end
-% 
-%     metaOpts.logdir = logDir;
-%     metaOpts.model = model;
-%     metaOpts.nInstances = length(bbParams.instances);
     fprintf('Setting up job ID %d / %d ...\n', id, numOfMachines);
     tasks(id) = createTask(job, @metacentrum_task, 0, {id, settingFiles, data, expname});
   end
