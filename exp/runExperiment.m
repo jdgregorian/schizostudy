@@ -51,7 +51,7 @@ function runExperiment(experimentFile, data, expname, metacentrum)
   end
   expfolder = fullfile(metafolder, 'exp', 'experiments');  
   foldername = fullfile(expfolder, expname);
-  scriptname = fullfile(foldername, [expname, '.m']);
+  scriptname = fullfile(foldername, [expname, '_runscript.m']);
 
   mkdir(fullfile(foldername, 'log'))
   ftest = fopen(fullfile(foldername, 'log', ['run_log_', strrep(datestr(clock), ':', '_'), '.txt']), 'w');

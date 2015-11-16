@@ -20,7 +20,7 @@ function createExperiment(expfolder, expname, settingFiles, data)
   settings = cellfun(@(x) x(1:strfind(x, 'classifyFC')-1), settings, 'UniformOutput', false);
 
   % print settings with data to .m file
-  FID = fopen(fullfile(foldername, [expname, '.m']), 'w');
+  FID = fopen(fullfile(foldername, [expname, '_runscript.m']), 'w');
   assert(FID ~= -1, 'Cannot open %s !', expname)
   fprintf('Printing settings to %s...\n', expname)
 

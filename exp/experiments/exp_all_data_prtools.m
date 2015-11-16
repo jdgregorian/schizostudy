@@ -1,61 +1,32 @@
-% Script for testing main settings of classifiers
+% Script for testing prtools settings of classifiers
 
-%% initialization
-filename = 'exp_all_data_prtools';
+% initialization
 expfolder = fullfile('exp', 'experiments');
-mkdir(expfolder,filename)
 
-%%
-FCdata = fullfile('data', 'data_FC_190subjects.mat');
-datamark = '190sub';
-prtoolsSettings
+% datafiles
+FC190sub = fullfile('data', 'data_FC_190subjects.mat');
+FC168sub = fullfile('data', 'data_FC_168subjects.mat');
+FCarbab_loo_all_abs = fullfile('data', 'arbabshirani', 'loo', 'adCorrAbs', '180subj_all.mat');
+FCarbab_loo_all_pos = fullfile('data', 'arbabshirani', 'loo', 'adCorrPos', '180subj_all.mat');
+FCarbab_loo_test_abs = fullfile('data', 'arbabshirani', 'loo', 'adCorrAbs', '80subj_testing.mat');
+FCarbab_loo_test_pos = fullfile('data', 'arbabshirani', 'loo', 'adCorrPos', '80subj_testing.mat');
+FCarbab_loo_train_abs = fullfile('data', 'arbabshirani', 'loo', 'adCorrAbs', '100subj_training.mat');
+FCarbab_loo_train_pos = fullfile('data', 'arbabshirani', 'loo', 'adCorrPos', '100subj_training.mat');
+FCarbab_traintest_abs = fullfile('data', 'arbabshirani', 'traintest', 'adCorrAbs');
+FCarbab_traintest_pos = fullfile('data', 'arbabshirani', 'traintest', 'adCorrPos');
 
-%%
-FCdata = fullfile('data', 'data_FC_168subjects.mat');
-datamark = '168sub';
-prtoolsSettings
+% settings
+prSettings = fullfile(expfolder, 'prtoolsSettings.m');
 
-%%
-FCdata = fullfile('data', 'arbabshirani', 'loo', 'adCorrAbs', '180subj_all.mat');
-datamark = '180sub_all_abs';
-prtoolsSettings
+% summary
+settingFiles = {prSettings};
+data = {FC190sub, FC168sub, FCarbab_loo_all_abs, FCarbab_loo_all_pos, FCarbab_loo_test_abs, ...
+  FCarbab_loo_test_pos, FCarbab_loo_train_abs, FCarbab_loo_train_pos, FCarbab_traintest_abs, ...
+  FCarbab_traintest_pos};
+expname = 'exp_all_data_prtools';
 
-%%
-FCdata = fullfile('data', 'arbabshirani', 'loo', 'adCorrPos', '180subj_all.mat');
-datamark = '180sub_all_pos';
-prtoolsSettings
+% running experiment
+runExperiment(settingFiles, data, expname)
 
-%%
-FCdata = fullfile('data', 'arbabshirani', 'loo', 'adCorrAbs', '80subj_testing.mat');
-datamark = '80sub_test_abs';
-prtoolsSettings
-
-%%
-FCdata = fullfile('data', 'arbabshirani', 'loo', 'adCorrPos', '80subj_testing.mat');
-datamark = '80sub_test_pos';
-prtoolsSettings
-
-%%
-FCdata = fullfile('data', 'arbabshirani', 'loo', 'adCorrAbs', '100subj_training.mat');
-datamark = '100sub_train_abs';
-prtoolsSettings
-
-%%
-FCdata = fullfile('data', 'arbabshirani', 'loo', 'adCorrPos', '100subj_training.mat');
-datamark = '100sub_train_pos';
-prtoolsSettings
-
-%% traintest abs
-FCdata = fullfile('data', 'arbabshirani', 'traintest', 'adCorrAbs');
-datamark = '180sub_traintest_abs';
-prtoolsSettings
-
-%% traintest pos
-FCdata = fullfile('data', 'arbabshirani', 'traintest', 'adCorrPos');
-datamark = '180sub_traintest_pos';
-prtoolsSettings
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% final results listing
-
-listSettingsResults(fullfile(expfolder, filename));
+% final results listing
+listSettingsResults(fullfile(expfolder, expname));

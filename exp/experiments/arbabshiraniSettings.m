@@ -27,6 +27,7 @@ mkdir(expfolder,filename)
 clear settings
 
 settings.svm.kernel_function = 'linear';
+settings.svm.boxconstraint = 1.5;
 
 classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear', datamark, '.mat']));
 
@@ -34,29 +35,17 @@ classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear', datamark, 
 clear settings
 
 settings.svm.kernel_function = 'linear';
+settings.svm.boxconstraint = 1.5;
 settings.svm.autoscale = false;
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_linear_noauto', datamark, '.mat']));
 
-%% quadratic
-clear settings
-
-settings.svm.kernel_function = 'quadratic';
-
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_quad', datamark, '.mat']));
-
-%% quadratic - autoscale 'off'
-clear settings
-
-settings.svm.kernel_function = 'quadratic';
-settings.svm.autoscale = false;
-
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_quad_noauto', datamark, '.mat']));
-
 %% polynomial
 clear settings
 
-settings.svm.kernel_function = 'polynomial'; 
+settings.svm.kernel_function = 'polynomial';
+settings.svm.boxconstraint = 0.12;
+settings.svm.polyorder = 3;
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly', datamark, '.mat']));
 
@@ -64,6 +53,8 @@ classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly', datamark, '.ma
 clear settings
 
 settings.svm.kernel_function = 'polynomial';
+settings.svm.boxconstraint = 0.12;
+settings.svm.polyorder = 3;
 settings.svm.autoscale = false; 
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly_noauto', datamark, '.mat']));
@@ -72,6 +63,8 @@ classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly_noauto', datamar
 clear settings
 
 settings.svm.kernel_function = 'rbf';
+settings.svm.boxconstraint = 1.25;
+settings.svm.rbf_sigma = 1;
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_rbf', datamark, '.mat']));
 
@@ -79,24 +72,11 @@ classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_rbf', datamark, '.mat
 clear settings
 
 settings.svm.kernel_function = 'rbf';
+settings.svm.boxconstraint = 1.25;
+settings.svm.rbf_sigma = 1;
 settings.svm.autoscale = false;
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_rbf_noauto', datamark, '.mat']));
-
-%% mlp
-clear settings
-
-settings.svm.kernel_function = 'mlp';
-
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_mlp', datamark, '.mat']));
-
-%% mlp - autoscale 'off'
-clear settings
-
-settings.svm.kernel_function = 'mlp';
-settings.svm.autoscale = false;
-
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_mlp_noauto', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PRTools classification tree - information gain criterion
@@ -118,23 +98,19 @@ settings.tree.crit = 'fishcrit';
 classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_fish',datamark,'.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% LDA (PRTools) - should be from MATLAB but it cannot handle high dimension
+%% LDA
 clear settings
 
-settings.implementation = 'prtools';
-settings.lda.prior = [0.5,0.5];
-settings.note = 'Default settings of PRTools LDA.';
+settings.lda.type = 'linear';
 
-classifyFC(FCdata, 'lda', settings, fullfile(filename, ['lda_prtools', datamark, '.mat']));
+classifyFC(FCdata, 'lda', settings, fullfile(filename, ['lda', datamark, '.mat']));
 
-%% QDA (PRTools)
+%% QDA
 clear settings
 
-settings.implementation = 'prtools';
-settings.qda.prior = [0.5,0.5];
-settings.note = 'Default settings of PRTools QDA.';
+settings.qda.type = 'quadratic';
 
-classifyFC(FCdata, 'qda', settings, fullfile(filename, ['qda_prtools', datamark, '.mat']));
+classifyFC(FCdata, 'qda', settings, fullfile(filename, ['qda', datamark, '.mat'])); 
 
 
 %% Fisher's linear discriminant (PRTools)
@@ -181,14 +157,6 @@ clear settings
 settings.note = 'Linear perceptron has no settings.';
 
 classifyFC(FCdata, 'perc', settings, fullfile(filename, ['perc_default', datamark, '.mat']));
-
-%% ANN
-clear settings
-
-settings.note = 'ANN default settings.';
-settings.iteration = 10;
-
-classifyFC(FCdata, 'ann', settings, fullfile(filename, ['ann_default', datamark, '.mat']));
 
 %% ANN - Arbabshirani's settings
 clear settings

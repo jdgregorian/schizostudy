@@ -239,6 +239,13 @@ settings.lda.type = 'diaglinear';
 
 [perf, ~, ~, classLDA] = classifyFC(FCdata,'lda',settings);
 
+%% linear discriminant analysis
+clear settings
+
+settings.qda.type = 'quadratic';
+
+[perf, ~, ~, classLDA] = classifyFC(FCdata,'qda',settings);
+
 %% linear discriminant analysis (PRTools)
 clear settings
 
