@@ -34,7 +34,7 @@ function [performance, preparedData, preparedLabels, class] = classifyFC(data, m
 
   % prepare data
   if isdir(data)
-    [preparedData, preparedLabels] = loadTrainTestData(data);
+    [preparedData, preparedLabels] = loadTrainTestDataFolder(data);
   else
     loadedData = load(data);
     % functional or structural connectivity data
@@ -43,18 +43,17 @@ function [performance, preparedData, preparedLabels, class] = classifyFC(data, m
     % one matrix and one vector of data 
     elseif length(fieldnames(loadedData)) == 2 
       [preparedData, preparedLabels] = loadDataLabels(loadedData);
-      if isempty(preparedData) || isempty(preparedLabels)
-        warning('Wrong input format or file!')
-        performance = NaN;
-        return
-      end
     else
-      warning('Wrong input format or file!')
-      performance = NaN;
       preparedData = [];
       preparedLabels = [];
-      return
     end
+  end
+  
+  % prepared data check
+  if isempty(preparedData) || isempty(preparedLabels)
+    warning('Wrong input format or file!')
+    performance = NaN;
+    return
   end
 
   % test classification by chosen method for 'iteration' times
@@ -150,8 +149,8 @@ function [data, labels] = loadDataLabels(loadedData)
   end
 end
 
-function [data, labels] = loadTrainTestData(foldername)
-% Loading training and testing data
+function [data, labels] = loadTrainTestDataFolder(foldername)
+% Loading training and testing data saved in folder in different files
 %
 % Only for David's format - two folders 'training' and 'testing' containing
 % .mat file 'GraphAndData' with matrix of features 'dataname' and vector of
