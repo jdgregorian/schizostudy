@@ -32,11 +32,19 @@ function createExperiment(expfolder, expname, settingFiles, data)
   nSettings = length(settings);
   % data dependent settings printing
   for d = 1:nData
-    slashes = strfind(data{d}, filesep);
     if isdir(data{d})
-      datamark = data{d}(5:end);
-      datamark(slashes - 4) = '_';
+      dataslash = strfind(data{d}, [filesep, 'data', filesep]);
+      if isempty(dataslash)
+        datamark = data{d};
+      else
+        datamark = data{d}(dataslash + 6:end);
+      end
+      slashes = strfind(datamark, filesep);
+      fprintf('datamark: %s\n', datamark);
+      datamark(slashes) = '_';
+      fprintf('datamark: %s\n', datamark);
     else
+      slashes = strfind(data{d}, filesep);
       datamark = ['_', data{d}(slashes(end)+1:end-4)]; % needed for new classifyFC row
     end
     for s = 1:nSettings
