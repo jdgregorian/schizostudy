@@ -27,6 +27,7 @@ function runExperiment(experimentFile, data, expname, metacentrum)
     settingFiles = experimentFile;
   end
   
+  % input check
   if ~exist('data', 'var')
     data = fullfile('data', 'data_FC_190subjects.mat');
   end
@@ -44,6 +45,7 @@ function runExperiment(experimentFile, data, expname, metacentrum)
     data = {data};
   end
   
+  % setting paths
   if metacentrum
     metafolder = [filesep, fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), 'prg', 'schizostudy')]; 
   else
@@ -53,6 +55,7 @@ function runExperiment(experimentFile, data, expname, metacentrum)
   foldername = fullfile(expfolder, expname);
   scriptname = fullfile(foldername, [expname, '_runscript.m']);
 
+  % logfile creation
   mkdir(fullfile(foldername, 'log'))
   ftest = fopen(fullfile(foldername, 'log', ['run_log_', strrep(datestr(clock), ':', '_'), '.txt']), 'w');
   if ftest ==-1
