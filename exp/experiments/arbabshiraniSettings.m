@@ -31,15 +31,6 @@ settings.svm.boxconstraint = 1.5;
 
 classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear', datamark, '.mat']));
 
-%% linear - autoscale 'off'
-clear settings
-
-settings.svm.kernel_function = 'linear';
-settings.svm.boxconstraint = 1.5;
-settings.svm.autoscale = false;
-
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_linear_noauto', datamark, '.mat']));
-
 %% polynomial
 clear settings
 
@@ -49,17 +40,7 @@ settings.svm.polyorder = 3;
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly', datamark, '.mat']));
 
-%% polynomial - autoscale 'off'
-clear settings
-
-settings.svm.kernel_function = 'polynomial';
-settings.svm.boxconstraint = 0.12;
-settings.svm.polyorder = 3;
-settings.svm.autoscale = false; 
-
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly_noauto', datamark, '.mat']));
-
-%% rbf - autoscale 'on'
+%% rbf
 clear settings
 
 settings.svm.kernel_function = 'rbf';
@@ -67,16 +48,6 @@ settings.svm.boxconstraint = 1.25;
 settings.svm.rbf_sigma = 1;
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_rbf', datamark, '.mat']));
-
-%% rbf - autoscale 'off'
-clear settings
-
-settings.svm.kernel_function = 'rbf';
-settings.svm.boxconstraint = 1.25;
-settings.svm.rbf_sigma = 1;
-settings.svm.autoscale = false;
-
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_rbf_noauto', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PRTools classification tree - information gain criterion
