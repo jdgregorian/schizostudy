@@ -40,7 +40,7 @@ function prepareICAData(folder)
   nAll = nTrain + nTest;
   adCorrAbs = [trainVar.adCorrAbs(:,:,1); testVar.adCorrAbs(:,:,1)];
   save(fullfile(folder, 'loo', 'adCorrAbs', [num2str(nAll), 'subj_all']), 'anId', 'adCorrAbs')
-  adCorrPos = [testVar.adCorrPos(:,:,1); testVar.adCorrPos(:,:,1)];
+  adCorrPos = [trainVar.adCorrPos(:,:,1); testVar.adCorrPos(:,:,1)];
   save(fullfile(folder, 'loo', 'adCorrPos', [num2str(nAll), 'subj_all']), 'anId', 'adCorrPos')
   
 end
