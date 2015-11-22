@@ -107,7 +107,7 @@ function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfM
   % tasks creating
   for id = 1:numOfMachines
     fprintf('Setting up job ID %d / %d ...\n', id, numOfMachines);
-    tasks(id) = createTask(job, @metacentrum_task, 0, {id, settingFiles, data, expname});
+    tasks(id) = createTask(job, @metacentrum_task, 0, {expname, id});
   end
 
   tasks
