@@ -6,8 +6,8 @@ expfolder = fullfile('exp', 'experiments');
 
 % datafiles
 arbabfolder = fullfile('data', 'arbabshirani');
-looTrainData = fullfile(arbabfolder, 'loo', 'adCorrAbs_oneICA', '100subj_train.mat');
-looTestData = fullfile(arbabfolder, 'loo', 'adCorrAbs_oneICA', '80subj_test.mat');
+looTrainData = fullfile(arbabfolder, 'loo', 'adCorrAbs_oneICA', '100subj_training.mat');
+looTestData = fullfile(arbabfolder, 'loo', 'adCorrAbs_oneICA', '80subj_testing.mat');
 looAllData = fullfile(arbabfolder, 'loo', 'adCorrAbs_oneICA', '180subj_all.mat');
 traintestData = fullfile(arbabfolder, 'traintest', 'adCorrAbs_oneICA');
 
