@@ -1,13 +1,17 @@
-function performances = returnResults(folders)
-% performances = returnResults('folders') lists results of FC performance testing 
-% in 'folders' cellarray to 'performance'. 
+function [performances, settings] = returnResults(folders)
+% [performances, settings] = returnResults('folders') lists results of FC 
+% performance testing in 'folders' cellarray to 'performance'. 
 %
 % See Also:
 % listSettingsResults
 
   if nargin == 0 || isempty(folders)
-    help listSettingsResults
+    help returnResults
     return
+  end
+  
+  if ~iscell(folders)
+    folders = {folders};
   end
   
   Nfolders = length(folders);
@@ -54,5 +58,6 @@ function performances = returnResults(folders)
     end
     
     performances{f} = avgPerformance(usefulFiles);
+    settings{f} = settings(usefulFiles);
   end
 end

@@ -7,6 +7,7 @@ fprintf('Generating TeX files with results - adjust returnResults?\n')
 fprintf('Split MATLAB and PRTools settings?\n')
 
 fprintf('\nMost recent: \n')
+fprintf('    Remove code redundancy in returnResults and listSettingResults\n')
 fprintf('    Metacentrum: Findout the error\n')
 fprintf('    Rewrite experiment to new format\n')
 fprintf('    Adjust classifier settings according to matlab version\n')
