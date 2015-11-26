@@ -1,4 +1,4 @@
-function reduceData(data, subjectOut, regionOut)
+function reduceFCData(data, subjectOut, regionOut)
 % Reduce connectivity matrix and indices vectors and save dataset.
 % 
 % Input:
