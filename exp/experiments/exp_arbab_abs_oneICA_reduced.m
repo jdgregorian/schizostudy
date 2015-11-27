@@ -17,8 +17,8 @@ arbabsettings = fullfile('exp', 'experiments', 'arbabshiraniSettings.m');
 
 % summary
 settingFiles = {arbabsettings};
-data = {traintestOneICAData, looTrainData, looTestData, looAllData, traintestAbsData, traintestPosData};
-expname = 'exp_arbab_abs_oneICA';
+data = {traintestOneICAData, looTrainData, looTestData, looAllData};
+expname = 'exp_arbab_abs_oneICA_reduced';
 
 % running experiment
 runExperiment(settingFiles, data, expname)
