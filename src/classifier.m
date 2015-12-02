@@ -13,42 +13,42 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %
 % Input:
 %
-%  method   - shortcut of the classifier type used | string
-%             'svm'     - support vector machine
-%             'rf'      - random forest
-%             'mrf'     - MATLAB random forest
-%             'dectree' - decision tree (PRTools)
-%             'lintree' - tree using linear distance based decision splits
-%             'mtltree' - MATLAB classification tree
-%             'svmtree' - tree using linear svm based decision splits
-%             'nb'      - naive Bayes
-%             'knn'     - k-nearest neighbours
-%             'llc'     - logistic linear classifier
-%             'lda'     - linear discriminant analysis
-%             'qda'     - quadratic discriminant analysis
-%             'rda'     - regularized discriminant analysis (RDA 14)
-%             'fisher'  - Fisher's linear discriminant fisherc (PRTools)
-%             'ann'     - artificial neural network
-%             'rbf'     - radial basis function network
-%             'perc'    - linear perceptron
-%  data     - input data matrix (rows - datapoints, columns - data 
-%             dimension) or 1x2 cell array {training, testing} data 
-%             | double matrix, cell array
-%  labels   - class labels for each data or 1x2 cell array {training,
-%             testing} labels | double vector, cell array
-%  settings - structure of additional settings for classifier function
+%   method   - shortcut of the classifier type used | string
+%              'svm'     - support vector machine
+%              'rf'      - random forest
+%              'mrf'     - MATLAB random forest
+%              'dectree' - decision tree (PRTools)
+%              'lintree' - tree using linear distance based decision splits
+%              'mtltree' - MATLAB classification tree
+%              'svmtree' - tree using linear svm based decision splits
+%              'nb'      - naive Bayes
+%              'knn'     - k-nearest neighbours
+%              'llc'     - logistic linear classifier
+%              'lda'     - linear discriminant analysis
+%              'qda'     - quadratic discriminant analysis
+%              'rda'     - regularized discriminant analysis (RDA 14)
+%              'fisher'  - Fisher's linear discriminant fisherc (PRTools)
+%              'ann'     - artificial neural network
+%              'rbf'     - radial basis function network
+%              'perc'    - linear perceptron
+%   data     - input data matrix (rows - datapoints, columns - data 
+%              dimension) or 1x2 cell array {training, testing} data 
+%              | double matrix, cell array
+%   labels   - class labels for each data or 1x2 cell array {training,
+%              testing} labels | double vector, cell array
+%   settings - structure of additional settings for classifier function
 %
 % Output:
 %
-%  performance        - classifiers performance | double
-%  class              - classes assigned to individual subjects ! double 
-%                       vector
-%  correctPredictions - correctness of classifications | boolean vector
-%  errors             - errors of individual subsets | cell array of
+%   performance        - classifiers performance | double
+%   class              - classes assigned to individual subjects ! double 
+%                        vector
+%   correctPredictions - correctness of classifications | boolean vector
+%   errors             - errors of individual subsets | cell array of
 %                       MException
 %
 % See Also:
-% classifyFC
+%   classifyFC
 
   % default value
   performance = NaN;

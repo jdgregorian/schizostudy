@@ -6,7 +6,7 @@ function saved = reduceSubjects(datafile, subjectOut, classOut, balance)
 %   datafile   - name of datafile with connectivity matrix | string
 %   subjectOut - subjects to remove from matrix | double vector
 %   classOut   - label of subjects to be removed (if empty, subjects will
-%                 be removed without consideration group balance)
+%                be removed without consideration group balance)
 %   balance    - mode of balancing the dataset | 
 %                'first'  - first N data not labeled as 'classOut' are 
 %                           removed, N is the number of removed data in

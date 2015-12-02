@@ -5,23 +5,23 @@ function [performance, preparedData, preparedLabels, class] = classifyFC(data, m
 %
 % Input:
 %
-% data     - path to datafile or folder with training and testing folders 
-%            | string
-% method   - method used to classification | string
-% settings - settings of chosen method | structure
-% filename - name of file with results (optional) | string
-%          - if empty no saving is done
+%   data     - path to datafile or folder with training and testing 
+%              folders | string
+%   method   - method used to classification | string
+%   settings - settings of chosen method | structure
+%   filename - name of file with results (optional) | string
+%            - if empty no saving is done
 %
 % Output:
 %
-% performance    - performance of chosen classifier with appropriate 
-%                  settings
-% preparedData   - functional connectivity data used for computations
-% preparedLabels - labels of data in 'preparedData' matrix from 'data'
-% class          - labels of data assigned by classifier
+%   performance    - performance of chosen classifier with appropriate 
+%                    settings
+%   preparedData   - functional connectivity data used for computations
+%   preparedLabels - labels of data in 'preparedData' matrix from 'data'
+%   class          - labels of data assigned by classifier
 %
 % See Also:
-% classifier
+%   classifier
 
   if nargin < 3
       settings = [];

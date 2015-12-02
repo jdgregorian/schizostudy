@@ -3,7 +3,7 @@ function listSettingsResults(folder)
 % in FOLDER to txt file. 
 %
 % See Also:
-% returnResults
+%   returnResults
 
   if nargin == 0
     help listSettingsResults
