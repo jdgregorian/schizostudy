@@ -6,15 +6,16 @@ function runExperiment(experimentFile, data, expname, metacentrum)
 % runExperiment(experimentFile) runs experiment set in 'experimentFile'
 %
 % Input:
-%    settingFiles  - m-file or cell array of m-files with settings of
-%                    classifiers
-%    data          - char or cell array of char containing path(s) to data
-%                    that should be tested
-%    expname       - name of the experiment
-%    metacentrum   - whether the experiment is running on metacentrum | logical
+%   settingFiles  - m-file or cell array of m-files with settings of
+%                   classifiers
+%   data          - char or cell array of char containing path(s) to data
+%                   that should be tested
+%   expname       - name of the experiment
+%   metacentrum   - whether the experiment is running on metacentrum 
+%                   | logical
 %
 % See Also:
-% metacentrum_runExperiment createExperiment
+%   metacentrum_runExperiment createExperiment
 
   % initialization
   if nargin < 1

@@ -11,7 +11,9 @@ function createExperiment(expfolder, expname, settingFiles, data)
 %                   strings
 
   foldername = fullfile(expfolder, expname);
-  mkdir(foldername)
+  if ~isdir(foldername)
+    mkdir(foldername)
+  end
   
   % load all settings
   [settings, resultNames] = loadSettings(settingFiles);
