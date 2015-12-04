@@ -3,7 +3,7 @@ function listSettingsResults(folder)
 % in FOLDER to txt file. 
 %
 % See Also:
-% returnResults
+%   returnResults
 
   if nargin == 0
     help listSettingsResults
@@ -27,6 +27,7 @@ function listSettingsResults(folder)
   performance = cell(nFiles,1);
   avgPerformance = zeros(nFiles,1);
   errors = cell(nFiles,1);
+  elapsedTime = NaN(nFiles,1);
   nEmptyFiles = 0;
   usefulFiles = true(nFiles,1);
   
@@ -42,6 +43,9 @@ function listSettingsResults(folder)
       avgPerformance(f - nEmptyFiles) = variables.avgPerformance;
       if isfield(variables, 'errors')
         errors{f-nEmptyFiles} = variables.errors;
+      end
+      if isfield(variables, 'elapsedTime')
+        elapsedTime{f-nEmptyFiles} = variables.elapsedTime;
       end
     else
       nEmptyFiles = nEmptyFiles + 1;
@@ -74,6 +78,7 @@ function listSettingsResults(folder)
       char(ones(1, 48 - length(method{f}))*32) ,avgPerformance(f)*100);
     fprintf(FID,'  File: %s\n', fileList(f).name);
     fprintf(FID,'  Data: %s\n', data{f});
+    fprintf(FID,'  Elapsed time: %.2f%%\n', elapsedTime(f));
     fprintf(FID,'\n');
     
     % settings printing
