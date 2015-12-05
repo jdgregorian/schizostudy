@@ -92,7 +92,7 @@ function runExperiment(experimentFile, data, expname, metacentrum)
       availableSettings = settings{currentID};
       fprintf(ftest, 'Trying to evaluate following settings:\n %s\n', availableSettings);
       secureEval(availableSettings)
-      fprintf(ftest, 'Settings successfully computed.\n');
+      fprintf(ftest, 'Settings computed.\n');
       rmdir(taskRunFolder, 's')
       attempts = 0;
     else

@@ -1,4 +1,4 @@
-function [performance, preparedData, preparedLabels, class] = classifyFC(data, method, settings, filename)
+function [avgPerformance, preparedData, preparedLabels, class] = classifyFC(data, method, settings, filename)
 % classifyFC(data, method, settings, filename) classifies functional 
 % (structural) connectivity data in 'data' by 'method' with additional
 % settings to method.
@@ -14,8 +14,8 @@ function [performance, preparedData, preparedLabels, class] = classifyFC(data, m
 %
 % Output:
 %
-%   performance    - performance of chosen classifier with appropriate 
-%                    settings
+%   avgPerformance - average performance of chosen classifier with 
+%                    appropriate settings
 %   preparedData   - functional connectivity data used for computations
 %   preparedLabels - labels of data in 'preparedData' matrix from 'data'
 %   class          - labels of data assigned by classifier
@@ -52,7 +52,10 @@ function [performance, preparedData, preparedLabels, class] = classifyFC(data, m
   % prepared data check
   if isempty(preparedData) || isempty(preparedLabels)
     warning('Wrong input format or file!')
-    performance = NaN;
+    errors = 'Wrong input format or file!';
+    avgPerformance = NaN;
+    resultFileName = fullfile('exp', 'experiments', filename);
+    save(resultFileName, 'avgPerformance', 'errors', 'data')
     return
   end
 

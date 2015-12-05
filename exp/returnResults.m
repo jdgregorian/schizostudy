@@ -1,4 +1,4 @@
-function [avgPerformances, settings, method, data, performance, errors] = returnResults(folders)
+function [avgPerformances, settings, method, data, performance, errors, omittedFiles] = returnResults(folders)
 % [performances, settings, method, data, errors] 
 %     = returnResults('folders') lists results of FC 
 % performance testing in 'folders' cellarray to 'performance' and
@@ -18,6 +18,7 @@ function [avgPerformances, settings, method, data, performance, errors] = return
 %   performance     - N x M cell array of performances of tested
 %                     classifiers
 %   errors          - N x M matrix of errors occured during testing
+%   omittedFiles    - list of omitted files
 %
 % See Also:
 %   listSettingsResults
@@ -60,6 +61,7 @@ function [avgPerformances, settings, method, data, performance, errors] = return
     folderErrors = cell(nFiles,1);
     nEmptyFiles = 0;
     usefulFiles = true(nFiles,1);
+    omittedFiles = {};
 
     fprintf('Loading data...\n')
     neededVariables = {'settings', 'method', 'data', 'performance', 'avgPerformance', 'errors'};
@@ -78,6 +80,7 @@ function [avgPerformances, settings, method, data, performance, errors] = return
         end
       else
         fprintf('Omitting file %s\n', filename)
+        omittedFiles{end+1} = filename;
         nEmptyFiles = nEmptyFiles + 1;
         usefulFiles(fil) = false;
       end
@@ -89,11 +92,11 @@ function [avgPerformances, settings, method, data, performance, errors] = return
     errors{f} = {};
     uniqueSettings = {};
     uniqueSettings_Method = {};
-    uniqueData = unique(folderData);
+    uniqueData = unique(folderData(1:nFiles - nEmptyFiles));
     % use only files with all information
     useFile = 1:nFiles;
     useFile(~usefulFiles) = [];
-    for s = useFile
+    for s = 1 : nFiles - nEmptyFiles
       settingsID = find(cellfun(@(x) isequal(folderSettings{s}, x), uniqueSettings), 1);
       if isempty(settingsID)
         uniqueSettings{end+1} = folderSettings{s};
