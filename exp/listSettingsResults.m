@@ -17,45 +17,21 @@ function listSettingsResults(folder)
   folderPos = strfind(folder, filesep);
   foldername = folder(folderPos(end) + 1 : end);
   resultname = [folder, filesep, foldername, '.txt'];
-  fileList = dir([folder, filesep, '*.mat']);
-  nFiles = length(fileList);
   
   % loading data
-  settings = cell(nFiles,1);
-  method = cell(nFiles,1);
-  data = cell(nFiles,1);
-  performance = cell(nFiles,1);
-  avgPerformance = zeros(nFiles,1);
-  errors = cell(nFiles,1);
-  elapsedTime = NaN(nFiles,1);
-  nEmptyFiles = 0;
-  usefulFiles = true(nFiles,1);
+  [avgPerformance, settings, method, data, performance, elapsedTime, errors, returnedFiles, omittedFiles] = returnResults(folder);
+  avgPerformance = avgPerformance{1};
+  settings = settings{1};
+  method = method{1};
+  data = data{1};
+  performance = performance{1};
+  elapsedTime = elapsedTime{1};
+  errors = errors{1};
+  returnedFiles = returnedFiles{1};
+  omittedFiles = omittedFiles{1};
   
-  fprintf('Loading data...\n')
-  neededVariables = {'settings', 'method', 'data', 'performance', 'avgPerformance', 'errors'};
-  for f = 1:nFiles
-    variables = load([folder filesep fileList(f).name], neededVariables{:});
-    if all(isfield(variables, neededVariables(1:end-1)))
-      settings{f - nEmptyFiles} = variables.settings;
-      method{f - nEmptyFiles} = variables.method;
-      data{f - nEmptyFiles} = variables.data;
-      performance{f - nEmptyFiles} = variables.performance;
-      avgPerformance(f - nEmptyFiles) = variables.avgPerformance;
-      if isfield(variables, 'errors')
-        errors{f-nEmptyFiles} = variables.errors;
-      end
-      if isfield(variables, 'elapsedTime')
-        elapsedTime{f-nEmptyFiles} = variables.elapsedTime;
-      end
-    else
-      nEmptyFiles = nEmptyFiles + 1;
-      usefulFiles(f) = false;
-    end
-  end
-  
-  % use only non-empty fields
-  nFiles = nFiles - nEmptyFiles;
-  fileList = fileList(usefulFiles);
+  nFiles = length(returnedFiles);
+  [nSettings, nData] = size(avgPerformance);
 
   % printing results to txt file
   FID = fopen(resultname,'w');
@@ -71,33 +47,50 @@ function listSettingsResults(folder)
   fprintf(FID,'      Number of files: %d\n', nFiles);
   fprintf(FID,'\n');
   
-  for f = 1:nFiles
-    % file header printing
+  % print omitted files
+  if ~isempty(omittedFiles)
     fprintf(FID,'\n---------------------------------------------------------------------------------\n\n');
-    fprintf(FID,'  Method: %s %s Performance: %.2f%%\n', method{f}, ...
-      char(ones(1, 48 - length(method{f}))*32) ,avgPerformance(f)*100);
-    fprintf(FID,'  File: %s\n', fileList(f).name);
-    fprintf(FID,'  Data: %s\n', data{f});
-    fprintf(FID,'  Elapsed time: %.2f%%\n', elapsedTime(f));
-    fprintf(FID,'\n');
-    
-    % settings printing
-    fprintf(FID,'  Settings:\n');
-    fprintf(FID,'\n');
-    printSettings(FID, settings{f});
-    
-    % performances printing
-    nPerf = length(performance{f});
-    if nPerf > 1
-      fprintf(FID,'\n  Performances per iterations: \n');
-      for i = 1:nPerf
-        fprintf(FID,'    %.4f', performance{f}(i));
-      end
-      fprintf(FID,'\n');
+    fprintf(FID,'  Omitted files:\n');
+    for f = 1:length(omittedFiles)
+      fprintf(FID,'    %s\n', omittedFiles{f});
     end
-    
-    % error printing
-    printErrors(FID, errors{f});
+    fprintf(FID,'\n');
+  end
+  
+  % printing settings results
+  f = 0;
+  for s = 1 : nSettings
+    for d = 1 : nData
+      if ~isempty(performance{s, d})
+        f = f + 1;
+        % file header printing
+        fprintf(FID,'\n---------------------------------------------------------------------------------\n\n');
+        fprintf(FID,'  Method: %s %s Performance: %.2f%%\n', method{s}, ...
+          char(ones(1, 48 - length(method{s}))*32) ,avgPerformance(s, d)*100);
+        fprintf(FID,'  File: %s\n', returnedFiles{f});
+        fprintf(FID,'  Data: %s\n', data{d});
+        fprintf(FID,'  Elapsed time: %.3f seconds\n', sum(elapsedTime{s, d}));
+        fprintf(FID,'\n');
+
+        % settings printing
+        fprintf(FID,'  Settings:\n');
+        fprintf(FID,'\n');
+        printSettings(FID, settings{s});
+
+        % performances printing
+        nPerf = length(performance{s, d});
+        if nPerf > 1
+          fprintf(FID,'\n  Performances per iterations: \n');
+          for i = 1:nPerf
+            fprintf(FID,'    %.4f', performance{s, d}(i));
+          end
+          fprintf(FID,'\n');
+        end
+
+        % error printing
+        printErrors(FID, errors{s, d});
+      end
+    end
   end
   
   fclose(FID);
