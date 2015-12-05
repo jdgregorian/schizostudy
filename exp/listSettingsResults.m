@@ -20,15 +20,6 @@ function listSettingsResults(folder)
   
   % loading data
   [avgPerformance, settings, method, data, performance, elapsedTime, errors, returnedFiles, omittedFiles] = returnResults(folder);
-  avgPerformance = avgPerformance{1};
-  settings = settings{1};
-  method = method{1};
-  data = data{1};
-  performance = performance{1};
-  elapsedTime = elapsedTime{1};
-  errors = errors{1};
-  returnedFiles = returnedFiles{1};
-  omittedFiles = omittedFiles{1};
   
   nFiles = length(returnedFiles);
   [nSettings, nData] = size(avgPerformance);

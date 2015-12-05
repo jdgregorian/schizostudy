@@ -8,6 +8,7 @@ fprintf('Split MATLAB and PRTools settings?\n')
 
 fprintf('\nMost recent: \n')
 fprintf('    Metacentrum: Findout the error\n')
+fprintf('    Exclude settings.notes from comparison in returnResults\n')
 fprintf('    Rewrite experiment to new format\n')
 fprintf('    Adjust classifier settings according to matlab version\n')
 fprintf('    Is Fisher similar to LDC?\n')

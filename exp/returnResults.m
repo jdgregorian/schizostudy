@@ -1,8 +1,7 @@
 function [avgPerformances, settings, method, data, performance, elapsedTime, errors, returnedFiles, omittedFiles] = returnResults(folders)
-% [performances, settings, method, data, errors] 
-%     = returnResults('folders') lists results of FC 
-% performance testing in 'folders' cellarray to 'performance' and
-% apropriate 'settings', 'method', 'data', and 'errors'.
+% [avgPerformances, settings, method, data, performance, elapsedTime, 
+%    errors, returnedFiles, omittedFiles] = returnResults('folders') 
+% lists results of FC performance testing in 'folders' cellarray.
 %
 % Input:
 %   folders - list of folders to process | string or cell array of 
@@ -129,5 +128,18 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
       returnedFiles{f} = {fileList(usefulFiles).name};
       omittedFiles{f} = {fileList(~usefulFiles).name};
     end
+  end
+  
+  % simple output for one input
+  if nFolders == 1
+    avgPerformances = avgPerformances{1};
+    settings = settings{1};
+    method = method{1};
+    data = data{1};
+    performance = performance{1};
+    elapsedTime = elapsedTime{1};
+    errors = errors{1};
+    returnedFiles = returnedFiles{1};
+    omittedFiles = omittedFiles{1};
   end
 end

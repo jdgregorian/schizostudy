@@ -28,6 +28,7 @@ clear settings
 
 settings.svm.kernel_function = 'linear';
 settings.svm.boxconstraint = 1.5;
+settings.note = 'Linear SVM';
 
 classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear', datamark, '.mat']));
 
@@ -37,6 +38,7 @@ clear settings
 settings.svm.kernel_function = 'polynomial';
 settings.svm.boxconstraint = 0.12;
 settings.svm.polyorder = 3;
+settings.note = 'Polynomial SVM';
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly', datamark, '.mat']));
 
@@ -46,6 +48,7 @@ clear settings
 settings.svm.kernel_function = 'rbf';
 settings.svm.boxconstraint = 1.25;
 settings.svm.rbf_sigma = 1;
+settings.note = 'RBF SVM';
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_rbf', datamark, '.mat']));
 
@@ -55,7 +58,7 @@ clear settings
 
 settings.implementation = 'prtools';
 settings.tree.crit = 'infcrit';
-settings.note = 'Default settings of PRTools decision tree using information gain criterion.';
+settings.note = 'PRTools decision tree using information gain criterion.';
 
 classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_inf',datamark,'.mat']));
 
@@ -63,8 +66,8 @@ classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_inf',datama
 clear settings
 
 settings.implementation = 'prtools';
-settings.note = 'PRTools decision tree using Fisher criterion.';
 settings.tree.crit = 'fishcrit';
+settings.note = 'PRTools decision tree using Fisher criterion.';
 
 classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_fish',datamark,'.mat']));
 
@@ -73,6 +76,7 @@ classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_fish',datam
 clear settings
 
 settings.lda.type = 'linear';
+settings.note = 'Default settings of linear discriminant analysis.';
 
 classifyFC(FCdata, 'lda', settings, fullfile(filename, ['lda', datamark, '.mat']));
 
@@ -80,6 +84,7 @@ classifyFC(FCdata, 'lda', settings, fullfile(filename, ['lda', datamark, '.mat']
 clear settings
 
 settings.qda.type = 'quadratic';
+settings.note = 'Default settings of quadratic discriminant analysis.';
 
 classifyFC(FCdata, 'qda', settings, fullfile(filename, ['qda', datamark, '.mat'])); 
 
@@ -132,9 +137,9 @@ classifyFC(FCdata, 'perc', settings, fullfile(filename, ['perc_default', datamar
 %% ANN - Arbabshirani's settings
 clear settings
 
-settings.note = 'ANN with Arbabshirani''s settings.';
 settings.ann.hiddenSizes = [6 6 6]; % [4 4 4] - on reduced
 settings.iteration = 10;
+settings.note = 'ANN with Arbabshirani''s settings.';
 
 classifyFC(FCdata, 'ann', settings, fullfile(filename, ['ann_arbab', datamark, '.mat']));
 
