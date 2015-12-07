@@ -146,8 +146,6 @@ end
 
 function printVal(FID, val)
 % function checks the class of value and prints it in appropriate format
-
-  isdecimalnumber = @(x) ~mod(x,1);
   
   if isempty(val)
     fprintf(FID,'[]');
@@ -156,10 +154,10 @@ function printVal(FID, val)
       case 'char'
         fprintf(FID,'''%s''', val);
       case 'double'
-        if val~= Inf && isdecimalnumber(val)
-          fprintf(FID,'%d', val);
-        else
+        if (isnan(val) || val == Inf || mod(val,1))
           fprintf(FID,'%f', val);
+        else
+          fprintf(FID,'%d', val);
         end
       case 'logical'
         if val

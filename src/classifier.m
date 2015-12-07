@@ -275,6 +275,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         switch method
           case 'dectree' % decision tree
             trainedPRClassifier = treec(toolData, settings.tree.crit, settings.tree.prune);
+%             getopt_pars
             
           case 'rf' % random forest
             if strcmpi(settings.forest.learning, 'bagging')
