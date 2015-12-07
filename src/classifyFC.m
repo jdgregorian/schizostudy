@@ -166,6 +166,7 @@ function [data, labels] = loadTrainTestDataFolder(foldername)
   [labels{1}, data{1}] = vectOrMat(loadedTrainData);
   [labels{2}, data{2}] = vectOrMat(loadedTestData);
   
-  labels{1} = labels{1} - 1;
-  labels{2} = labels{2} - 1;
+  minvalue = min(min(labels{1}), min(labels{2}));
+  labels{1} = labels{1} - minvalue;
+  labels{2} = labels{2} - minvalue;
 end
