@@ -7,6 +7,7 @@ fprintf('Generating TeX files with results - adjust returnResults?\n')
 fprintf('Split MATLAB and PRTools settings?\n')
 
 fprintf('\nMost recent: \n')
+fprintf('    Fix settings second-level (and more) comparison in listSettingsResults\n')
 fprintf('    Improve methods by using CV during training - gridsearch, in PRTools regoptc\n')
 fprintf('    Metacentrum: Findout the error\n')
 fprintf('    Exclude settings.notes from comparison in returnResults\n')

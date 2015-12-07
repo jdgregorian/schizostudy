@@ -87,7 +87,7 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
             folderElapsedTime{fil - nEmptyFiles} = variables.elapsedTime;
           end
         else
-          fprintf('Omitting file %s\n', filename)
+          fprintf('Omitting file (lack of result variables): %s\n', filename)
           nEmptyFiles = nEmptyFiles + 1;
           usefulFiles(fil) = false;
         end
@@ -114,6 +114,10 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
           elapsedTime{f}{end+1, dataID} = folderElapsedTime{s};
         else
           dataID = find(strcmp(uniqueData, folderData{s}), 1);
+          if ~isempty(avgPerformances{f}(settingsID, dataID))
+            fprintf('Omitting file (result redundancy): %s\n', filename)
+            usefulFiles(s) = false;
+          end
           avgPerformances{f}(settingsID, dataID) = folderAvgPerformance(s);
           performance{f}{settingsID, dataID} = folderPerformance{s};
           errors{f}{settingsID, dataID} = folderErrors{s};
