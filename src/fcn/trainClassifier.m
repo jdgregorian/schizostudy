@@ -1,7 +1,8 @@
 function trainedClassifier = trainClassifier(method, trainingData, trainingLabels, settings, cellset)
 % trainedClassifier = trainClassifier(method, trainingData, 
-% trainingLabels, settings) trains classifier specified in variables 
-% 'method' and 'settings' on 'trainingData' with 'trainingLabels'.
+% trainingLabels, settings, cellset) trains classifier specified in 
+% variables 'method' and 'settings' (or 'cellset') on 'trainingData' with 
+% 'trainingLabels'.
 % 
 % Warning: 'settings' can be in different format - use prepareSettings
 %          first
