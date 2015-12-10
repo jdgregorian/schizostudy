@@ -1,4 +1,4 @@
-function trainedCVClassifier = trainCVClassifier(method, trainingData, trainingLabels, settings, cellset)
+function trainedCVClassifier = trainCVClassifier(method, data, labels, settings, cellset)
 % trainedCVClassifier = trainCVClassifier(method, trainingData, 
 % trainingLabels, settings) trains cross-validated classifier according to
 % settings.gridsearch.
@@ -14,7 +14,7 @@ function trainedCVClassifier = trainCVClassifier(method, trainingData, trainingL
   
   if ~isfield(settings, 'gridsearch')
     warning('No gridsearch set. Running regular training.')
-    trainedCVClassifier.classifier = trainClassifier(method, trainingData, trainingLabels, settings, cellset);
+    trainedCVClassifier.classifier = trainClassifier(method, data, labels, settings, cellset);
   end
 
   % implementation settings
@@ -35,22 +35,12 @@ function trainedCVClassifier = trainCVClassifier(method, trainingData, trainingL
     [settings, cellset] = prepareSettings(method, settings);
     assert(~isempty(settings), 'Classifier settings are not in correct format')
   end
-
-  % CV prepare
-  Nsubjects = size(trainingData, 1);
-  kFold = defopts(settings.gridsearch, 'crossval', 5);
-  if strcmpi(kFold, 'loo') || (kFold > Nsubjects)
-    kFold = Nsubjects;
-    CVindices = 1:Nsubjects;
-  else
-    CVindices = crossvalind('kfold', Nsubjects, kFold);
-  end
   
   % prepare properties 
   CVProperties = defopts(settings.gridsearch, 'properties', {});
   if isempty(CVProperties)
     warning('No properties in gridsearch set. Running regular training.')
-    trainedCVClassifier.classifier = trainClassifier(method, trainingData, trainingLabels, settings, cellset);
+    trainedCVClassifier.classifier = trainClassifier(method, data, labels, settings, cellset);
   end
   
   nProperties = length(CVProperties);
@@ -61,25 +51,37 @@ function trainedCVClassifier = trainCVClassifier(method, trainingData, trainingL
     CVGridPoints = 2;
   end
   
+  % prepare grid values
   gridValues = cell(nProperties, 1);
   for p = 1:nProperties
     gridValues{p} = linspace(CVGridBounds{p}(1), CVGridBounds{p}(2), CVGridPoints);
   end
   
+  % prepare settings
   nCombinations = prod(CVGridPoints);
   gridSettings = cell(nCombinations, 1);
-  % TODO: Continue with following row
-  %gridSettings = cellfun( @(x) x = settings, gridSettings)
+  for i = 1:nCombinations
+    gridSettings{i} = settings;
+  end
   for i = 0:nCombinations - 1
     exactParamId = i; 
     % extract appropriate values
     for j = 1:nProperties
       ParamId = mod(exactParamId, CVGridPoints(j));
-      eval(['gridSettings{i+1}.', settingsStructName(method),' = ',num2str(gridValues{p}(ParamId+1)),';'])
+      eval(['gridSettings{i+1}.', settingsStructName(method), '.', CVProperties{j}, ' = ',num2str(gridValues{j}(ParamId+1)),';'])
       exactParamId = (exactParamId - ParamId) / CVGridPoints(j);
     end
   end
-
+  
+  % CV prepare
+  Nsubjects = size(data, 1);
+  kFold = defopts(settings.gridsearch, 'crossval', 5);
+  if strcmpi(kFold, 'loo') || (kFold > Nsubjects)
+    kFold = Nsubjects;
+    CVindices = 1:Nsubjects;
+  else
+    CVindices = crossvalind('kfold', Nsubjects, kFold);
+  end
   
   % main training loop
   %
@@ -93,5 +95,42 @@ function trainedCVClassifier = trainCVClassifier(method, trainingData, trainingL
   % bestSettings = argmax(perf);
   %
   % trainedCVClassifier.classifier = trainClassifier(method, trainingData, trainingLabels, bestSettings, bestCellset);
+  
+  performance = zeros(nCombinations, 1);
+  for s = 1:nCombinations
+    correctPredictions = false(Nsubjects, 1);
+    for f = 1:kFold
+      foldIds = sub == CVindices;
+      % training
+      trainingData = data(~foldIds,:);
+      trainingLabels = labels(~foldIds);
+      actualcellset = cellSettings(eval(['gridSettings{s}.', settingsStructName(method)]));
+      try
+        actualClassifier = trainClassifier(method, trainingData, trainingLabels, gridSettings{s}, actualcellset);
+        % testing
+        testingData = data(foldIds,:);
+        testingLabels = labels(foldIds);
+        y = classifierPredict(actualClassifier, testingData, trainingData, trainingLabels);
+        % output check
+        if iscell(y)
+          if length(y) == 1
+            y = str2double(y{1});
+          else
+            y = str2double(y);
+          end
+        end
+        correctPredictions(foldIds) = y == testingLabels;
+      catch
+        % if error continue
+      end
+    end
+    performance(s) = sum(correctPredictions)/Nsubjects;
+  end
+  
+  % train the best classifier settings
+  [~, bestSettingsID] = max(performance); 
+  trainedCVClassifier.settings = gridSettings{bestSettingsID};
+  bestCellSettings = cellSettings(eval(['gridSettings{s}.', settingsStructName(method)]));
+  trainedCVClassifier.classifier = trainClassifier(method, data, labels, gridSettings{bestSettingsID}, bestCellSettings);
   
 end
