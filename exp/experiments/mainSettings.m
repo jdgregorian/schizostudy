@@ -301,7 +301,7 @@ classifyFC(FCdata,'lda',settings, fullfile(filename, ['lda_linear_pca20', datama
 clear settings
 
 settings.implementation = 'prtools';
-settings.lda.prior = [0.5,0.5];
+settings.prior = [0.5,0.5];
 settings.note = 'Default settings of PRTools LDA.';
 
 classifyFC(FCdata,'lda',settings, fullfile(filename, ['lda_prtools_pca20', datamark, '.mat']));
@@ -326,7 +326,7 @@ classifyFC(FCdata,'qda',settings, fullfile(filename, ['qda_quadratic_pca20', dat
 clear settings
 
 settings.implementation = 'prtools';
-settings.qda.prior = [0.5,0.5];
+settings.prior = [0.5,0.5];
 settings.note = 'Default settings of PRTools QDA.';
 
 classifyFC(FCdata,'qda',settings, fullfile(filename, ['qda_prtools', datamark, '.mat']));
@@ -355,24 +355,6 @@ settings.knn.distance = 'euclidean';
 settings.note = 'Default settings of KNN classifier.';
 
 classifyFC(FCdata,'knn',settings, fullfile(filename, ['knn_1', datamark, '.mat']));
-
-%% KNN - k=3
-clear settings
-
-settings.knn.k = 3;
-settings.knn.distance = 'euclidean';
-
-classifyFC(FCdata,'knn',settings, fullfile(filename, ['knn_3', datamark, '.mat']));
-
-%% KNN - k=3, kendall 200
-clear settings
-
-settings.knn.k = 3;
-settings.knn.distance = 'euclidean';
-settings.dimReduction.name = 'kendall';
-settings.dimReduction.nDim = 200;
-
-classifyFC(FCdata,'knn',settings, fullfile(filename, ['knn_3_kendall_200', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% logistic linear classifier + PCA 20

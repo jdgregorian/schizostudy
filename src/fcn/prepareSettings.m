@@ -17,6 +17,11 @@ function [settings, cellset] = prepareSettings(method, settings)
   if any(strcmpi(method, {'fisher', 'dectree'}))
     settings.implementation = 'prtools';
   end
+  
+  % gridsearch settings
+  settings.gridsearch = defopts(settings, 'gridsearch', []);
+  settings.gridsearch.mode = defopts(settings.gridsearch, 'mode', 'none');
+  settings.gridsearch.properties = defopts(settings.gridsearch, 'properties', {});
 
   % PRTools implementations
   if any(strcmpi(settings.implementation, {'prtools', 'prt'}))
@@ -38,10 +43,15 @@ function [settings, cellset] = prepareSettings(method, settings)
         settings.forest.learning = defopts(settings.forest, 'learning', 'bagging');
         settings.forest.rule = defopts(settings.forest, 'rule', 'wvotec');
         
-      case {'lda', 'qda'} % linear or quadratic discriminant classifier
-        settings.da = defopts(settings, method, []);
-        settings.da.R = defopts(settings.da, 'R', 0);
-        settings.da.S = defopts(settings.da, 'S', 0);
+      case 'lda' % linear discriminant classifier
+        settings.lda = defopts(settings, 'lda', []);
+        settings.lda.R = defopts(settings.lda, 'R', 0);
+        settings.lda.S = defopts(settings.lda, 'S', 0);
+        
+      case 'qda' % quadratic discriminant classifier
+        settings.qda = defopts(settings, 'qda', []);
+        settings.qda.R = defopts(settings.qda, 'R', 0);
+        settings.qda.S = defopts(settings.qda, 'S', 0);
         
       case 'fisher' % Fisher's linear discriminant (fisherc)
         if isfield(settings,'fisher')
