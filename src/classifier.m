@@ -141,6 +141,8 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       % training
       if strcmpi(settings.gridsearch.mode, 'none')
         trainedClassifier = trainClassifier(method, trainingData, trainingLabels, settings, cellset);
+      else
+        trainedClassifier = trainCVClassifier(method, trainingData, trainingLabels, settings);
       end
 
       % prediction
