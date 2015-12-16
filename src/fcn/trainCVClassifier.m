@@ -63,17 +63,31 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
   
   bestLevelSettings = cell(nLevels, 1);
   bestLevelPerformance = zeros(nLevels, 1);
+  
   % level loop
   for l = 1:nLevels
     % prepare grid values
     gridValues = cell(nProperties, 1);
     for p = 1:nProperties
-      if strcmpi(CVGridSpacing{p}{l}, 'log')
-        gridValues{p} = logspace(log10(CVGridBounds{p}(1)), log10(CVGridBounds{p}(2)), CVGridPoints(p));
-      else
-        gridValues{p} = linspace(CVGridBounds{p}(1), CVGridBounds{p}(2), CVGridPoints(p));
+      if l == 1
+        lb = CVGridBounds{p}(1);
+        ub = CVGridBounds{p}(2);
+      else      
+        if strcmpi(CVGridSpacing{p}{l}, 'log')
+          gridValues{p} = logspace(log10(lb), log10(ub), CVGridPoints(p) + 2);
+        else
+          gridValues{p} = linspace(lb, ub, CVGridPoints(p) + 2);
+        end
+        lb = gridValues{p}(2);
+        ub = gridValues{p}(end - 1);      
       end
-    end
+
+      if strcmpi(CVGridSpacing{p}{l}, 'log')
+        gridValues{p} = logspace(log10(lb), log10(ub), CVGridPoints(p));
+      else
+        gridValues{p} = linspace(lb, ub, CVGridPoints(p));
+      end
+    end    
 
     % prepare settings
     for i = 0:nCombinations - 1
@@ -124,10 +138,19 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
     bestLevelSettings{l} = gridSettings{bestSettingsID};
     
     % calculate new bounds
-    lowerID = bestSettingsID - 1;
+    lowerID = bestSettingsID - 1; % TODO: should be according to actual best settings and overall best
     for p = 1:nProperties
       ParamId = mod(lowerID, CVGridPoints(p));
-      % TODO: calculation of bounds according to gridValues{p}(ParamId+1)
+      if ParamId == 0
+        lb = gridValues{p}(ParamId + 1);
+      else
+        lb = gridValues{p}(ParamId);
+      end
+      if ParamId + 2 == CVGridPoints(p)
+        ub = gridValues{p}(ParamId + 1);
+      else
+        ub = gridValues{p}(ParamId + 2);
+      end
       lowerID = (lowerID - ParamId) / CVGridPoints(p);
     end
 
