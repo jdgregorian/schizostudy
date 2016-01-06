@@ -2,6 +2,26 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
 % trainedCVClassifier = trainCVClassifier(method, trainingData, 
 % trainingLabels, settings) trains cross-validated classifier according to
 % settings.gridsearch.
+%
+% Gridsearch is implemented in a very primitive way. At each level points
+% from the parameter space are layed out using linear/logaritmic scale. At
+% each point is trained classifier with aproprite settings. Point with the
+% best performance is the center point of the next level search.
+%
+% Example: 
+%   Find linear SVM classifier in 3-level gridsearch using properties
+%   'boxconstraint' and 'kktviolationlevel'. 'boxconstraint' bounds are 0.2
+%   and 10, and 'kktviolationlevel' bounds are 0 and 0.99. Gridsearch will
+%   use 5 points for 'boxconstraint' and 4 for 'kktviolationlevel'. Scale
+%   at first level is logaritmic for 'boxconstraint' and at the rest is 
+%   linear. Scale is linear for 'kktviolationlevel' at all levels.
+%
+%   settings.gridsearch.levels = 3;
+%   settings.gridsearch.properties = {'boxconstraint', 'kktviolationlevel'};
+%   settings.gridsearch.bounds = {[0.2, 10], [0, 0.99]};
+%   settings.gridsearch.npoints = [5, 4]; 
+%   settings.gridsearch.scaling = {{'log', 'lin', 'lin'},
+%                                  {'lin', 'lin', 'lin'}};
 % 
 % Warning: 'settings' can be in different format - use prepareSettings
 %          first
@@ -40,10 +60,13 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
   CVGridPoints(CVGridPoints < 2) = 2;
   
   % spacing
-  defSpace = {'lin'};
-  defSpace = {defSpace(ones(nLevels,1))};
-  defSpace = defSpace(ones(1, nProperties));
-  CVGridSpacing = defopts(settings.gridsearch, 'spacing', defSpace);
+  defScale = {'lin'};
+  defScale = {defScale(ones(nLevels,1))};
+  CVGridScaling = defopts(settings.gridsearch, 'scaling', defScale);
+  if ~iscell(CVGridScaling{1})
+    CVGridScaling = {CVGridScaling};
+    CVGridScaling = CVGridScaling(ones(1, nProperties));
+  end
 
   nCombinations = prod(CVGridPoints);
   gridSettings = cell(nCombinations, 1);
@@ -72,21 +95,12 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
       if l == 1
         lb = CVGridBounds{p}(1);
         ub = CVGridBounds{p}(2);
-      else      
-        if strcmpi(CVGridSpacing{p}{l}, 'log')
-          gridValues{p} = logspace(log10(lb), log10(ub), CVGridPoints(p) + 2);
-        else
-          gridValues{p} = linspace(lb, ub, CVGridPoints(p) + 2);
-        end
+      else
+        gridValues{p} = gridScaling(lb, ub, CVGridScaling{p}{l}, CVGridPoints(p) + 2);
         lb = gridValues{p}(2);
         ub = gridValues{p}(end - 1);      
       end
-
-      if strcmpi(CVGridSpacing{p}{l}, 'log')
-        gridValues{p} = logspace(log10(lb), log10(ub), CVGridPoints(p));
-      else
-        gridValues{p} = linspace(lb, ub, CVGridPoints(p));
-      end
+      gridValues{p} = gridScaling(lb, ub, CVGridScaling{p}{l}, CVGridPoints(p));
     end    
 
     % prepare settings
@@ -138,17 +152,21 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
     bestLevelSettings{l} = gridSettings{bestSettingsID};
     
     % calculate new bounds
-    lowerID = bestSettingsID - 1; % TODO: should be according to actual best settings and overall best
+    lowerID = bestSettingsID - 1; % TODO: non-primitive gridsearch
     for p = 1:nProperties
       ParamId = mod(lowerID, CVGridPoints(p));
       if ParamId == 0
+        % boundary value
         lb = gridValues{p}(ParamId + 1);
       else
+        % non-boundary value
         lb = gridValues{p}(ParamId);
       end
       if ParamId + 2 == CVGridPoints(p)
+        % boundary value
         ub = gridValues{p}(ParamId + 1);
       else
+        % non-boundary value
         ub = gridValues{p}(ParamId + 2);
       end
       lowerID = (lowerID - ParamId) / CVGridPoints(p);
@@ -160,5 +178,47 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
   [~, bestSettingsID] = max(bestLevelPerformance); 
   bestCellSettings = cellSettings(eval(['bestLevelSettings{bestSettingsID}.', settingsStructName(method)]));
   trainedCVClassifier = trainClassifier(method, data, labels, bestLevelSettings{bestSettingsID}, bestCellSettings);
+  
+end
+
+function s = gridScaling(lb, ub, scaling, nPoints)
+% Function returns 'nPoints' using 'scaling' from interval [lb, ub]
+%
+% Input:
+%   lb      - lower bound
+%   ub      - upper bound
+%   scaling - scaling type | 'lin', 'log'
+%   nPoints - number of points to lay out
+
+  if lb > ub
+    h = lb;
+    lb = ub;
+    ub = h;
+  end
+
+  if strcmpi(scaling, 'log') 
+    % NaN protection
+    if lb < 0 && ub < 0
+      protlb = abs(lb);
+      protub = abs(ub);
+    elseif lb <= 0
+      protlb = eps;
+      protub = ub - lb + eps;
+    else
+      protlb = lb;
+      protub = ub;
+    end
+    s = logspace(log10(protlb), log10(protub), nPoints);
+    % return original scaling
+    if lb < 0 && ub < 0
+      s = -s;
+    elseif lb <= 0
+      s = s + lb - eps;
+      s(1) = lb;
+      s(end) = ub;
+    end
+  else
+    s = linspace(lb, ub, nPoints);
+  end
   
 end
