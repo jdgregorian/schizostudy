@@ -103,6 +103,8 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
       uniqueData = unique(folderData(1:nFiles - nEmptyFiles));
 
       for s = 1 : nFiles - nEmptyFiles
+        % TODO: structure equalities - use function subfields from
+        % listSettingsResults
         settingsID = find(cellfun(@(x) isequal(folderSettings{s}, x), uniqueSettings), 1);
         if isempty(settingsID)
           uniqueSettings{end+1} = folderSettings{s};
