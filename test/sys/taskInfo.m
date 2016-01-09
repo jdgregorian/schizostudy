@@ -7,11 +7,6 @@ fprintf('Generating TeX files with results - adjust returnResults?\n')
 fprintf('Split MATLAB and PRTools settings?\n')
 
 fprintf('\nMost recent: \n')
-if ~isdir(fullfile('vendor', 'conn'))
-  fprintf('\n---------------------------------------------------------------------------------\n\n')
-  fprintf('    Download CONN at https://www.nitrc.org/projects/conn to vendor directory\n')
-  fprintf('\n---------------------------------------------------------------------------------\n\n')
-end
 fprintf('    Metacentrum: Findout the error\n')
 fprintf('    Improve multilevel gridsearch. Use regoptc in PRTools?\n')
 fprintf('    Rewrite experiment to new format\n')

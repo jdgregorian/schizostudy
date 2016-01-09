@@ -7,14 +7,27 @@ addpath(genpath('data'))
 addpath(genpath('exp'))
 addpath(genpath('src'))
 addpath(genpath('test'))
-addpath(genpath(fullfile('vendor','prtools')))
 
-FCdata = fullfile('data','data_FC_190subjects.mat');
-FCdata_old = fullfile('data','data_FC_203subjects.mat');
-% SCdata = fullfile('data','data_SC_190subjects.mat');
-% SCdata_old = fullfile('data','data_SC_203subjects.mat');
+% toolbox checking
+if ~isdir(fullfile('vendor', 'prtools'))
+  warning([' PrTools toolbox is missing! It might cause malfunction of some classifiers.',...
+           ' Download PrTools at http://www.37steps.com/software/ to vendor directory.'])
+else
+  addpath(genpath(fullfile('vendor', 'prtools')))
+end
 
-% Startup tasks informations
-if exist(fullfile('test','sys','.creator'),'file')
+if ~isdir(fullfile('vendor', 'conn'))
+  fprintf('\n---------------------------------------------------------------------------------\n\n')
+  fprintf('    Download CONN at https://www.nitrc.org/projects/conn to vendor directory\n')
+  fprintf('\n---------------------------------------------------------------------------------\n\n')
+else
+  addpath(genpath(fullfile('vendor', 'conn')))
+end
+
+% define useful variables
+FCdata = fullfile('data', 'data_FC_190subjects.mat');
+
+% startup tasks informations
+if exist(fullfile('test', 'sys', '.creator'), 'file')
   taskInfo
 end
