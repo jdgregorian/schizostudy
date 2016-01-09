@@ -13,8 +13,6 @@ if ~isdir(fullfile('vendor', 'conn'))
   fprintf('\n---------------------------------------------------------------------------------\n\n')
 end
 fprintf('    Metacentrum: Findout the error\n')
-fprintf('    Solve structrure equalities in returnResults\n')
-fprintf('    Exclude settings.notes from comparison in returnResults\n')
 fprintf('    Improve multilevel gridsearch. Use regoptc in PRTools?\n')
 fprintf('    Rewrite experiment to new format\n')
 fprintf('    Adjust classifier settings according to matlab version\n')

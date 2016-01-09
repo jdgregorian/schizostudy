@@ -99,24 +99,31 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
       errors{f} = {};
       elapsedTime{f} = {};
       uniqueSettings = {};
+      uSettings = {};
       uniqueSettings_Method = {};
       uniqueData = unique(folderData(1:nFiles - nEmptyFiles));
 
       for s = 1 : nFiles - nEmptyFiles
-        % TODO: structure equalities - use function subfields from
-        % listSettingsResults
-        settingsID = find(cellfun(@(x) isequal(folderSettings{s}, x), uniqueSettings), 1);
+        % compare uniqueness of settings omitting field 'note'
+        fSettings = folderSettings{s};
+        if isfield(fSettings, 'note')
+          fSettings = rmfield(fSettings, 'note');
+        end
+        settingsID = find(cellfun(@(x) isequal(fSettings, x), uSettings), 1);
+        % new settings
         if isempty(settingsID)
           uniqueSettings{end+1} = folderSettings{s};
+          uSettings{end+1} = fSettings; % for settings comparison
           uniqueSettings_Method{end+1} = folderMethod{s};
           dataID = find(strcmp(uniqueData, folderData{s}), 1);
           avgPerformances{f}(end+1, dataID) = folderAvgPerformance(s);
           performance{f}{end+1, dataID} = folderPerformance{s};
           errors{f}{end+1, dataID} = folderErrors{s};
           elapsedTime{f}{end+1, dataID} = folderElapsedTime{s};
+        % existing settings
         else
           dataID = find(strcmp(uniqueData, folderData{s}), 1);
-          if ~isempty(avgPerformances{f}(settingsID, dataID))
+          if (dataID <= size(avgPerformances{f},2)) && (~isempty(performance{f}{settingsID, dataID}))
             fprintf('Omitting file (result redundancy): %s\n', filename)
             usefulFiles(s) = false;
           end
