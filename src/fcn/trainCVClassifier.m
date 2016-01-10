@@ -16,6 +16,7 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
 %   at first level is logaritmic for 'boxconstraint' and at the rest is 
 %   linear. Scale is linear for 'kktviolationlevel' at all levels.
 %
+%   settings.gridsearch.mode = 'simple';
 %   settings.gridsearch.levels = 3;
 %   settings.gridsearch.properties = {'boxconstraint', 'kktviolationlevel'};
 %   settings.gridsearch.bounds = {[0.2, 10], [0, 0.99]};
@@ -51,21 +52,34 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
     warning('No properties in gridsearch set. Running regular training.')
     trainedCVClassifier.classifier = trainClassifier(method, data, labels, settings, cellset);
   end
-  
   nProperties = length(CVProperties);
   
-  nLevels = defopts(settings.gridsearch, 'levels', 1);
-  CVGridBounds = defopts(settings.gridsearch, 'bounds', mat2cell([zeros(nProperties,1), ones(nProperties,1)], ones(nProperties,1)));
+  nLevels = defopts(settings.gridsearch, 'levels', ones(nProperties, 1));
+  if length(nLevels) < nProperties
+  % fill the rest with the last
+    nLevels(end+1 : nProperties) = nLevels(end);
+  end
+  maxLevels = max(nLevels);
+  
+  CVGridBounds = defopts(settings.gridsearch, 'bounds', mat2cell([zeros(nProperties, 1), ones(nProperties, 1)], ones(nProperties, 1)));
   CVGridPoints = defopts(settings.gridsearch, 'npoints', ones(nProperties, 1)*11);
+  if length(CVGridPoints) < nProperties
+    CVGridPoints(end+1 : nProperties) = CVGridPoints(end);
+  end
   CVGridPoints(CVGridPoints < 2) = 2;
   
-  % spacing
+  % scaling
   defScale = {'lin'};
-  defScale = {defScale(ones(nLevels,1))};
+  defScale = {defScale(ones(maxLevels, 1))};
   CVGridScaling = defopts(settings.gridsearch, 'scaling', defScale);
   if ~iscell(CVGridScaling{1})
     CVGridScaling = {CVGridScaling};
     CVGridScaling = CVGridScaling(ones(1, nProperties));
+  end
+  for p = 1:nProperties
+    if length(CVGridScaling{p}) < maxLevels
+      CVGridScaling{p}(end+1 : maxLevels) = CVGridScaling{p}(end);
+    end
   end
 
   nCombinations = prod(CVGridPoints);
@@ -76,7 +90,7 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
   
   % CV prepare
   Nsubjects = size(data, 1);
-  kFold = defopts(settings.gridsearch, 'crossval', 5);
+  kFold = defopts(settings.gridsearch, 'kfold', 5);
   if strcmpi(kFold, 'loo') || (kFold > Nsubjects)
     kFold = Nsubjects;
     CVindices = 1:Nsubjects;
@@ -84,23 +98,26 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
     CVindices = crossvalind('kfold', Nsubjects, kFold);
   end
   
-  bestLevelSettings = cell(nLevels, 1);
-  bestLevelPerformance = zeros(nLevels, 1);
+  bestLevelSettings = cell(maxLevels, 1);
+  bestLevelPerformance = zeros(maxLevels, 1);
+  
+  lb = NaN(1, nProperties);
+  ub = NaN(1, nProperties);
   
   % level loop
-  for l = 1:nLevels
+  for l = 1:maxLevels
     % prepare grid values
     gridValues = cell(nProperties, 1);
     for p = 1:nProperties
       if l == 1
-        lb = CVGridBounds{p}(1);
-        ub = CVGridBounds{p}(2);
-      else
-        gridValues{p} = gridScaling(lb, ub, CVGridScaling{p}{l}, CVGridPoints(p) + 2);
-        lb = gridValues{p}(2);
-        ub = gridValues{p}(end - 1);      
+        lb(p) = CVGridBounds{p}(1);
+        ub(p) = CVGridBounds{p}(2);
+      elseif l <= nLevels(p)
+        gridValues{p} = gridScaling(lb(p), ub(p), CVGridScaling{p}{l}, CVGridPoints(p) + 2);
+        lb(p) = gridValues{p}(2);
+        ub(p) = gridValues{p}(end - 1);      
       end
-      gridValues{p} = gridScaling(lb, ub, CVGridScaling{p}{l}, CVGridPoints(p));
+      gridValues{p} = gridScaling(lb(p), ub(p), CVGridScaling{p}{l}, CVGridPoints(p));
     end    
 
     % prepare settings
@@ -117,7 +134,7 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
     % main training loop
     performance = zeros(nCombinations, 1);
     for s = 1:nCombinations
-      fprintf('Gridsearch level %d, settings %d...\n', l, s)
+      fprintf('Gridsearch level %d, settings %d/%d...\n', l, s, nCombinations)
       correctPredictions = false(Nsubjects, 1);
       for f = 1:kFold
         foldIds = f == CVindices;
@@ -155,19 +172,26 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
     lowerID = bestSettingsID - 1; % TODO: non-primitive gridsearch
     for p = 1:nProperties
       ParamId = mod(lowerID, CVGridPoints(p));
-      if ParamId == 0
-        % boundary value
-        lb = gridValues{p}(ParamId + 1);
+      if nLevels(p) > l
+        % first settings = lower bound
+        if ParamId == 0
+          % boundary value
+          lb(p) = gridValues{p}(ParamId + 1);
+        else
+          % non-boundary value
+          lb(p) = gridValues{p}(ParamId);
+        end
+        % last settings = upper bound
+        if ParamId + 1 == CVGridPoints(p)
+          % boundary value
+          ub(p) = gridValues{p}(ParamId + 1);
+        else
+          % non-boundary value
+          ub(p) = gridValues{p}(ParamId + 2);
+        end
       else
-        % non-boundary value
-        lb = gridValues{p}(ParamId);
-      end
-      if ParamId + 2 == CVGridPoints(p)
-        % boundary value
-        ub = gridValues{p}(ParamId + 1);
-      else
-        % non-boundary value
-        ub = gridValues{p}(ParamId + 2);
+        lb(p) = gridValues{p}(1);
+        ub(p) = gridValues{p}(end);
       end
       lowerID = (lowerID - ParamId) / CVGridPoints(p);
     end

@@ -48,7 +48,8 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %                       MException
 %
 % See Also:
-%   classifyFC, trainClassifier, classifierPredict, prepareSettings
+%   classifyFC, trainClassifier, trainCVClassifier, classifierPredict, 
+%   prepareSettings
 
   % default value
   performance = NaN;

@@ -39,6 +39,7 @@ perf = classifyFC(FCdata,'svm',settings);
 clear settings
 
 settings.svm.kernel_function = 'polynomial'; 
+settings.svm.polyorder = 3;
 
 perf = classifyFC(FCdata,'svm',settings);
 
@@ -49,6 +50,21 @@ settings.svm.kernel_function = 'polynomial';
 settings.svm.autoscale = false; 
 
 perf = classifyFC(FCdata,'svm',settings);
+
+%% polynomial - gridsearch
+clear settings
+
+settings.svm.kernel_function = 'polynomial'; 
+
+settings.gridsearch.mode = 'simple';
+settings.gridsearch.kfold = 5;
+settings.gridsearch.properties = {'boxconstraint', 'polyorder'};
+settings.gridsearch.levels = [3, 1];
+settings.gridsearch.bounds = {[1.1 * 10^-3, 10^5], [3, 5]};
+settings.gridsearch.npoints = [11, 3];
+settings.gridsearch.scaling = {{'log', 'lin', 'lin'}, {'lin'}};
+
+perf = classifyFC(FCdata, 'svm', settings);
 
 %% rbf - autoscale 'on'
 clear settings
@@ -64,6 +80,21 @@ clear settings
 settings.svm.kernel_function = 'rbf';
 settings.svm.autoscale = false;
 settings.svm.rbf_sigma = 7; % found through gridsearch
+
+perf = classifyFC(FCdata,'svm',settings);
+
+%% rbf - autoscale 'on'
+clear settings
+
+settings.svm.kernel_function = 'rbf';
+
+settings.gridsearch.mode = 'simple';
+settings.gridsearch.kfold = 5;
+settings.gridsearch.properties = {'boxconstraint', 'rbf_sigma'};
+settings.gridsearch.levels = [3, 3];
+settings.gridsearch.bounds = {[1.1 * 10^-3, 10^5], [10^-5, 10^5]};
+settings.gridsearch.npoints = [3, 3];
+settings.gridsearch.scaling = {{'log', 'lin', 'lin'}, {'log', 'lin', 'lin'}};
 
 perf = classifyFC(FCdata,'svm',settings);
 
@@ -220,6 +251,7 @@ clear settings
 settings.implementation = 'prtools';
 settings.note = 'PRTools decision tree using Fisher criterion';
 settings.tree.crit = 'fishcrit';
+settings.tree.prune = NaN;
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 
@@ -310,6 +342,23 @@ settings.knn.k = 3;
 settings.knn.distance = 'euclidean';
 settings.dimReduction.name = 'kendall';
 settings.dimReduction.nDim = 200;
+
+perf = classifyFC(FCdata,'knn',settings);
+
+%% KNN - gridsearch
+clear settings
+
+settings.knn.distance = 'euclidean';
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 200;
+
+settings.gridsearch.mode = 'simple';
+settings.gridsearch.kfold = 5;
+settings.gridsearch.properties = {'k'};
+settings.gridsearch.levels = 1;
+settings.gridsearch.bounds = {[1, 200]};
+settings.gridsearch.npoints = 200;
+settings.gridsearch.scaling = {{'lin'}};
 
 perf = classifyFC(FCdata,'knn',settings);
 
