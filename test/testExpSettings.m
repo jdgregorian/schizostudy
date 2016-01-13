@@ -1,7 +1,7 @@
 % Script for testing main settings of classifiers
 
 %% initialization
-FCdata = fullfile('data','data_FC_190subjects.mat');
+FCdata = fullfile('data', 'data_FC_190subjects.mat');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SVM

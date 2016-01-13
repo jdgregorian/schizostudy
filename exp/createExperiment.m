@@ -37,6 +37,9 @@ function createExperiment(expfolder, expname, settingFiles, data)
   for d = 1:nData
     % datamark creating - needed for new classifyFC row
     dataslash = strfind(data{d}, [filesep, 'data', filesep]);
+    if isempty(dataslash)
+      dataslash = strfind(data{d}, ['data', filesep]);
+    end
     if strcmp(data{d}(1:5), ['data', filesep])
       datamark = data{d}(5 : end);
     elseif isempty(dataslash)

@@ -56,7 +56,7 @@ function listSettingsResults(folder)
         f = f + 1;
         % file header printing
         fprintf(FID,'\n---------------------------------------------------------------------------------\n\n');
-        fprintf(FID,'  Method: %s %s Performance: %.2f%%\n', method{s}, ...
+        fprintf(FID,'  Method: %s %s Performance: %.2f%%\n\n', method{s}, ...
           char(ones(1, 48 - length(method{s}))*32) ,avgPerformance(s, d)*100);
         fprintf(FID,'  File: %s\n', returnedFiles{f});
         fprintf(FID,'  Data: %s\n', data{d});
@@ -97,45 +97,7 @@ function printSettings(FID, settings)
     fprintf(FID,'    settings.%s = ', settingsSF{sf});
     % array settings
     if numel(valueSF) > 1 && ~ischar(valueSF)
-      % cell array
-      if iscell(valueSF)
-        fprintf(FID,'{ ');
-        % first row
-        printVal(FID, valueSF{1,1})
-        for c = 2:size(valueSF,2)
-          fprintf(FID,', ');
-          printVal(FID, valueSF{1,c})
-        end
-        % rest of rows
-        for r = 2:size(valueSF,1)
-          fprintf(FID,'; ');
-          printVal(FID, valueSF{r,1})
-          for c = 2:size(valueSF,2)
-            fprintf(FID,', ');
-            printVal(FID, valueSF{r,c})
-          end
-        end
-        fprintf(FID,'}');
-      % other arrays
-      else
-        fprintf(FID,'[ ');
-        % first row
-        printVal(FID, valueSF(1,1))
-        for c = 2:size(valueSF,2)
-          fprintf(FID,', ');
-          printVal(FID, valueSF(1,c))
-        end
-        % rest of rows
-        for r = 2:size(valueSF,1)
-          fprintf(FID,'; ');
-          printVal(FID, valueSF(r,1))
-          for c = 2:size(valueSF,2)
-            fprintf(FID,', ');
-            printVal(FID, valueSF(r,c))
-          end
-        end
-        fprintf(FID,']');
-      end
+      printArray(FID, valueSF);
     % non-array value
     else
       printVal(FID, valueSF);
@@ -148,7 +110,14 @@ function printVal(FID, val)
 % function checks the class of value and prints it in appropriate format
   
   if isempty(val)
-    fprintf(FID,'[]');
+    if iscell(val)
+      fprintf(FID,'{}');
+    else
+      fprintf(FID,'[]');
+    end
+  elseif iscell(val) || (numel(val) > 1 && ~ischar(val))
+  % cell or any kind of array (except char)
+    printArray(FID, val);
   else
     switch class(val)
       case 'char'
@@ -170,6 +139,50 @@ function printVal(FID, val)
       otherwise
         fprintf(FID,'%s %dx%d', class(val), size(val,1), size(val,2));
     end
+  end
+end
+
+function printArray(FID, val)
+% function prints array
+
+  % cell array
+  if iscell(val)
+    fprintf(FID,'{');
+    % first row
+    printVal(FID, val{1,1})
+    for c = 2:size(val,2)
+      fprintf(FID,', ');
+      printVal(FID, val{1,c})
+    end
+    % rest of rows
+    for r = 2:size(val,1)
+      fprintf(FID,'; ');
+      printVal(FID, val{r,1})
+      for c = 2:size(val,2)
+        fprintf(FID,', ');
+        printVal(FID, val{r,c})
+      end
+    end
+    fprintf(FID,'}');
+  % other arrays
+  else
+    fprintf(FID,'[');
+    % first row
+    printVal(FID, val(1,1))
+    for c = 2:size(val,2)
+      fprintf(FID,', ');
+      printVal(FID, val(1,c))
+    end
+    % rest of rows
+    for r = 2:size(val,1)
+      fprintf(FID,'; ');
+      printVal(FID, val(r,1))
+      for c = 2:size(val,2)
+        fprintf(FID,', ');
+        printVal(FID, val(r,c))
+      end
+    end
+    fprintf(FID,']');
   end
 end
 
