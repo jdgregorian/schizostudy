@@ -108,7 +108,8 @@ end
 
 function printVal(FID, val)
 % function checks the class of value and prints it in appropriate format
-  
+% to file FID
+
   if isempty(val)
     if iscell(val)
       fprintf(FID,'{}');
@@ -136,6 +137,8 @@ function printVal(FID, val)
         end
       case 'function_handle'
         fprintf(FID,'@%s', func2str(val));
+      case 'struct'
+        printStruct(FID, val)
       otherwise
         fprintf(FID,'%s %dx%d', class(val), size(val,1), size(val,2));
     end
@@ -143,7 +146,7 @@ function printVal(FID, val)
 end
 
 function printArray(FID, val)
-% function prints array
+% function prints array to file FID
 
   % cell array
   if iscell(val)
@@ -184,6 +187,20 @@ function printArray(FID, val)
     end
     fprintf(FID,']');
   end
+end
+
+function printStruct(FID, s)
+% prints structure to file FID
+
+  sf = fieldnames(s);
+  fprintf(FID,'struct(');
+  fprintf(FID,'''%s'', ', sf{1});
+  printVal(FID, getfield(s, sf{1}))
+  for fnum = 2 : length(sf)
+    fprintf(FID,', ''%s'', ', sf{fnum});
+    printVal(FID, getfield(s, sf{fnum}))
+  end
+  fprintf(FID,')');
 end
 
 function sf = subfields(ThisStruct)
