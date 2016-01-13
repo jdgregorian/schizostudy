@@ -7,7 +7,7 @@ fprintf('Generating TeX files with results - adjust returnResults?\n')
 fprintf('Split MATLAB and PRTools settings?\n')
 
 fprintf('\nMost recent: \n')
-fprintf('    Recursive cell printing in listSettingsResults\n')
+fprintf('    NaN comparison in returnResults\n')
 fprintf('    Network architecture in trainCVClassifier\n')
 fprintf('    Metacentrum: Findout the error\n')
 fprintf('    Improve multilevel gridsearch. Use regoptc in PRTools?\n')
