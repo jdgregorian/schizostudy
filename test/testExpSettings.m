@@ -428,6 +428,26 @@ settings.dimReduction.nDim = 20;
 
 perf = classifyFC(FCdata, 'ann', settings);
 
+%% ann - automatic(PRTools)
+clear settings
+
+settings.note = 'PRTools ANN - no additional settings';
+settings.implementation = 'prtools';
+
+perf = classifyFC(FCdata, 'ann', settings);
+
+%% ann - experimental
+clear settings
+
+settings.note = 'ANN';
+for l = 10:10
+  for i = 1:1
+    settings.ann.hiddenSizes = i*ones(1, l);
+
+    perf = classifyFC(FCdata, 'ann', settings);
+  end
+end
+
 %% rbf
 clear settings
 

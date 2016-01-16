@@ -67,6 +67,9 @@ function trainedClassifier = trainClassifier(method, trainingData, trainingLabel
 
       case 'llc' % logistic linear classifier
         trainedClassifier.classifier = loglc(toolData);
+        
+      case 'ann' % artificial neural network
+        trainedClassifier.classifier = neurc(toolData);
 
     end
   else % pure matlab implementations

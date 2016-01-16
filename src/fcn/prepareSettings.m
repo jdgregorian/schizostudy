@@ -70,6 +70,11 @@ function [settings, cellset] = prepareSettings(method, settings)
           warning('Logistic linear classifier (PRTools) do not accept additional settings.')
         end
         
+      case 'ann' % automatic artificial neural network (neurc)
+        if isfield(settings,'llc')
+          warning('Automatic artificial neural network classifier (PRTools) do not accept additional settings.')
+        end
+        
       otherwise
         settings = [];
          
