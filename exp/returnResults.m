@@ -106,10 +106,14 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
       for s = 1 : nFiles - nEmptyFiles
         % compare uniqueness of settings omitting field 'note'
         fSettings = folderSettings{s};
+        fMethod = folderMethod{s};
         if isfield(fSettings, 'note')
           fSettings = rmfield(fSettings, 'note');
         end
-        settingsID = find(cellfun(@(x) isequal(fSettings, x), uSettings), 1);
+        settingsID = find(cellfun(@(x) myisequal(fSettings, x), uSettings));
+        if ~isempty(settingsID)
+          settingsID = settingsID(strcmp(fMethod, uniqueSettings_Method(settingsID)));
+        end
         % new settings
         if isempty(settingsID)
           uniqueSettings{end+1} = folderSettings{s};

@@ -6,6 +6,8 @@ function [settings, cellset] = prepareSettings(method, settings)
 
   cellset = [];
   
+  settings.method = method;
+  
   % prior settings
   if ~isfield(settings, 'prior')
     settings.prior = [0.5, 0.5];

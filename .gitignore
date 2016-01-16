@@ -4,6 +4,7 @@ results/*
 startupSchizo.m
 exp/experiments/*/
 exp/experiments/*.txt
+exp/experiments/*.zip
 test/sys/.creator
 test/test.m
 vendor/conn
