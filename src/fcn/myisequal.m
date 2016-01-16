@@ -18,13 +18,16 @@ function res = myisequal(a, b)
     % compare structures
     elseif isstruct(a) && isstruct(b)
       sfa = fieldnames(a);
-      sfb = fieldnames(b);
-      if isequal(sfa, sfb)
-        partRes = false(1, length(sfa));
+      if isequal(sfa, fieldnames(b))
         for f = 1 : length(sfa)
-          partRes(f) = myisequal(getfield(a, sfa{f}), getfield(b, sfb{f}));
+          aValues = arrayfun(@(x) getfield(x, sfa{f}), a, 'UniformOutput', false);
+          bValues = arrayfun(@(x) getfield(x, sfa{f}), b, 'UniformOutput', false);
+          % return in case of inequality
+          if ~myisequal(aValues, bValues)          
+            return
+          end
         end
-        res = all(partRes);
+        res = true;
       end
     end
   end
