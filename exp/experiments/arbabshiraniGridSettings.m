@@ -113,6 +113,23 @@ settings.gridsearch.scaling = {{'lin'}};
 classifyFC(FCdata, 'knn', settings, fullfile(filename, ['knn_sgrid', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ANN - Arbabshirani's settings
+clear settings
+
+settings.iteration = 10;
+settings.note = 'ANN using very simple gridsearch on property hiddenSizes.';
+
+settings.gridsearch.mode = 'simple';
+settings.gridsearch.kfold = 5;
+settings.gridsearch.properties = {'hiddenSizes'};
+settings.gridsearch.levels = 3;
+settings.gridsearch.bounds = {[1, 10]};
+settings.gridsearch.npoints = 10;
+settings.gridsearch.scaling = {{'lin'}};
+
+classifyFC(FCdata, 'ann', settings, fullfile(filename, ['ann_sgrid', datamark, '.mat']));
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% final results listing
 
 listSettingsResults(fullfile(expfolder, filename));

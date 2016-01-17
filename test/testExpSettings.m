@@ -440,13 +440,15 @@ perf = classifyFC(FCdata, 'ann', settings);
 clear settings
 
 settings.note = 'ANN';
-for l = 10:10
-  for i = 1:1
-    settings.ann.hiddenSizes = i*ones(1, l);
+settings.gridsearch.mode = 'simple';
+settings.gridsearch.kfold = 5;
+settings.gridsearch.properties = {'hiddenSizes'};
+settings.gridsearch.levels = [2];
+settings.gridsearch.bounds = {[1, 5]};
+settings.gridsearch.npoints = [5];
+settings.gridsearch.scaling = {{'lin'}};
 
-    perf = classifyFC(FCdata, 'ann', settings);
-  end
-end
+perf = classifyFC(FCdata, 'ann', settings);
 
 %% rbf
 clear settings

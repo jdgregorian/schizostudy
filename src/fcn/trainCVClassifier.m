@@ -112,7 +112,7 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
       if l == 1
         lb(p) = CVGridBounds{p}(1);
         ub(p) = CVGridBounds{p}(2);
-      elseif l <= nLevels(p)
+      elseif l <= nLevels(p) && ~strcmp(CVProperties{p}, 'hiddenSizes')
         gridValues{p} = gridScaling(lb(p), ub(p), CVGridScaling{p}{l}, CVGridPoints(p) + 2);
         lb(p) = gridValues{p}(2);
         ub(p) = gridValues{p}(end - 1);      
@@ -126,7 +126,12 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
       % extract appropriate values
       for p = 1:nProperties
         ParamId = mod(exactParamId, CVGridPoints(p));
-        eval(['gridSettings{i+1}.', settingsStructName(method), '.', CVProperties{p}, ' = ',num2str(gridValues{p}(ParamId+1)),';'])
+        % neural network architecture
+        if strcmp(CVProperties{p}, 'hiddenSizes')
+          eval(['gridSettings{i+1}.', settingsStructName(method), '.', CVProperties{p}, ' = [',num2str(ones(1, l)*gridValues{p}(ParamId+1)),'];'])
+        else
+          eval(['gridSettings{i+1}.', settingsStructName(method), '.', CVProperties{p}, ' = ',num2str(gridValues{p}(ParamId+1)),';'])
+        end
         exactParamId = (exactParamId - ParamId) / CVGridPoints(p);
       end
     end
@@ -172,7 +177,7 @@ function trainedCVClassifier = trainCVClassifier(method, data, labels, settings)
     lowerID = bestSettingsID - 1; % TODO: non-primitive gridsearch
     for p = 1:nProperties
       ParamId = mod(lowerID, CVGridPoints(p));
-      if nLevels(p) > l
+      if nLevels(p) > l && ~strcmp(CVProperties{p}, 'hiddenSizes')
         % first settings = lower bound
         if ParamId == 0
           % boundary value
