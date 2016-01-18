@@ -120,13 +120,18 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     correctPredictions = zeros(1, Nsubjects);
     errors = cell(1,Nsubjects);
     kFold = defopts(settings, 'crossval', 'loo');
-    if strcmpi(kFold,'loo') || (kFold > Nsubjects)
+    if strcmpi(kFold, 'loo') || (kFold > Nsubjects)
       kFold = Nsubjects;
       CVindices = 1:Nsubjects;
     else
       CVindices = crossvalind('kfold', Nsubjects, kFold);
     end
   end
+  
+  % create classifier
+  % the following line will be removed after unification of classifiers
+  settings.(settingsStructName(method)).gridsearch = settings.gridsearch;
+  TC = ClassifierFactory.createClassifier(method, defopts(settings, settingsStructName(method)));
     
   for sub = 1:kFold
     
@@ -142,8 +147,10 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       % training
       if strcmpi(settings.gridsearch.mode, 'none')
         trainedClassifier = trainClassifier(method, trainingData, trainingLabels, settings, cellset);
+        TC = TC.train(trainingData, trainingLabels);
       else
-        trainedClassifier = trainCVClassifier(method, trainingData, trainingLabels, settings);
+%         trainedClassifier = trainCVClassifier(method, trainingData, trainingLabels, settings);
+        TC = TC.train(trainingData, trainingLabels);
       end
 
       % prediction
@@ -157,6 +164,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       testingLabels = labels(foldIds);
 
       % predict according to the method
+      y = TC.predict(testingData, trainingData, trainingLabels);
       y = classifierPredict(trainedClassifier, testingData, trainingData, trainingLabels);
       
       if iscell(y)
@@ -196,7 +204,7 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
   if iscell(data) && iscell(indices)
     nDatasets = length(data);
     dataId = cellfun(@length, indices); % remember sizes of data
-    dataId = arrayfun(@(x) x*ones(dataId(x),1),1:nDatasets, 'UniformOutput', false);
+    dataId = arrayfun(@(x) x*ones(dataId(x),1), 1:nDatasets, 'UniformOutput', false);
     dataId = cat(1, dataId{:});
     data = cat(1, data{:});
     indices = cat(1, indices{:});
