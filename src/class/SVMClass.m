@@ -14,11 +14,17 @@ classdef SVMClass < Classifier
       SVM.settings = settings;
       SVM.implementation = 'matlab';
       SVM.classifier = [];
+      % TODO: make the following lines work
+%       if nargin > 0
+%         SVM = SVM.train(trainingData, trainingLabels);
+%       else
+%         warning('Not enough training variables. Classifier will not be trained.')
+%       end
     end
     
     function SVM = trainClassifier(SVM, trainingData, trainingLabels)
     % training function
-      cellset = cellSettings(SVM.settings);
+      cellset = cellSettings(SVM.settings, {'gridsearch'});
       SVM.classifier = svmtrain(trainingData, trainingLabels, cellset{:});
     end
     

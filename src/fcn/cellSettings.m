@@ -7,6 +7,10 @@ function cellset = cellSettings(settings, remove)
     remove = {};
   end
   
+  if ~iscell(remove)
+    remove = {remove};
+  end
+  
   % remove settings from stucture
   for i = 1:length(remove)
     if isfield(settings, remove{i})

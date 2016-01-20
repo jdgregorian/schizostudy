@@ -146,7 +146,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 
       % training
       if strcmpi(settings.gridsearch.mode, 'none')
-        trainedClassifier = trainClassifier(method, trainingData, trainingLabels, settings, cellset);
+%         trainedClassifier = trainClassifier(method, trainingData, trainingLabels, settings, cellset);
         TC = TC.train(trainingData, trainingLabels);
       else
 %         trainedClassifier = trainCVClassifier(method, trainingData, trainingLabels, settings);
@@ -165,7 +165,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 
       % predict according to the method
       y = TC.predict(testingData, trainingData, trainingLabels);
-      y = classifierPredict(trainedClassifier, testingData, trainingData, trainingLabels);
+%       y = classifierPredict(trainedClassifier, testingData, trainingData, trainingLabels);
       
       if iscell(y)
         if length(y) == 1

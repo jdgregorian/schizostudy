@@ -51,6 +51,7 @@ classdef (Abstract) Classifier
       % no gridsearch set -> regular training
       if ~isfield(obj.settings, 'gridsearch')
         obj = obj.trainClassifier(data, labels);
+        return
       end
 
       % prepare properties 
@@ -58,6 +59,7 @@ classdef (Abstract) Classifier
       if isempty(CVProperties)
         warning('No properties in gridsearch set. Running regular training.')
         obj = obj.trainClassifier(data, labels);
+        return
       end
       nProperties = length(CVProperties);
 
@@ -117,7 +119,7 @@ classdef (Abstract) Classifier
             lb(p) = CVGridBounds{p}(1);
             ub(p) = CVGridBounds{p}(2);
           elseif l <= nLevels(p) && ~strcmp(CVProperties{p}, 'hiddenSizes')
-            gridValues{p} = gridScaling(lb(p), ub(p), CVGridScaling{p}{l}, CVGridPoints(p) + 2);
+            gridValues{p} = obj.gridScaling(lb(p), ub(p), CVGridScaling{p}{l}, CVGridPoints(p) + 2);
             lb(p) = gridValues{p}(2);
             ub(p) = gridValues{p}(end - 1);      
           end
@@ -141,7 +143,7 @@ classdef (Abstract) Classifier
             end
             exactParamId = (exactParamId - ParamId) / CVGridPoints(p);
           end
-          gridClass{i+1} = ClassifierFactory(obj.method, gridSettings);
+          gridClass{i+1} = ClassifierFactory.createClassifier(obj.method, gridSettings);
         end
 
         % main training loop
@@ -212,14 +214,16 @@ classdef (Abstract) Classifier
 
       % train the best classifier settings
       [~, bestClassifierID] = max(bestLevelPerformance); 
-      obj = bestLevelClassifier{bestClassifierID}.trainClassifier(data, labels);
+      bestClassifier = bestLevelClassifier{bestClassifierID}.trainClassifier(data, labels);
+      obj.classifier = bestClassifier.classifier;
+      obj.settings = bestClassifier.settings;
 
     end
   end
   
-  methods (Static)
+end
 
-    function s = gridScaling(lb, ub, scaling, nPoints)
+function s = gridScaling(lb, ub, scaling, nPoints)
     % Function returns 'nPoints' using 'scaling' from interval [lb, ub]
     %
     % Input:
@@ -260,5 +264,3 @@ classdef (Abstract) Classifier
       end
 
     end
-  end
-end

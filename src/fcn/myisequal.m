@@ -1,8 +1,6 @@
 function res = myisequal(a, b)
 % Compares 'a' and 'b' and returns true if they are the same (even in the 
 % case of NaN) and false if they are not.
-%
-% Warning & TODO: Does not work for array of struct.
 
   res = isequal(a, b);
   
@@ -20,8 +18,8 @@ function res = myisequal(a, b)
       sfa = fieldnames(a);
       if isequal(sfa, fieldnames(b))
         for f = 1 : length(sfa)
-          aValues = arrayfun(@(x) getfield(x, sfa{f}), a, 'UniformOutput', false);
-          bValues = arrayfun(@(x) getfield(x, sfa{f}), b, 'UniformOutput', false);
+          aValues = arrayfun(@(x) x.(sfa{f}), a, 'UniformOutput', false);
+          bValues = arrayfun(@(x) x.(sfa{f}), b, 'UniformOutput', false);
           % return in case of inequality
           if ~myisequal(aValues, bValues)          
             return
