@@ -8,17 +8,20 @@ classdef SVMClass < Classifier
   
   methods
     
-    function SVM = SVMClass(settings)
+    function SVM = SVMClass(settings) %, trainingData, trainingLabels)
     % constructor
       SVM.method = 'svm';
       SVM.settings = settings;
       SVM.implementation = 'matlab';
       SVM.classifier = [];
-      % TODO: make the following lines work
-%       if nargin > 0
-%         SVM = SVM.train(trainingData, trainingLabels);
+      
+      % TODO: make this work with trainClassifier
+%       if nargin > 2
+%         cellset = cellSettings(SVM.settings, {'gridsearch'});
+%         SVM.classifier = svmtrain(trainingData, trainingLabels, cellset{:});
 %       else
 %         warning('Not enough training variables. Classifier will not be trained.')
+%         SVM.classifier = [];
 %       end
     end
     
@@ -28,7 +31,7 @@ classdef SVMClass < Classifier
       SVM.classifier = svmtrain(trainingData, trainingLabels, cellset{:});
     end
     
-    function y = predict(SVM, testingData, trainingData, trainingLabels)
+    function y = predict(SVM, testingData, ~, ~)
     % prediction using SVM
       y = svmclassify(SVM.classifier, testingData);
     end

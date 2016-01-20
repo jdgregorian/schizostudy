@@ -49,7 +49,10 @@ classdef (Abstract) Classifier
     %   trainClassifier, prepareSettings
 
       % no gridsearch set -> regular training
-      if ~isfield(obj.settings, 'gridsearch')
+      if ~isfield(obj.settings, 'gridsearch') || ...
+         ~isfield(obj.settings.gridsearch, 'mode') || ...
+         ~isfield(obj.settings.gridsearch, 'properties') || ...
+         strcmp(obj.settings.gridsearch.mode, 'none')
         obj = obj.trainClassifier(data, labels);
         return
       end

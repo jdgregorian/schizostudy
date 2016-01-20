@@ -187,6 +187,13 @@ settings.implementation = 'prtools';
 
 perf = classifyFC(FCdata,'rf',settings);
 
+%% MATLAB random forest
+clear settings
+
+settings.forest.nTrees = 11;
+
+perf = classifyFC(FCdata, 'mrf', settings);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Trees
 % linear tree + pca
