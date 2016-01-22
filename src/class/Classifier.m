@@ -16,6 +16,17 @@ classdef (Abstract) Classifier
 
   methods
     
+    function obj = Classifier(settings)
+    % constructor
+    
+      % prior settings
+      if ~isfield(settings, 'prior')
+        settings.prior = [0.5, 0.5];
+      end
+      obj.settings = settings;
+      obj.classifier = [];
+    end
+    
     function obj = train(obj, data, labels)
     % obj = trainCVClassifier(method, trainingData, 
     % trainingLabels, settings) trains cross-validated classifier according to

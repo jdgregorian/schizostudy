@@ -277,9 +277,9 @@ settings.lda.type = 'diaglinear';
 %% linear discriminant analysis
 clear settings
 
-settings.qda.type = 'quadratic';
+settings.lda.type = 'linear';
 
-[perf, ~, ~, classLDA] = classifyFC(FCdata,'qda',settings);
+[perf, ~, ~, classLDA] = classifyFC(FCdata,'lda',settings);
 
 %% linear discriminant analysis (PRTools)
 clear settings
@@ -373,9 +373,8 @@ perf = classifyFC(FCdata,'knn',settings);
 %% logistic linear classifier
 clear settings
 
-
-% settings.dimReduction.name = 'pca';
-% settings.dimReduction.nDim = 20;
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 20;
 settings.note = '';
 
 perf = classifyFC(FCdata,'llc',settings);

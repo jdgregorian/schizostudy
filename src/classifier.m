@@ -131,6 +131,8 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
   % create classifier
   % the following line will be removed after unification of classifiers
   settings.(settingsStructName(method)).gridsearch = settings.gridsearch;
+  settings.(settingsStructName(method)).implementation = settings.implementation;
+  
   TC = ClassifierFactory.createClassifier(method, defopts(settings, settingsStructName(method)));
     
   for sub = 1:kFold
