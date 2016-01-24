@@ -4,6 +4,7 @@
 
 % initialization
 expfolder = fullfile('exp', 'experiments');
+setfolder = fullfile('exp', 'settings');
 
 % datafiles
 arbabfolder = fullfile('data', 'arbabshirani');
@@ -15,7 +16,7 @@ traintestAbsData = fullfile(arbabfolder, 'traintest', 'adCorrAbs');
 traintestPosData = fullfile(arbabfolder, 'traintest', 'adCorrPos');
 
 % settings
-arbabsettings = fullfile('exp', 'experiments', 'arbabshiraniSettings.m');
+arbabsettings = fullfile(setfolder, 'arbabshiraniSettings.m');
 
 % summary
 settingFiles = {arbabsettings};

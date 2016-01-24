@@ -43,7 +43,7 @@ classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_fish',datamark,'.
 clear settings
 
 settings.implementation = 'prtools';
-settings.forest.learning = 'bagging';
+settings.rf.learning = 'bagging';
 settings.note = 'Default settings of PRTools bagged random forest.';
 
 classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_bagging',datamark,'.mat']));
@@ -52,7 +52,7 @@ classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_bagging',datamark,'.m
 clear settings
 
 settings.implementation = 'prtools';
-settings.forest.learning = 'boosting';
+settings.rf.learning = 'boosting';
 settings.note = 'Default settings of PRTools boosted random forest.';
 
 classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_boosting',datamark,'.mat']));

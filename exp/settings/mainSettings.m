@@ -105,9 +105,9 @@ classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_mlp_noauto', datamark
 % MATLAB classification forest - 11 trees
 clear settings
 
-settings.forest.nTrees = 11;
+settings.rf.nTrees = 11;
 settings.iteration = 10;
-settings.forest.type = 'matlab';
+settings.rf.type = 'matlab';
 settings.note = 'Default settings of MATLAB classification forest with 11 trees.';
 
 classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_11t', datamark, '.mat']));
@@ -115,10 +115,10 @@ classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_11t', datamark, '.mat']
 %% RF - 11 linear trees
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.type = 'classic';
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'bagging';
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'linear';
+settings.rf.learning = 'bagging';
 settings.iteration = 10;
 
 settings.dimReduction.name = 'pca';
@@ -130,10 +130,10 @@ classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t', datamark, '
 %% RF - 11 linear trees + pca(20)
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.type = 'classic';
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'bagging';
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'linear';
+settings.rf.learning = 'bagging';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 settings.iteration = 10;
@@ -143,11 +143,11 @@ classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_pca20', datam
 %% RF - 11 linear trees - distance mahal
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.type = 'classic';
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'bagging';
-settings.forest.distance = 'mahal';
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'linear';
+settings.rf.learning = 'bagging';
+settings.rf.distance = 'mahal';
 settings.iteration = 10;
 
 settings.dimReduction.name = 'pca';
@@ -159,11 +159,11 @@ classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_mahal', datam
 %% RF - 11 linear trees - distance Inf
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.type = 'classic';
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'bagging';
-settings.forest.distance = Inf;
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'linear';
+settings.rf.learning = 'bagging';
+settings.rf.distance = Inf;
 settings.iteration = 10;
 
 settings.dimReduction.name = 'pca';
@@ -175,11 +175,11 @@ classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_distInf', dat
 %% RF - 11 linear trees - distance 1
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.type = 'classic';
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'bagging';
-settings.forest.distance = 1;
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'linear';
+settings.rf.learning = 'bagging';
+settings.rf.distance = 1;
 settings.iteration = 10;
 
 settings.dimReduction.name = 'pca';
@@ -191,12 +191,12 @@ classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_dist1', datam
 %% RF - 11 linear trees - boosting, maxSplit = 10
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.type = 'classic';
-settings.forest.TreeType = 'linear';
-settings.forest.learning = 'boosting';
-settings.forest.maxSplit = 10;
-settings.forest.distance = 2;
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'linear';
+settings.rf.learning = 'boosting';
+settings.rf.maxSplit = 10;
+settings.rf.distance = 2;
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
@@ -207,10 +207,10 @@ classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_boost_10split
 %% RF - 11 svm trees
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.type = 'classic';
-settings.forest.TreeType = 'svm';
-settings.forest.learning = 'bagging';
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'svm';
+settings.rf.learning = 'bagging';
 settings.iteration = 10;
 
 classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_svm_11t', datamark, '.mat']));
@@ -422,34 +422,24 @@ classifyFC(FCdata, 'nb', settings, fullfile(filename, ['nb_prtools', datamark, '
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Artificial Neural Networks
-% linear perceptron - ttest 1000
+% linear perceptron + PCA 189
 clear settings
 
 settings.note = 'Linear perceptron has no settings. Dimension has to be reduced because of memory limits.';
-settings.dimReduction.name = 'ttest';
-settings.dimReduction.nDim = 1000;
+settings.dimReduction.name = 'pca';
+settings.dimReduction.nDim = 189;
 
-classifyFC(FCdata, 'perc', settings, fullfile(filename, ['perc_ttest1000', datamark, '.mat']));
+classifyFC(FCdata, 'perc', settings, fullfile(filename, ['perc_pca189', datamark, '.mat']));
 
 %% ANN + PCA 200
 clear settings
 
-settings.note = 'ANN default settings. PCA (200ft.) used due to ANN memory limitations.';
+settings.note = 'ANN default settings. PCA (189ft.) used due to ANN memory limitations.';
 settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 200;
+settings.dimReduction.nDim = 189;
 settings.iteration = 10;
 
 classifyFC(FCdata, 'ann', settings, fullfile(filename, ['ann_pca189', datamark, '.mat']));
-
-%% ANN - Arbabshirani's settings
-clear settings
-
-settings.note = 'ANN with Arbabshirani''s settings.';
-settings.ann.hiddenSizes = [6 6 6]; % [4 4 4] - on reduced
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 200;
-
-classifyFC(FCdata, 'ann', settings, fullfile(filename, ['ann_arbab', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% final results listing

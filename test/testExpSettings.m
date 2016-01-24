@@ -132,9 +132,9 @@ perf = classifyFC(traintestData, 'svm', settings);
 % 11 linear trees
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.type = 'classic';
-settings.forest.TreeType = 'linear';
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'linear';
 settings.iteration = 10;
 
 perf = classifyFC(FCdata, 'rf', settings);
@@ -142,9 +142,9 @@ perf = classifyFC(FCdata, 'rf', settings);
 %% 11 linear trees + pca(20)
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.type = 'classic';
-settings.forest.TreeType = 'linear';
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'linear';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 settings.iteration = 10;
@@ -155,20 +155,20 @@ perf = classifyFC(FCdata, 'rf', settings);
 clear settings
 
     settings.iteration = 10;
-    settings.forest.nTrees = 11;
-    settings.forest.type = 'classic';
-    settings.forest.TreeType = 'linear';
-    settings.forest.learning = 'bagging';
-    settings.forest.distance = Inf;
+    settings.rf.nTrees = 11;
+    settings.rf.type = 'classic';
+    settings.rf.TreeType = 'linear';
+    settings.rf.learning = 'bagging';
+    settings.rf.distance = Inf;
 
 perf = classifyFC(FCdata,'rf',settings);
 
 %% bagged linear svm
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.type = 'classic';
-settings.forest.TreeType = 'svm';
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'svm';
 settings.iteration = 10;
 
 perf = classifyFC(FCdata,'rf',settings);
@@ -176,7 +176,7 @@ perf = classifyFC(FCdata,'rf',settings);
 %% random forest (PRTools)
 clear settings
 
-settings.forest.nTrees = 11;
+settings.rf.nTrees = 11;
 settings.implementation = 'prtools';
 settings.iteration = 10;
 
@@ -185,8 +185,8 @@ perf = classifyFC(FCdata,'rf',settings);
 %% random forest (PRTools)
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.learning = 'bagging';
+settings.rf.nTrees = 11;
+settings.rf.learning = 'bagging';
 settings.implementation = 'prtools';
 
 perf = classifyFC(FCdata,'rf',settings);
@@ -194,8 +194,8 @@ perf = classifyFC(FCdata,'rf',settings);
 %% MATLAB random forest
 clear settings
 
-settings.forest.nTrees = 11;
-settings.forest.type = 'matlab';
+settings.rf.nTrees = 11;
+settings.rf.type = 'matlab';
 
 perf = classifyFC(FCdata, 'rf', settings);
 

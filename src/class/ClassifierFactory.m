@@ -29,6 +29,9 @@ classdef ClassifierFactory
           % decision tree
           case 'tree'
             obj = TreeClassPRT(settings);
+          otherwise
+            warning(['ClasssifierFactory.createClassifier: ', method, ' -- no such classifier available']);
+            obj = [];
         end
         
       % Matlab classifiers

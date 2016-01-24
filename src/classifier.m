@@ -16,11 +16,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %   method   - shortcut of the classifier type used | string
 %              'svm'     - support vector machine
 %              'rf'      - random forest
-%              'mrf'     - MATLAB random forest
-%              'dectree' - decision tree (PRTools)
-%              'lintree' - tree using linear distance based decision splits
-%              'mtltree' - MATLAB classification tree
-%              'svmtree' - tree using linear svm based decision splits
+%              'tree'    - decision tree
 %              'nb'      - naive Bayes
 %              'knn'     - k-nearest neighbours
 %              'llc'     - logistic linear classifier
@@ -48,8 +44,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %                       MException
 %
 % See Also:
-%   classifyFC, trainClassifier, trainCVClassifier, classifierPredict, 
-%   prepareSettings
+%   classifyFC
 
   % default value
   performance = NaN;
@@ -82,17 +77,6 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     if size(labels, 1) < size(labels, 2)
       labels = labels';
     end
-  end
-  
-  % settings before the main loop
-  [settings, ~] = prepareSettings(method, settings);
-  if isempty(settings)
-    warning('There is no %s method from PRTools implemented!', method)
-    performance = NaN;
-    class = NaN;
-    correctPredictions = NaN;
-    errors{1} = ['There is no ', method,' method from PRTools implemented!'];
-    return
   end
   
   % dimension reduction outside the LOO loop
@@ -130,10 +114,16 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
   
   % create classifier
   % the following line will be removed after unification of classifiers
-  settings.(settingsStructName(method)).gridsearch = settings.gridsearch;
-  settings.(settingsStructName(method)).implementation = settings.implementation;
+  settings = prepareSettings(method, settings);
   
-  TC = ClassifierFactory.createClassifier(method, defopts(settings, settingsStructName(method)));
+  TC = ClassifierFactory.createClassifier(method, defopts(settings, method, []));
+  if isempty(TC)
+    performance = NaN;
+    class = NaN;
+    correctPredictions = NaN;
+    errors{1} = ['There is no ', method,' method in ', settings.implementation, ' implementation!'];
+    return
+  end
     
   for sub = 1:kFold
     
@@ -147,13 +137,8 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     try % one error should not cancel full computation
 
       % training
-      if strcmpi(settings.gridsearch.mode, 'none')
-        TC = TC.train(trainingData, trainingLabels);
-      else
-        TC = TC.train(trainingData, trainingLabels);
-      end
+      TC = TC.train(trainingData, trainingLabels);
 
-      % prediction
       % transform data if necessary (automatically disabled in outside
       % transformation)
       if settings.transformPrediction
@@ -163,7 +148,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       end
       testingLabels = labels(foldIds);
 
-      % predict according to the method
+      % prediction
       y = TC.predict(testingData, trainingData, trainingLabels);
       
       if iscell(y)
@@ -182,6 +167,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         class(foldIds) = y;
       end
       
+    % catch error not to cancel the whole computation
     catch err
       errors{sub} = err;
       class(foldIds) = NaN;
@@ -192,12 +178,13 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       fprintf('Subset %d/%d done. Actual performance: %.2f%% \n', sub, kFold, sum(correctPredictions)/sum(sub >= CVindices)*100);
     end
   end
-
+  
+  % overall performance of classifier
   performance = sum(correctPredictions)/(Nsubjects-trainSize);
  
 end
 
-function [reducedData,settings] = reduceDim(data, indices, settings)
+function [reducedData, settings] = reduceDim(data, indices, settings)
 % function for dimension reduction specified in settings
 
   if iscell(data) && iscell(indices)
@@ -333,4 +320,27 @@ function [reducedData,settings] = reduceDim(data, indices, settings)
     end
   end
 
+end
+
+function settings = prepareSettings(method, settings)
+% Prepares settings for main loop.
+  
+  settings.method = method;
+  
+  % prior settings
+  if ~isfield(settings, 'prior')
+    settings.(method).prior = [0.5, 0.5];
+  end
+
+  % implementation settings
+  settings.(method).implementation = defopts(settings, 'implementation', 'matlab');
+  % Fisher is implemented only in PRTools
+  if any(strcmpi(method, {'fisher'}))
+    settings.fisher.implementation = 'prtools';
+  end
+  
+  % gridsearch settings
+  settings.(method).gridsearch = defopts(settings, 'gridsearch', []);
+  settings.(method).gridsearch.mode = defopts(settings.(method).gridsearch, 'mode', 'none');
+  settings.(method).gridsearch.properties = defopts(settings.(method).gridsearch, 'properties', {});
 end
