@@ -28,9 +28,8 @@ classdef (Abstract) Classifier
     end
     
     function obj = train(obj, data, labels)
-    % obj = trainCVClassifier(method, trainingData, 
-    % trainingLabels, settings) trains cross-validated classifier according to
-    % settings.gridsearch.
+    % obj = obj.train(method, trainingData, trainingLabels) trains 
+    % cross-validated classifier according to obj.settings.gridsearch.
     %
     % Gridsearch is implemented in a very primitive way. At each level points
     % from the parameter space are layed out using linear/logaritmic scale. At
@@ -55,9 +54,6 @@ classdef (Abstract) Classifier
     % 
     % Warning: 'settings' can be in different format - use prepareSettings
     %          first
-    %
-    % See also:
-    %   trainClassifier, prepareSettings
 
       % no gridsearch set -> regular training
       if ~isfield(obj.settings, 'gridsearch') || ...

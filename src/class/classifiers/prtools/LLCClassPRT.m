@@ -1,5 +1,5 @@
-classdef LDAClassPRT < PRToolsClassifier
-% Linear discriminant analysis based classifier using PRTools
+classdef LLCClassPRT < PRToolsClassifier
+% Logistic linear classifier using PRTools
   properties    
     method         % classifier method
     settings       % classifier settings
@@ -9,18 +9,21 @@ classdef LDAClassPRT < PRToolsClassifier
   
   methods
     
-    function obj = LDAClassPRT(settings)
+    function obj = LLCClassPRT(settings)
     % constructor
       obj = obj@PRToolsClassifier(settings);
-      obj.method = 'lda';
-      obj.settings.R = defopts(obj.settings, 'R', 0);
-      obj.settings.S = defopts(obj.settings, 'S', 0);
+      obj.method = 'llc';
+      
+      cellset = cellSettings(obj.settings, {'gridsearch', 'implementation', 'prior'});
+      if ~isempty(cellset)
+        warning('Logistic linear classifier (PRTools) do not accept additional settings.')
+      end
     end
     
     function obj = trainClassifier(obj, trainingData, trainingLabels)
     % training function
       toolData = obj.prdata(trainingData, trainingLabels);
-      obj.classifier = ldc(toolData, obj.settings.R, obj.settings.S);
+      obj.classifier = loglc(toolData);
     end
     
   end

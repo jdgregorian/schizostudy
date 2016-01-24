@@ -133,27 +133,30 @@ perf = classifyFC(traintestData, 'svm', settings);
 clear settings
 
 settings.forest.nTrees = 11;
+settings.forest.type = 'classic';
 settings.forest.TreeType = 'linear';
 settings.iteration = 10;
 
-perf = classifyFC(FCdata,'rf',settings);
+perf = classifyFC(FCdata, 'rf', settings);
 
 %% 11 linear trees + pca(20)
 clear settings
 
 settings.forest.nTrees = 11;
+settings.forest.type = 'classic';
 settings.forest.TreeType = 'linear';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 settings.iteration = 10;
 
-perf = classifyFC(FCdata,'rf',settings);
+perf = classifyFC(FCdata, 'rf', settings);
 
 %% linear trees - experimental
 clear settings
 
     settings.iteration = 10;
     settings.forest.nTrees = 11;
+    settings.forest.type = 'classic';
     settings.forest.TreeType = 'linear';
     settings.forest.learning = 'bagging';
     settings.forest.distance = Inf;
@@ -164,6 +167,7 @@ perf = classifyFC(FCdata,'rf',settings);
 clear settings
 
 settings.forest.nTrees = 11;
+settings.forest.type = 'classic';
 settings.forest.TreeType = 'svm';
 settings.iteration = 10;
 
@@ -182,7 +186,7 @@ perf = classifyFC(FCdata,'rf',settings);
 clear settings
 
 settings.forest.nTrees = 11;
-settings.forest.learning = 'boosting';
+settings.forest.learning = 'bagging';
 settings.implementation = 'prtools';
 
 perf = classifyFC(FCdata,'rf',settings);
@@ -191,8 +195,9 @@ perf = classifyFC(FCdata,'rf',settings);
 clear settings
 
 settings.forest.nTrees = 11;
+settings.forest.type = 'matlab';
 
-perf = classifyFC(FCdata, 'mrf', settings);
+perf = classifyFC(FCdata, 'rf', settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Trees
@@ -201,37 +206,41 @@ clear settings
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
+settings.tree.type = 'linear';
 
-perf = classifyFC(FCdata,'linTree', settings);
+perf = classifyFC(FCdata,'tree', settings);
 
 %% linear tree mahal + pca
 clear settings
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
+settings.tree.type = 'linear';
 settings.tree.distance = 'mahal';
 
-perf = classifyFC(FCdata,'linTree',settings);
+perf = classifyFC(FCdata,'tree',settings);
 
 %% linear tree mahal + pca
 clear settings
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 10;
+settings.tree.type = 'linear';
 settings.tree.distance = {2,'mahal',Inf};
 settings.something = {{}, @sum, true};
 
-% perf = classifyFC(FCdata,'linTree',settings,fullfile('mainSettings','experimental_tree.mat'));
-perf = classifyFC(FCdata,'linTree',settings);
+% perf = classifyFC(FCdata,'tree',settings,fullfile('mainSettings','experimental_tree.mat'));
+perf = classifyFC(FCdata,'tree',settings);
 
 %% SVM tree
 clear settings
 
 % settings.dimReduction.name = 'pca';
 % settings.dimReduction.nDim = 200;
+settings.tree.type = 'svm';
 
 tic
-perf = classifyFC(FCdata,'svmtree');
+perf = classifyFC(FCdata, 'tree', settings);
 toc
 
 %% MATLAB classification tree
@@ -239,8 +248,9 @@ clear settings
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
+settings.tree.type = 'matlab';
 
-perf = classifyFC(FCdata,'mtltree',settings);
+perf = classifyFC(FCdata,'tree',settings);
 
 %% PRTools classification tree
 clear settings
@@ -250,7 +260,7 @@ settings.note = 'Default settings of PRTools decision tree';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 
-perf = classifyFC(FCdata,'dectree',settings);
+perf = classifyFC(FCdata, 'tree', settings);
 
 %% PRTools classification tree - Fisher
 clear settings
@@ -262,7 +272,7 @@ settings.tree.prune = NaN;
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 
-perf = classifyFC(FCdata,'dectree',settings);
+perf = classifyFC(FCdata,'tree',settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% linear discriminant analysis

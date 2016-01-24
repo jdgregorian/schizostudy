@@ -28,7 +28,7 @@ settings.implementation = 'prtools';
 settings.tree.crit = 'infcrit';
 settings.note = 'Default settings of PRTools decision tree using information gain criterion.';
 
-classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_inf',datamark,'.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_inf',datamark,'.mat']));
 
 %% PRTools classification tree - Fisher criterion
 clear settings
@@ -37,7 +37,7 @@ settings.implementation = 'prtools';
 settings.note = 'PRTools decision tree using Fisher criterion.';
 settings.tree.crit = 'fishcrit';
 
-classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_fish',datamark,'.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_fish',datamark,'.mat']));
 
 %% PRTools classification forest - bagging
 clear settings

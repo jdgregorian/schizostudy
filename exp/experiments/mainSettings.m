@@ -107,14 +107,16 @@ clear settings
 
 settings.forest.nTrees = 11;
 settings.iteration = 10;
+settings.forest.type = 'matlab';
 settings.note = 'Default settings of MATLAB classification forest with 11 trees.';
 
-classifyFC(FCdata,'mrf',settings, fullfile(filename, ['mrf_11t', datamark, '.mat']));
+classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_11t', datamark, '.mat']));
 
 %% RF - 11 linear trees
 clear settings
 
 settings.forest.nTrees = 11;
+settings.forest.type = 'classic';
 settings.forest.TreeType = 'linear';
 settings.forest.learning = 'bagging';
 settings.iteration = 10;
@@ -123,24 +125,26 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
 
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t', datamark, '.mat']));
+classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t', datamark, '.mat']));
 
 %% RF - 11 linear trees + pca(20)
 clear settings
 
 settings.forest.nTrees = 11;
+settings.forest.type = 'classic';
 settings.forest.TreeType = 'linear';
 settings.forest.learning = 'bagging';
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 settings.iteration = 10;
 
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t_pca20', datamark, '.mat']));
+classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_pca20', datamark, '.mat']));
 
 %% RF - 11 linear trees - distance mahal
 clear settings
 
 settings.forest.nTrees = 11;
+settings.forest.type = 'classic';
 settings.forest.TreeType = 'linear';
 settings.forest.learning = 'bagging';
 settings.forest.distance = 'mahal';
@@ -150,12 +154,13 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
 
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t_mahal', datamark, '.mat']));
+classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_mahal', datamark, '.mat']));
 
 %% RF - 11 linear trees - distance Inf
 clear settings
 
 settings.forest.nTrees = 11;
+settings.forest.type = 'classic';
 settings.forest.TreeType = 'linear';
 settings.forest.learning = 'bagging';
 settings.forest.distance = Inf;
@@ -165,12 +170,13 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
 
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t_distInf', datamark, '.mat']));
+classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_distInf', datamark, '.mat']));
 
 %% RF - 11 linear trees - distance 1
 clear settings
 
 settings.forest.nTrees = 11;
+settings.forest.type = 'classic';
 settings.forest.TreeType = 'linear';
 settings.forest.learning = 'bagging';
 settings.forest.distance = 1;
@@ -180,12 +186,13 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
 
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t_dist1', datamark, '.mat']));
+classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_dist1', datamark, '.mat']));
 
 %% RF - 11 linear trees - boosting, maxSplit = 10
 clear settings
 
 settings.forest.nTrees = 11;
+settings.forest.type = 'classic';
 settings.forest.TreeType = 'linear';
 settings.forest.learning = 'boosting';
 settings.forest.maxSplit = 10;
@@ -195,17 +202,18 @@ settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
 
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_lin_11t_boost_10split', datamark, '.mat']));
+classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_boost_10split', datamark, '.mat']));
 
 %% RF - 11 svm trees
 clear settings
 
 settings.forest.nTrees = 11;
+settings.forest.type = 'classic';
 settings.forest.TreeType = 'svm';
 settings.forest.learning = 'bagging';
 settings.iteration = 10;
 
-classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_svm_11t', datamark, '.mat']));
+classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_svm_11t', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Trees
@@ -213,53 +221,59 @@ classifyFC(FCdata,'rf',settings, fullfile(filename, ['rf_svm_11t', datamark, '.m
 clear settings
 
 settings.dimReduction.name = 'pca';
+settings.tree.type = 'linear';
 settings.dimReduction.nDim = 200;
 settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
 
-classifyFC(FCdata,'linTree',settings, fullfile(filename, ['linTree', datamark, '.mat']));
+classifyFC(FCdata, 'tree',settings, fullfile(filename, ['tree_lin', datamark, '.mat']));
 
 %% linear tree + PCA 20
 clear settings
 
 settings.dimReduction.name = 'pca';
+settings.tree.type = 'linear';
 settings.dimReduction.nDim = 20;
 
-classifyFC(FCdata,'linTree',settings, fullfile(filename, ['linTree_pca20', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_lin_pca20', datamark, '.mat']));
 
 %% linear tree mahal
 clear settings
 
 settings.tree.distance = 'mahal';
+settings.tree.type = 'linear';
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 200;
 settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
 
-classifyFC(FCdata,'linTree',settings, fullfile(filename, ['linTree_mahal', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_lin_mahal', datamark, '.mat']));
 
 %% linear tree mahal + PCA 20
 clear settings
 
 settings.tree.distance = 'mahal';
+settings.tree.type = 'linear';
 
 settings.dimReduction.name = 'pca';
 settings.dimReduction.nDim = 20;
 
-classifyFC(FCdata,'linTree',settings, fullfile(filename, ['linTree_mahal_pca20', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_lin_mahal_pca20', datamark, '.mat']));
 
 %% SVM tree
 clear settings
 
 settings.note = 'Default settings of SVMTree.';
+settings.tree.type = 'svm';
 
-classifyFC(FCdata,'svmtree', settings, fullfile(filename, ['svmTree', datamark, '.mat']));
+classifyFC(FCdata,'tree', settings, fullfile(filename, ['tree_svm', datamark, '.mat']));
 
 %% MATLAB classification tree
 clear settings
 
 settings.note = 'Default MATLAB classification tree settings.';
+settings.tree.type = 'matlab';
 
-classifyFC(FCdata,'mtltree',settings, fullfile(filename, ['mtlTree', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_mtl', datamark, '.mat']));
 
 %% PRTools classification tree - information gain criterion
 clear settings
@@ -268,7 +282,7 @@ settings.implementation = 'prtools';
 settings.tree.crit = 'infcrit';
 settings.note = 'Default settings of PRTools decision tree using information gain criterion.';
 
-classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_inf', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_prt_inf', datamark, '.mat']));
 
 %% PRTools classification tree - Fisher criterion
 clear settings
@@ -277,7 +291,7 @@ settings.implementation = 'prtools';
 settings.note = 'PRTools decision tree using Fisher criterion.';
 settings.tree.crit = 'fishcrit';
 
-classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_fish', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_prt_fish', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% LDA - diaglinear

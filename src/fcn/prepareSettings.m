@@ -29,7 +29,7 @@ function [settings, cellset] = prepareSettings(method, settings)
   if any(strcmpi(settings.implementation, {'prtools', 'prt'}))
     prwaitbar off
     switch method
-      case 'dectree' % decision tree (treec)
+      case 'tree' % decision tree (treec)
         settings.tree = defopts(settings, 'tree', []);
         settings.tree.crit = defopts(settings.tree, 'crit', 'infcrit');
         settings.tree.prune = defopts(settings.tree, 'prune', 0);
@@ -94,7 +94,7 @@ function [settings, cellset] = prepareSettings(method, settings)
             cellset = cellSettings(settings.forest, {'nTrees'});
         end
 
-      case {'lintree', 'mtltree', 'svmtree'} % trees
+      case {'tree'} % trees
         settings.tree = defopts(settings, 'tree', []);
 
         if strcmpi(method, 'mtltree')

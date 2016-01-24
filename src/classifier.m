@@ -85,7 +85,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
   end
   
   % settings before the main loop
-  [settings, cellset] = prepareSettings(method, settings);
+  [settings, ~] = prepareSettings(method, settings);
   if isempty(settings)
     warning('There is no %s method from PRTools implemented!', method)
     performance = NaN;
@@ -148,10 +148,8 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 
       % training
       if strcmpi(settings.gridsearch.mode, 'none')
-%         trainedClassifier = trainClassifier(method, trainingData, trainingLabels, settings, cellset);
         TC = TC.train(trainingData, trainingLabels);
       else
-%         trainedClassifier = trainCVClassifier(method, trainingData, trainingLabels, settings);
         TC = TC.train(trainingData, trainingLabels);
       end
 
@@ -167,7 +165,6 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 
       % predict according to the method
       y = TC.predict(testingData, trainingData, trainingLabels);
-%       y = classifierPredict(trainedClassifier, testingData, trainingData, trainingLabels);
       
       if iscell(y)
         if length(y) == 1

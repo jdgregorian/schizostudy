@@ -82,7 +82,7 @@ settings.tree.crit = 'infcrit';
 settings.tree.prune = NaN;
 settings.note = 'PRTools decision tree using information gain criterion and optimization of pruning level.';
 
-classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_inf_optim', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_inf_optim', datamark, '.mat']));
 
 %% PRTools classification tree - Fisher criterion, optimal pruning
 clear settings
@@ -92,7 +92,7 @@ settings.tree.crit = 'fishcrit';
 settings.tree.prune = NaN;
 settings.note = 'PRTools decision tree using Fisher criterion and optimization of pruning level.';
 
-classifyFC(FCdata, 'dectree', settings, fullfile(filename, ['dectree_fish_optim', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_fish_optim', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN - gridsearch

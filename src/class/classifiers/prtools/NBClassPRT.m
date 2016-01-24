@@ -1,5 +1,5 @@
-classdef LDAClassPRT < PRToolsClassifier
-% Linear discriminant analysis based classifier using PRTools
+classdef NBClassPRT < PRToolsClassifier
+% Naive Bayes classifier using PRTools
   properties    
     method         % classifier method
     settings       % classifier settings
@@ -9,18 +9,21 @@ classdef LDAClassPRT < PRToolsClassifier
   
   methods
     
-    function obj = LDAClassPRT(settings)
+    function obj = NBClassPRT(settings)
     % constructor
       obj = obj@PRToolsClassifier(settings);
-      obj.method = 'lda';
-      obj.settings.R = defopts(obj.settings, 'R', 0);
-      obj.settings.S = defopts(obj.settings, 'S', 0);
+      obj.method = 'nb';
+      
+      cellset = cellSettings(obj.settings, {'gridsearch', 'implementation', 'prior'});
+      if ~isempty(cellset)
+        warning('Naive Bayes (PRTools) do not accept additional settings.')
+      end
     end
     
     function obj = trainClassifier(obj, trainingData, trainingLabels)
     % training function
       toolData = obj.prdata(trainingData, trainingLabels);
-      obj.classifier = ldc(toolData, obj.settings.R, obj.settings.S);
+      obj.classifier = naivebc(toolData, gaussm);
     end
     
   end
