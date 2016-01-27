@@ -357,10 +357,10 @@ clear settings
 
 settings.knn.k = 3;
 settings.knn.distance = 'euclidean';
-settings.dimReduction.name = 'kendall';
+settings.dimReduction.name = 'median';
 settings.dimReduction.nDim = 200;
 
-perf = classifyFC(FCdata,'knn',settings);
+perf = classifyFC(FCdata, 'knn', settings);
 
 %% KNN - gridsearch
 clear settings

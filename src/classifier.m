@@ -210,67 +210,24 @@ function [reducedData, settings] = reduceDim(data, indices, settings)
   
   switch settings.dimReduction.name
     case 'pca'
-      % principle compopnent analysis feature reduction
+      % principle component analysis feature reduction
       fprintf('Starting dimension reduction by PCA...\n')
-      if nDim > Nsubjects-1
-        nDim = Nsubjects-1;
-      end
-      
-      [settings.dimReduction.transMatrix, transData] = pca(data);
-      nDim = min(size(transData,2), nDim);
-      reducedData = transData(:,1:nDim);
-      
+      [reducedData, settings.dimReduction.transMatrix] = pcaReduction(data, nDim);
       settings.transformPrediction = true;
       fprintf('Dimension reduced from %d to %d\n', dim, nDim)
       
     case 'kendall'
       % Kendall tau rank coefficient feature reduction
-      % (according to Hui 2009)
       fprintf('Starting dimension reduction using Kendall tau rank coefficients...\n')
       treshold = defopts(settings.dimReduction, 'treshold', -1); % minimal Kendall tau rank value
-      
-      nOne = sum(indices);
-      nZero = Nsubjects - nOne;
-      nc = zeros(1,dim);
-      % for each value from one group count equalities for each value from the
-      % other
-      for ind = 1:nZero
-        for counterInd = nZero + 1:Nsubjects
-          nc = nc + (sign(data(ind,:)-data(counterInd,:)) == true(1,dim)*sign(indices(ind)-indices(counterInd)));
-        end
-      end
-      nd = ones(1,dim) * nOne * nZero - nc;
-      tau = (nc - nd)/(nZero*nOne); % count Kendall tau ranks
-      
-      [sortedTau, tauId] = sort(abs(tau),'descend');
-      reducedData = data(:,tauId(1:nDim)); % reduction by dimension setting
-      reducedData = reducedData(:,sortedTau(1:nDim) > treshold); % reduction by treshold
-      
-      if isempty(reducedData) % check if some data left
-        warning('Too severe constraints! Preventing emptyness of reduced dataset by keeping one dimension with the greatest Kendall tau rank.')
-        reducedData = data(:,tauId(1));
-      end
-      
+      reducedData = kendallReduction(data, indices, nDim, treshold);
       fprintf('Dimension reduced from %d to %d\n', dim, size(reducedData,2))
       
     case 'ttest'
       % t-test feature reduction
       fprintf('Starting dimension reduction using t-test...\n')
       alpha = defopts(settings.dimReduction, 'alpha', 0.05); % significance level
-      
-      [t2, p] = ttest2(data(logical(indices),:),data(~logical(indices),:),'Alpha',alpha, 'Vartype','unequal');
-      
-      reducedData = data(:,logical(t2)); % reduction by ttest
-
-      if isempty(reducedData) % check if some data left
-        warning('Too severe constraints! Preventing emptyness of reduced dataset by keeping one dimension with the greatest Kendall tau rank.')
-        [~, pMinId] = min(p);
-        reducedData = data(:,pMinId(1));
-      elseif sum(t2) > nDim   % reduction by dimensions with the lowest p-values 
-        [~, pId] = sort(p(logical(t2)));
-        reducedData = reducedData(:,pId(1:nDim));
-      end
-      
+      reducedData = ttestReduction(data, indices, nDim, alpha);
       fprintf('Dimension reduced from %d to %d\n', dim, size(reducedData,2))
     
     case 'median'
@@ -281,28 +238,8 @@ function [reducedData, settings] = reduceDim(data, indices, settings)
       nOnes = sum(indices);
       nZeros = Nsubjects - nOnes;
       minDif = defopts(settings.dimReduction, 'minDif', 2*abs(nOnes-nZeros)); % minimum number of differences
-      
-      medData = median(data,1);
-      greaterSub = data > repmat(medData,Nsubjects,1);
-      greaterOnes = sum(greaterSub & repmat(indices,1,dim),1);
-      greaterZeros = sum(greaterSub & repmat(~indices,1,dim),1);
-      % count median difference coefficient
-      nDif = abs(greaterOnes - greaterZeros) + abs(nOnes - nZeros - greaterOnes + greaterZeros);
-      
-      reducedData = data(:,nDif >= minDif);
-      redDim = size(reducedData,2);
-      
-      if redDim == 0 % check if some data left
-        warning(['Too severe constraints! Preventing emptyness of reduced',...
-          'dataset by keeping one dimension with the greatest difference coefficient.'])
-        [~, minId] = min(nDif);
-        reducedData = data(:, minId(1));
-      elseif redDim > nDim   % reduction by dimensions with the greatest difference coefficients
-        [~, difId] = sort(nDif(nDif >= minDif),'descend');
-        reducedData = reducedData(:,difId(1:nDim));
-      end
-      
-      fprintf('Dimension reduced from %d to %d\n', dim, redDim)
+      reducedData = medianReduction(data, indices, nDim, minDif);
+      fprintf('Dimension reduced from %d to %d\n', dim, size(reducedData,2))
       
     case 'none'
       reducedData = data;

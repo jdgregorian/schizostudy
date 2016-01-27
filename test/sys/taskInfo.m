@@ -8,6 +8,8 @@ fprintf('Labels in column or independent?\n')
 fprintf('Split MATLAB and PRTools settings?\n')
 
 fprintf('\nMost recent: \n')
+fprintf('    Finish medianReduction\n')
+fprintf('    Write dimensionality reduction based on highest averages\n')
 fprintf('    Metacentrum: Findout the error\n')
 fprintf('    Verify if qda in prtools has so good results\n')
 fprintf('    Separate settings from experiments\n')
