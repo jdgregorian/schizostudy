@@ -1,6 +1,5 @@
 % Script for testing Arbabshirani's settings of classifiers using simple
-% gridsearch. ANN and RBF are missing - trainCVClassifier needs to be
-% improved to search optimal architecture.
+% gridsearch and highest mean dimension reduction. RBF is missing.
 %
 % Variables 'FCdata', 'filename', 'expfolder' and 'datamark' should be 
 % defined before run.

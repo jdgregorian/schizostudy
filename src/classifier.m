@@ -190,13 +190,16 @@ function [reducedData, settings] = reduceDim(data, indices, settings)
   if iscell(data) && iscell(indices)
     nDatasets = length(data);
     dataId = cellfun(@length, indices); % remember sizes of data
-    dataId = arrayfun(@(x) x*ones(dataId(x),1), 1:nDatasets, 'UniformOutput', false);
+    dataId = arrayfun(@(x) x*ones(dataId(x), 1), 1:nDatasets, 'UniformOutput', false);
     dataId = cat(1, dataId{:});
-    data = cat(1, data{:});
-    indices = cat(1, indices{:});
+    cData = cat(1, data{:});
+    cIndices = cat(1, indices{:});
+  else
+    cData = data;
+    cIndices = indices;
   end
   
-  [Nsubjects, dim] = size(data);
+  [Nsubjects, dim] = size(cData);
   
   % dimension reduction
   defSet.name = 'none';
@@ -208,52 +211,60 @@ function [reducedData, settings] = reduceDim(data, indices, settings)
     nDim = dim;  % maximum of chosen dimensions
   end
   
-  switch settings.dimReduction.name
+  switch lower(settings.dimReduction.name)
+    case 'none'
+      % no dimension reduction 
+      reducedData = data;
+      return
+      
     case 'pca'
       % principle component analysis feature reduction
       fprintf('Starting dimension reduction by PCA...\n')
-      [reducedData, settings.dimReduction.transMatrix] = pcaReduction(data, nDim);
+      [reducedData, settings.dimReduction.transMatrix] = pcaReduction(cData, nDim);
       settings.transformPrediction = true;
-      fprintf('Dimension reduced from %d to %d\n', dim, nDim)
       
     case 'kendall'
       % Kendall tau rank coefficient feature reduction
       fprintf('Starting dimension reduction using Kendall tau rank coefficients...\n')
-      treshold = defopts(settings.dimReduction, 'treshold', -1); % minimal Kendall tau rank value
-      reducedData = kendallReduction(data, indices, nDim, treshold);
-      fprintf('Dimension reduced from %d to %d\n', dim, size(reducedData,2))
+      % minimal Kendall tau rank value
+      treshold = defopts(settings.dimReduction, 'treshold', -1);
+      reducedData = kendallReduction(cData, cIndices, nDim, treshold);
       
     case 'ttest'
       % t-test feature reduction
       fprintf('Starting dimension reduction using t-test...\n')
-      alpha = defopts(settings.dimReduction, 'alpha', 0.05); % significance level
-      reducedData = ttestReduction(data, indices, nDim, alpha);
-      fprintf('Dimension reduced from %d to %d\n', dim, size(reducedData,2))
+      % significance level
+      alpha = defopts(settings.dimReduction, 'alpha', 0.05);
+      reducedData = ttestReduction(cData, cIndices, nDim, alpha);
     
     case 'median'
-      % feature reduction according to Honza Kalina's suggestion:
-      %    Choose median value in each dimension, count how many
-      %    individuals has greater or lower value
+      % feature reduction based on median (Honza Kalina's suggestion)
       fprintf('Starting dimension reduction using median difference coefficients...\n')
-      nOnes = sum(indices);
+      nOnes = sum(cIndices);
       nZeros = Nsubjects - nOnes;
-      minDif = defopts(settings.dimReduction, 'minDif', 2*abs(nOnes-nZeros)); % minimum number of differences
-      reducedData = medianReduction(data, indices, nDim, minDif);
-      fprintf('Dimension reduced from %d to %d\n', dim, size(reducedData,2))
+      % minimum number of differences
+      minDif = defopts(settings.dimReduction, 'minDif', 2*abs(nOnes-nZeros));
+      reducedData = medianReduction(cData, cIndices, nDim, minDif);
       
-    case 'none'
-      reducedData = data;
+    case 'hmean'
+      % feature reduction based on higest mean
+      fprintf('Starting dimension reduction using higest mean...\n')
+      % minimal value of mean
+      minVal = defopts(settings.dimReduction, 'minVal', 0);
+      reducedData = hMeanReduction(cData, nDim, minVal);
       
     otherwise
       error('Wrong dimReduction property name!!!')
       
   end
   
-  if exist('dataId','var')
+  fprintf('Dimension reduced from %d to %d\n', dim, size(reducedData, 2))
+  
+  if exist('dataId', 'var')
     redData = reducedData;
-    reducedData = cell(1,nDatasets);
+    reducedData = cell(1, nDatasets);
     for i = 1:nDatasets
-      reducedData{i} = redData(i == dataId,:);
+      reducedData{i} = redData(i == dataId, :);
     end
   end
 

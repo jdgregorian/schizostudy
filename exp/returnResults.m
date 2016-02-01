@@ -73,21 +73,27 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
       % loading files
       for fil = 1:nFiles
         filename = [folders{f}, filesep, fileList(fil).name];
-        variables = load(filename, possibleVariables{:});
-        if all(isfield(variables, necessaryVariables(1:end-1)))
-          folderSettings{fil - nEmptyFiles} = variables.settings;
-          folderMethod{fil - nEmptyFiles} = variables.method;
-          folderData{fil - nEmptyFiles} = variables.data;
-          folderPerformance{fil - nEmptyFiles} = variables.performance;
-          folderAvgPerformance(fil - nEmptyFiles) = variables.avgPerformance;
-          if isfield(variables, 'errors')
-            folderErrors{fil - nEmptyFiles} = variables.errors;
+        try
+          variables = load(filename, possibleVariables{:});
+          if all(isfield(variables, necessaryVariables(1:end-1)))
+            folderSettings{fil - nEmptyFiles} = variables.settings;
+            folderMethod{fil - nEmptyFiles} = variables.method;
+            folderData{fil - nEmptyFiles} = variables.data;
+            folderPerformance{fil - nEmptyFiles} = variables.performance;
+            folderAvgPerformance(fil - nEmptyFiles) = variables.avgPerformance;
+            if isfield(variables, 'errors')
+              folderErrors{fil - nEmptyFiles} = variables.errors;
+            end
+            if isfield(variables, 'elapsedTime')
+              folderElapsedTime{fil - nEmptyFiles} = variables.elapsedTime;
+            end
+          else
+            fprintf('Omitting file (lack of result variables): %s\n', filename)
+            nEmptyFiles = nEmptyFiles + 1;
+            usefulFiles(fil) = false;
           end
-          if isfield(variables, 'elapsedTime')
-            folderElapsedTime{fil - nEmptyFiles} = variables.elapsedTime;
-          end
-        else
-          fprintf('Omitting file (lack of result variables): %s\n', filename)
+        catch
+          fprintf('Omitting file (unable to read): %s\n', filename)
           nEmptyFiles = nEmptyFiles + 1;
           usefulFiles(fil) = false;
         end

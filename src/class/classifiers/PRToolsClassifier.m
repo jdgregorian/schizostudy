@@ -17,6 +17,7 @@ classdef (Abstract) PRToolsClassifier < Classifier
     % constructor
       obj = obj@Classifier(settings);
       obj.implementation = 'prtools';
+      prwaitbar off
     end
     
     function toolData = prdata(obj, trainingData, trainingLabels)

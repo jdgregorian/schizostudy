@@ -22,6 +22,7 @@ function listSettingsResults(folder)
   [avgPerformance, settings, method, data, performance, elapsedTime, errors, returnedFiles, omittedFiles] = returnResults(folder);
   
   nFiles = length(returnedFiles);
+  nOmitted = length(omittedFiles);
   [nSettings, nData] = size(avgPerformance);
 
   % printing results to txt file
@@ -35,14 +36,14 @@ function listSettingsResults(folder)
   fprintf(FID,'---------------------------------------------------------------------------------\n');
   fprintf(FID,'\n\n');
   fprintf(FID,'      Created on %s in folder %s.\n', datestr(now), folder);
-  fprintf(FID,'      Number of files: %d\n', nFiles);
+  fprintf(FID,'      Number of files in folder: %d\n', nFiles + nOmitted);
   fprintf(FID,'\n');
   
   % print omitted files
   if ~isempty(omittedFiles)
     fprintf(FID,'\n---------------------------------------------------------------------------------\n\n');
-    fprintf(FID,'  Omitted files:\n');
-    for f = 1:length(omittedFiles)
+    fprintf(FID,'  Omitted files (%d):\n', nOmitted);
+    for f = 1:nOmitted
       fprintf(FID,'    %s\n', omittedFiles{f});
     end
     fprintf(FID,'\n');

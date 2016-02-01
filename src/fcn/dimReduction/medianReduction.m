@@ -1,12 +1,15 @@
 function reducedData = medianReduction(data, labels, nDim, minDif)
-% reducedData = medianReduction(data, labels, nDim) provides feature 
-% reduction of 'data' to 'nDim'-dimensional data (at maximum) using t-test.
+% reducedData = medianReduction(data, labels, nDim, minDif) provides 
+% feature reduction of 'data' to 'nDim'-dimensional data (at maximum) using 
+% Honza Kalina's suggestion: 
+%   Choose median value in each dimension, count how many individuals has 
+%   greater or lower value.
 %
 % Input:
-%   data - N x M data matrix | double
+%   data   - N x M data matrix | double
 %   labels - N x 1 label vector | double
-%   nDim - dimension of reduced data | integer
-%   alpha - feature significance level | double
+%   nDim   - dimension of reduced data | integer
+%   minDif - minimal number of differences | integer
 %
 % Output:
 %   reducedData - N x nDim data | double
@@ -22,7 +25,7 @@ function reducedData = medianReduction(data, labels, nDim, minDif)
   nZeros = Nsubjects - nOnes;
   
   if nargin < 4
-    % significance level
+    % minimal number of differences
     minDif = 2*abs(nOnes-nZeros);
     if nargin < 3
       nDim = dim;
@@ -39,12 +42,14 @@ function reducedData = medianReduction(data, labels, nDim, minDif)
   reducedData = data(:, nDif >= minDif);
   redDim = size(reducedData, 2);
 
-  if redDim == 0 % check if some data left
+  % check if some data left
+  if redDim == 0
     warning(['Too severe constraints! Preventing emptyness of reduced',...
-      'dataset by keeping one dimension with the greatest difference coefficient.'])
+      'dataset by keeping one dimension with the highest difference coefficient.'])
     [~, minId] = min(nDif);
     reducedData = data(:, minId(1));
-  elseif redDim > nDim   % reduction by dimensions with the greatest difference coefficients
+  % reduction by dimensions with the highest difference coefficients
+  elseif redDim > nDim
     [~, difId] = sort(nDif(nDif >= minDif), 'descend');
     reducedData = reducedData(:, difId(1:nDim));
   end

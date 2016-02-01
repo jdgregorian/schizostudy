@@ -116,16 +116,15 @@ perf = classifyFC(FCdata,'svm',settings);
 %% rbf - experimental
 clear settings
 
-arbabfolder = fullfile('data', 'arbabshirani');
-traintestData = fullfile(arbabfolder, 'traintest', 'adCorrAbs_27_11_15');
+% arbabfolder = fullfile('data', 'arbabshirani');
+% traintestData = fullfile(arbabfolder, 'traintest', 'adCorrAbs_27_11_15');
 
-settings.svm.kernel_function = 'rbf';
-settings.gridsearch.mode = 'grid';
-settings.gridsearch.properties = {'boxconstraint', 'rbf_sigma'};
-settings.gridsearch.bounds = {[2*10^-3, 10^5], [10^-5, 10^5]};
-settings.gridsearch.npoints = [11,11];
+settings.svm.kernel_function = 'linear';
+settings.dimReduction.name = 'hmean';
+settings.dimReduction.nDim = 1000;
+settings.dimReduction.minVal = -1;
 
-perf = classifyFC(traintestData, 'svm', settings);
+perf = classifyFC(FCdata, 'svm', settings);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Random forest
