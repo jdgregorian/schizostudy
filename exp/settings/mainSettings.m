@@ -6,7 +6,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% initialization
 if ~exist('FCdata', 'var')
-  FCdata = fullfile('data', 'data_FC_190subjects.mat');
+  FCdata = fullfile('data', 'data_FC_190subjects_B.mat');
 end
 if ~exist('filename', 'var')
   filename = 'mainSettings';
@@ -27,6 +27,7 @@ mkdir(expfolder,filename)
 clear settings
 
 settings.svm.kernel_function = 'linear';
+settings.note = 'Linear SVM.';
 
 classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear', datamark, '.mat']));
 
@@ -35,6 +36,7 @@ clear settings
 
 settings.svm.kernel_function = 'linear';
 settings.svm.autoscale = false;
+settings.note = 'Linear SVM. Autoscale ''off''.';
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_linear_noauto', datamark, '.mat']));
 
@@ -42,6 +44,7 @@ classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_linear_noauto', datam
 clear settings
 
 settings.svm.kernel_function = 'quadratic';
+settings.note = 'Quadratic SVM.';
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_quad', datamark, '.mat']));
 
@@ -50,6 +53,7 @@ clear settings
 
 settings.svm.kernel_function = 'quadratic';
 settings.svm.autoscale = false;
+settings.note = 'Quadratic SVM. Autoscale ''off''.';
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_quad_noauto', datamark, '.mat']));
 
@@ -57,6 +61,7 @@ classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_quad_noauto', datamar
 clear settings
 
 settings.svm.kernel_function = 'polynomial'; 
+settings.note = 'Polynomial(3) SVM.';
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly', datamark, '.mat']));
 
@@ -65,40 +70,42 @@ clear settings
 
 settings.svm.kernel_function = 'polynomial';
 settings.svm.autoscale = false; 
+settings.note = 'Polynomial(3) SVM. Autoscale ''off''.';
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly_noauto', datamark, '.mat']));
 
-%% rbf - autoscale 'on'
+%% rbf - autoscale 'on', gridsearch 'rbf_sigma'
 clear settings
 
 settings.svm.kernel_function = 'rbf';
-settings.svm.rbf_sigma = 42; % found through gridsearch
+settings.note = 'RBF SVM using gridsearch on sigma.';
 
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_rbf', datamark, '.mat']));
+settings.gridsearch.mode = 'simple';
+settings.gridsearch.kfold = 5;
+settings.gridsearch.properties = {'rbf_sigma'};
+settings.gridsearch.levels = 2;
+settings.gridsearch.bounds = {[10^-3, 10^3]};
+settings.gridsearch.npoints = 11;
+settings.gridsearch.scaling = {{'log', 'lin'}};
 
-%% rbf - autoscale 'off'
+perf = classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_grid', datamark, '.mat']));
+
+%% rbf - autoscale 'off', gridsearch 'rbf_sigma'
 clear settings
 
 settings.svm.kernel_function = 'rbf';
 settings.svm.autoscale = false;
-settings.svm.rbf_sigma = 7; % found through gridsearch
+settings.note = 'RBF SVM using gridsearch on sigma. Autoscale ''off''.';
 
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_rbf_noauto', datamark, '.mat']));
+settings.gridsearch.mode = 'simple';
+settings.gridsearch.kfold = 5;
+settings.gridsearch.properties = {'rbf_sigma'};
+settings.gridsearch.levels = 2;
+settings.gridsearch.bounds = {[10^-3, 10^3]};
+settings.gridsearch.npoints = 11;
+settings.gridsearch.scaling = {{'log', 'lin'}};
 
-%% mlp
-clear settings
-
-settings.svm.kernel_function = 'mlp';
-
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_mlp', datamark, '.mat']));
-
-%% mlp - autoscale 'off'
-clear settings
-
-settings.svm.kernel_function = 'mlp';
-settings.svm.autoscale = false;
-
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_mlp_noauto', datamark, '.mat']));
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_grid_noauto', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Random forest
@@ -120,73 +127,9 @@ settings.rf.type = 'classic';
 settings.rf.TreeType = 'linear';
 settings.rf.learning = 'bagging';
 settings.iteration = 10;
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 200;
-settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
+settings.note = 'Random forest with linear trees. Learning by bagging.';
 
 classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t', datamark, '.mat']));
-
-%% RF - 11 linear trees + pca(20)
-clear settings
-
-settings.rf.nTrees = 11;
-settings.rf.type = 'classic';
-settings.rf.TreeType = 'linear';
-settings.rf.learning = 'bagging';
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
-settings.iteration = 10;
-
-classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_pca20', datamark, '.mat']));
-
-%% RF - 11 linear trees - distance mahal
-clear settings
-
-settings.rf.nTrees = 11;
-settings.rf.type = 'classic';
-settings.rf.TreeType = 'linear';
-settings.rf.learning = 'bagging';
-settings.rf.distance = 'mahal';
-settings.iteration = 10;
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 200;
-settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
-
-classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_mahal', datamark, '.mat']));
-
-%% RF - 11 linear trees - distance Inf
-clear settings
-
-settings.rf.nTrees = 11;
-settings.rf.type = 'classic';
-settings.rf.TreeType = 'linear';
-settings.rf.learning = 'bagging';
-settings.rf.distance = Inf;
-settings.iteration = 10;
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 200;
-settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
-
-classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_distInf', datamark, '.mat']));
-
-%% RF - 11 linear trees - distance 1
-clear settings
-
-settings.rf.nTrees = 11;
-settings.rf.type = 'classic';
-settings.rf.TreeType = 'linear';
-settings.rf.learning = 'bagging';
-settings.rf.distance = 1;
-settings.iteration = 10;
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 200;
-settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
-
-classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_dist1', datamark, '.mat']));
 
 %% RF - 11 linear trees - boosting, maxSplit = 10
 clear settings
@@ -197,75 +140,19 @@ settings.rf.TreeType = 'linear';
 settings.rf.learning = 'boosting';
 settings.rf.maxSplit = 10;
 settings.rf.distance = 2;
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 200;
-settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
+settings.note = 'Random forest with linear trees. Learning by boosting.';
 
 classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_boost_10split', datamark, '.mat']));
-
-%% RF - 11 svm trees
-clear settings
-
-settings.rf.nTrees = 11;
-settings.rf.type = 'classic';
-settings.rf.TreeType = 'svm';
-settings.rf.learning = 'bagging';
-settings.iteration = 10;
-
-classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_svm_11t', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Trees
 % linear tree
 clear settings
 
-settings.dimReduction.name = 'pca';
 settings.tree.type = 'linear';
-settings.dimReduction.nDim = 200;
-settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
+settings.note = 'Default linear tree.';
 
 classifyFC(FCdata, 'tree',settings, fullfile(filename, ['tree_lin', datamark, '.mat']));
-
-%% linear tree + PCA 20
-clear settings
-
-settings.dimReduction.name = 'pca';
-settings.tree.type = 'linear';
-settings.dimReduction.nDim = 20;
-
-classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_lin_pca20', datamark, '.mat']));
-
-%% linear tree mahal
-clear settings
-
-settings.tree.distance = 'mahal';
-settings.tree.type = 'linear';
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 200;
-settings.note = 'PCA(200ft.) does not affect tree learning. Added to speed up testing.';
-
-classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_lin_mahal', datamark, '.mat']));
-
-%% linear tree mahal + PCA 20
-clear settings
-
-settings.tree.distance = 'mahal';
-settings.tree.type = 'linear';
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
-
-classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_lin_mahal_pca20', datamark, '.mat']));
-
-%% SVM tree
-clear settings
-
-settings.note = 'Default settings of SVMTree.';
-settings.tree.type = 'svm';
-
-classifyFC(FCdata,'tree', settings, fullfile(filename, ['tree_svm', datamark, '.mat']));
 
 %% MATLAB classification tree
 clear settings
@@ -294,63 +181,23 @@ settings.tree.crit = 'fishcrit';
 classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_prt_fish', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% LDA - diaglinear
-clear settings
-
-settings.lda.type = 'diaglinear';
-settings.note = 'LDA settings with diaglinear.';
-
-classifyFC(FCdata,'lda',settings, fullfile(filename, ['lda_diaglinear', datamark, '.mat']));
-
-%% LDA - linear + PCA 20
-clear settings
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
-settings.lda.type = 'linear';
-
-classifyFC(FCdata,'lda',settings, fullfile(filename, ['lda_linear_pca20', datamark, '.mat']));
-
 %% LDA (PRTools)
 clear settings
 
 settings.implementation = 'prtools';
-settings.prior = [0.5,0.5];
+settings.prior = [0.5, 0.5];
 settings.note = 'Default settings of PRTools LDA.';
 
-classifyFC(FCdata,'lda',settings, fullfile(filename, ['lda_prtools_pca20', datamark, '.mat']));
-
-%% QDA - diagquadratic
-clear settings
-
-settings.qda.type = 'diagquadratic';
-
-classifyFC(FCdata,'qda',settings, fullfile(filename, ['qda_diagquadratic', datamark, '.mat']));
-
-%% QDA - quadratic + PCA 20
-clear settings
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
-settings.qda.type = 'quadratic';
-
-classifyFC(FCdata,'qda',settings, fullfile(filename, ['qda_quadratic_pca20', datamark, '.mat']));
+classifyFC(FCdata, 'lda', settings, fullfile(filename, ['lda_prtools', datamark, '.mat']));
 
 %% QDA (PRTools)
 clear settings
 
 settings.implementation = 'prtools';
-settings.prior = [0.5,0.5];
+settings.prior = [0.5, 0.5];
 settings.note = 'Default settings of PRTools QDA.';
 
-classifyFC(FCdata,'qda',settings, fullfile(filename, ['qda_prtools', datamark, '.mat']));
-
-%% RDA (RDA 14)
-clear settings
-
-settings.note = 'Default RDA (14).';
-
-classifyFC(FCdata,'rda',settings, fullfile(filename, ['rda_default', datamark, '.mat']));
+classifyFC(FCdata, 'qda', settings, fullfile(filename, ['qda_prtools', datamark, '.mat']));
 
 %% Fisher's linear discriminant (PRTools)
 clear settings
@@ -358,50 +205,33 @@ clear settings
 settings.implementation = 'prtools';
 settings.note = 'Fisher''s linear discriminant (PRTools) has no settings.';
 
-classifyFC(FCdata,'fisher',settings, fullfile(filename, ['fisher', datamark, '.mat']));
+classifyFC(FCdata, 'fisher', settings, fullfile(filename, ['fisher', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN
 clear settings
 
-settings.knn.k = 1;
 settings.knn.distance = 'euclidean';
-settings.note = 'Default settings of KNN classifier.';
+settings.note = 'KNN classifier using gridsearch on k.';
 
-classifyFC(FCdata,'knn',settings, fullfile(filename, ['knn_1', datamark, '.mat']));
+settings.gridsearch.mode = 'simple';
+settings.gridsearch.kfold = 5;
+settings.gridsearch.properties = {'k'};
+settings.gridsearch.levels = 1;
+settings.gridsearch.bounds = {[1, 10]};
+settings.gridsearch.npoints = 10;
+settings.gridsearch.scaling = {{'lin'}};
+
+classifyFC(FCdata, 'knn', settings, fullfile(filename, ['knn_grid', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% logistic linear classifier + PCA 20
-clear settings
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 20;
-
-classifyFC(FCdata,'llc',settings, fullfile(filename, ['llc_pca20', datamark, '.mat']));
-
-%% logistic linear classifier + PCA 50
-clear settings
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 50;
-
-classifyFC(FCdata,'llc',settings, fullfile(filename, ['llc_pca50', datamark, '.mat']));
-
-%% logistic linear classifier + PCA 75
-clear settings
-
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 75;
-
-classifyFC(FCdata,'llc',settings, fullfile(filename, ['llc_pca75', datamark, '.mat']));
-
 %% logistic linear classifier (PRTools)
 clear settings
 
 settings.implementation = 'prtools';
 settings.note = 'Default logistic linear classifier settings in PRTools.';
 
-classifyFC(FCdata,'llc',settings, fullfile(filename, ['llc_prtools', datamark, '.mat']));
+classifyFC(FCdata, 'llc', settings, fullfile(filename, ['llc_prtools', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% naive Bayes
@@ -410,36 +240,24 @@ clear settings
 settings.nb.distribution = 'normal';
 settings.note = 'Default naive Bayes settings.';
 
-classifyFC(FCdata, 'nb', settings, fullfile(filename, ['nb_default', datamark, '.mat']));
-
-%% naive Bayes (PRTools)
-clear settings
-
-settings.implementation = 'prtools';
-settings.note = 'Default PRTools naive Bayes settings.';
-
-classifyFC(FCdata, 'nb', settings, fullfile(filename, ['nb_prtools', datamark, '.mat']));
+classifyFC(FCdata, 'nb', settings, fullfile(filename, ['nb', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Artificial Neural Networks
-% linear perceptron + PCA 189
+%% ANN
 clear settings
 
-settings.note = 'Linear perceptron has no settings. Dimension has to be reduced because of memory limits.';
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 189;
-
-classifyFC(FCdata, 'perc', settings, fullfile(filename, ['perc_pca189', datamark, '.mat']));
-
-%% ANN + PCA 200
-clear settings
-
-settings.note = 'ANN default settings. PCA (189ft.) used due to ANN memory limitations.';
-settings.dimReduction.name = 'pca';
-settings.dimReduction.nDim = 189;
+settings.note = 'ANN default settings.';
 settings.iteration = 10;
 
-classifyFC(FCdata, 'ann', settings, fullfile(filename, ['ann_pca189', datamark, '.mat']));
+classifyFC(FCdata, 'ann', settings, fullfile(filename, ['ann', datamark, '.mat']));
+
+%% RBF
+clear settings
+
+settings.note = 'Default RBF';
+
+perf = classifyFC(FCdata, 'rbf', settings, fullfile(filename, ['rbf', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% final results listing

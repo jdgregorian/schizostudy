@@ -129,7 +129,7 @@ classdef (Abstract) Classifier
             lb(p) = CVGridBounds{p}(1);
             ub(p) = CVGridBounds{p}(2);
           elseif l <= nLevels(p) && ~strcmp(CVProperties{p}, 'hiddenSizes')
-            gridValues{p} = obj.gridScaling(lb(p), ub(p), CVGridScaling{p}{l}, CVGridPoints(p) + 2);
+            gridValues{p} = gridScaling(lb(p), ub(p), CVGridScaling{p}{l}, CVGridPoints(p) + 2);
             lb(p) = gridValues{p}(2);
             ub(p) = gridValues{p}(end - 1);      
           end
@@ -146,10 +146,8 @@ classdef (Abstract) Classifier
             % neural network architecture
             if strcmp(CVProperties{p}, 'hiddenSizes')
               gridSettings.(CVProperties{p}) = ones(1, l)*gridValues{p}(ParamId+1);
-%               eval(['gridSettings.', settingsStructName(obj.method), '.', CVProperties{p}, ' = [',num2str(ones(1, l)*gridValues{p}(ParamId+1)),'];'])
             else
               gridSettings.(CVProperties{p}) = gridValues{p}(ParamId+1);
-%               eval(['gridSettings.', settingsStructName(obj.method), '.', CVProperties{p}, ' = ',num2str(gridValues{p}(ParamId+1)),';'])
             end
             exactParamId = (exactParamId - ParamId) / CVGridPoints(p);
           end

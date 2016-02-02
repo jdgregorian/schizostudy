@@ -247,8 +247,8 @@ function [reducedData, settings] = reduceDim(data, indices, settings)
       reducedData = medianReduction(cData, cIndices, nDim, minDif);
       
     case 'hmean'
-      % feature reduction based on higest mean
-      fprintf('Starting dimension reduction using higest mean...\n')
+      % feature reduction based on highest mean
+      fprintf('Starting dimension reduction using highest mean...\n')
       % minimal value of mean
       minVal = defopts(settings.dimReduction, 'minVal', 0);
       reducedData = hMeanReduction(cData, nDim, minVal);

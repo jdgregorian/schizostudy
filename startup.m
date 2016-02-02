@@ -25,7 +25,7 @@ else
 end
 
 % define useful variables
-FCdata = fullfile('data', 'data_FC_190subjects.mat');
+FCdata = fullfile('data', 'data_FC_190subjects_B.mat');
 
 % startup tasks informations
 if exist(fullfile('test', 'sys', '.creator'), 'file')

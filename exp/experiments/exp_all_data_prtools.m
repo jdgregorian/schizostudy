@@ -5,7 +5,7 @@ expfolder = fullfile('exp', 'experiments');
 setfolder = fullfile('exp', 'settings');
 
 % datafiles
-FC190sub = fullfile('data', 'data_FC_190subjects.mat');
+FC190sub_B = fullfile('data', 'data_FC_190subjects.mat');
 FC168sub = fullfile('data', 'data_FC_168subjects.mat');
 FCarbab_loo_all_abs = fullfile('data', 'arbabshirani', 'loo', 'adCorrAbs', '180subj_all.mat');
 FCarbab_loo_all_pos = fullfile('data', 'arbabshirani', 'loo', 'adCorrPos', '180subj_all.mat');

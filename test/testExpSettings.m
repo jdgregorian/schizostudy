@@ -1,7 +1,7 @@
 % Script for testing main settings of classifiers
 
 %% initialization
-FCdata = fullfile('data', 'data_FC_190subjects.mat');
+FCdata = fullfile('data', 'data_FC_190subjects_B.mat');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SVM
@@ -113,16 +113,21 @@ settings.svm.autoscale = false;
 
 perf = classifyFC(FCdata,'svm',settings);
 
-%% rbf - experimental
+%% SVM - experimental
 clear settings
 
 % arbabfolder = fullfile('data', 'arbabshirani');
 % traintestData = fullfile(arbabfolder, 'traintest', 'adCorrAbs_27_11_15');
 
 settings.svm.kernel_function = 'linear';
-settings.dimReduction.name = 'hmean';
-settings.dimReduction.nDim = 1000;
-settings.dimReduction.minVal = -1;
+
+settings.gridsearch.mode = 'simple';
+settings.gridsearch.kfold = 5;
+settings.gridsearch.properties = {'boxconstraint'};
+settings.gridsearch.levels = 3;
+settings.gridsearch.bounds = {[1.1 * 10^-3, 10^5]};
+settings.gridsearch.npoints = 11;
+settings.gridsearch.scaling = {{'log', 'lin', 'lin'}};
 
 perf = classifyFC(FCdata, 'svm', settings);
 
@@ -356,7 +361,7 @@ clear settings
 
 settings.knn.k = 3;
 settings.knn.distance = 'euclidean';
-settings.dimReduction.name = 'median';
+settings.dimReduction.name = 'hmean';
 settings.dimReduction.nDim = 200;
 
 perf = classifyFC(FCdata, 'knn', settings);
