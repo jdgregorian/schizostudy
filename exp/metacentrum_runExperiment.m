@@ -1,19 +1,21 @@
-function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfMachines)
+function metacentrum_runExperiment(settingFiles, data, expname, addSettings, walltime, numOfMachines)
 % Tests settings in 'settingFiles' od 'data' and names the experiment as 
 % 'expname'.
 %
 % Input:
-%    settingFiles  - m-file or cell array of m-files with settings of
-%                    classifiers | string (cell array of strings)
-%    data          - char or cell array of char containing path(s) to data
-%                    that should be tested | string (cell array of strings)
-%    expname       - name of the experiment | string
-%    walltime      - maximum (wall)time for Metacentrum machines | string
-%                    ('4h', '1d', '2d', ...)
-%    numOfMachines - number of machines in Metacentrum | integer
+%   settingFiles  - m-file or cell array of m-files with settings of
+%                   classifiers | string (cell array of strings)
+%   data          - char or cell array of char containing path(s) to data
+%                   that should be tested | string (cell array of strings)
+%   expname       - name of the experiment | string
+%   addSettings   - additional settings for each settings from
+%                   'settingFiles' | string or cell array of strings
+%   walltime      - maximum (wall)time for Metacentrum machines | string
+%                   ('4h', '1d', '2d', ...)
+%   numOfMachines - number of machines in Metacentrum | integer
 %
 % See Also:
-% runExperiment createExperiment
+%   runExperiment, createExperiment
 
 %  cd(fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), 'prg', 'schizostudy'))
   
@@ -35,6 +37,9 @@ function metacentrum_runExperiment(settingFiles, data, expname, walltime, numOfM
   end
   if ~exist('expname', 'var')
     expname = ['exp_', data, '_', char(datetime)];
+  end
+  if ~exist('addSettings', 'var')
+    addSettings = {''};
   end
   if ~exist('walltime', 'var')
     walltime = '4h'; 

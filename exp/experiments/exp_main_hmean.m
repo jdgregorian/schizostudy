@@ -9,21 +9,32 @@ setfolder = fullfile('exp', 'settings');
 FC190sub_B = fullfile('data', 'data_FC_190subjects_B.mat');
 
 % settings
-main40 = fullfile(setfolder, 'mainSettings_hmean40.m');
-main80 = fullfile(setfolder, 'mainSettings_hmean80.m');
-main150 = fullfile(setfolder, 'mainSettings_hmean150.m');
-main300 = fullfile(setfolder, 'mainSettings_hmean300.m');
-main500 = fullfile(setfolder, 'mainSettings_hmean500.m');
-main1000 = fullfile(setfolder, 'mainSettings_hmean1000.m');
-main2000 = fullfile(setfolder, 'mainSettings_hmean2000.m');
+mainSet = fullfile(setfolder, 'mainSettings.m');
+
+% additional settings
+hmean40   = ['settings.dimReduction.name = ''hmean'';',...
+             'settings.dimReduction.nDim = 40;'];
+hmean80   = ['settings.dimReduction.name = ''hmean'';',...
+             'settings.dimReduction.nDim = 80;'];
+hmean150  = ['settings.dimReduction.name = ''hmean'';',...
+             'settings.dimReduction.nDim = 150;'];
+hmean300  = ['settings.dimReduction.name = ''hmean'';',...
+             'settings.dimReduction.nDim = 300;'];
+hmean500  = ['settings.dimReduction.name = ''hmean'';',...
+             'settings.dimReduction.nDim = 500;'];
+hmean1000 = ['settings.dimReduction.name = ''hmean'';',...
+             'settings.dimReduction.nDim = 1000;'];
+hmean2000 = ['settings.dimReduction.name = ''hmean'';',...
+             'settings.dimReduction.nDim = 2000;'];
 
 % summary
-settingFiles = {main40, main80, main150, main300, main500, main1000, main2000};
+settingFiles = {mainSet};
 data = {FC190sub_B};
+additionalSettings = {hmean40, hmean80, hmean150, hmean300, hmean500, hmean1000, hmean2000};
 expname = 'exp_main_hmean';
 
 % running experiment
-runExperiment(settingFiles, data, expname)
+runExperiment(settingFiles, data, expname, additionalSettings)
 
 % final results listing
 listSettingsResults(fullfile(expfolder, expname));

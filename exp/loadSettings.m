@@ -3,7 +3,7 @@ function [settings, resultNames] = loadSettings(settingFiles)
 % 'settings' and names of results in 'resultNames'.
 %
 % See Also:
-% createExperiment
+%   createExperiment
   
   nFiles = length(settingFiles);
   settings = {};
@@ -11,7 +11,7 @@ function [settings, resultNames] = loadSettings(settingFiles)
     str = fileread(settingFiles{f}); % read the whole file
     splits = strsplit(str, '%%'); % split according to %% marks
     % find parts with settings in file
-    usefulParts = cell2mat(cellfun(@(x) ~isempty(strfind(x,'classifyFC')), splits, 'UniformOutput', false));
+    usefulParts = cell2mat(cellfun(@(x) ~isempty(strfind(x, 'classifyFC')), splits, 'UniformOutput', false));
     settings(end+1:end+sum(usefulParts)) = splits(usefulParts);
   end
   % return % back to each setting

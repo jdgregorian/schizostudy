@@ -1,4 +1,4 @@
-function runExperiment(experimentFile, data, expname, metacentrum)
+function runExperiment(experimentFile, data, expname, addSettings, metacentrum)
 % runExperiment(settingFiles, data, expname, metacentrum) tests 
 % settings in 'settingFiles' on 'data' and names the experiment as 
 % 'expname'.
@@ -6,16 +6,18 @@ function runExperiment(experimentFile, data, expname, metacentrum)
 % runExperiment(experimentFile) runs experiment set in 'experimentFile'
 %
 % Input:
-%   settingFiles  - m-file or cell array of m-files with settings of
-%                   classifiers
-%   data          - char or cell array of char containing path(s) to data
-%                   that should be tested
-%   expname       - name of the experiment
-%   metacentrum   - whether the experiment is running on metacentrum 
-%                   | logical
+%   settingFiles - m-file or cell array of m-files with settings of
+%                  classifiers
+%   data         - char or cell array of char containing path(s) to data
+%                  that should be tested
+%   expname      - name of the experiment
+%   addSettings  - additional settings for each settings from
+%                  'settingFiles' | string or cell array of strings
+%   metacentrum  - whether the experiment is running on metacentrum 
+%                  | logical
 %
 % See Also:
-%   metacentrum_runExperiment createExperiment
+%   metacentrum_runExperiment, createExperiment
 
   % initialization
   if nargin < 1
@@ -34,6 +36,9 @@ function runExperiment(experimentFile, data, expname, metacentrum)
   end
   if ~exist('expname', 'var')
     expname = ['exp_', data, '_', char(datetime)];
+  end
+  if ~exist('addSettings', 'var')
+    addSettings = {''};
   end
   if ~exist('metacentrum', 'var')
     metacentrum = false;
@@ -67,7 +72,7 @@ function runExperiment(experimentFile, data, expname, metacentrum)
   % if experiment was not created yet
   if ~isdir(foldername) || ~exist(scriptname, 'file')
     fprintf(ftest, 'Creating experiment...\n');
-    createExperiment(expfolder, expname, settingFiles, data)
+    createExperiment(expfolder, expname, settingFiles, data, addSettings)
   end
   
   % find available settings

@@ -9,7 +9,6 @@ fprintf('Split MATLAB and PRTools settings?\n')
 fprintf('Improve multilevel gridsearch. Use regoptc in PRTools?\n')
 
 fprintf('\nMost recent: \n')
-fprintf('    Create possibility to add settings to experiment\n')
 fprintf('    Metacentrum: Findout the error\n')
 fprintf('    Verify if qda in prtools has so good results\n')
 fprintf('    Write superclass for linear and svmtrees\n')
