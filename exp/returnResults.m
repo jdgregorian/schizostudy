@@ -1,6 +1,6 @@
 function [avgPerformances, settings, method, data, performance, elapsedTime, errors, returnedFiles, omittedFiles] = returnResults(folders)
 % [avgPerformances, settings, method, data, performance, elapsedTime, 
-%    errors, returnedFiles, omittedFiles] = returnResults('folders') 
+%    errors, returnedFiles, omittedFiles] = returnResults(folders) 
 % lists results of FC performance testing in 'folders' cellarray.
 %
 % Input:

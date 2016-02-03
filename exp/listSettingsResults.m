@@ -2,6 +2,9 @@ function listSettingsResults(folder)
 % listSettingsResults(FOLDER) lists results of FC performance testing 
 % in FOLDER to txt file. 
 %
+% Input:
+%   folder - directory containing results | string
+%
 % See Also:
 %   returnResults
 
@@ -26,7 +29,7 @@ function listSettingsResults(folder)
   [nSettings, nData] = size(avgPerformance);
 
   % printing results to txt file
-  FID = fopen(resultname,'w');
+  FID = fopen(resultname, 'w');
   assert(FID ~= -1, 'Cannot open %s !', resultname)
   fprintf('Printing results to %s...\n', resultname)
   

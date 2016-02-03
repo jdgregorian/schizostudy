@@ -8,7 +8,7 @@ function metacentrum_task(expname, taskID)
   
   % create logfile 
   mkdir(fullfile(EXPPATH, 'log'))
-  FILESTDOUT = fullfile(EXPPATH, 'log', ['log_' num2str(taskID) '.txt']);
+  FILESTDOUT = fullfile(EXPPATH, 'log', ['log_', num2str(taskID), '.txt']);
   fout = fopen(FILESTDOUT, 'w');
   if fout ==-1
     warning('Cannot open log file!')
