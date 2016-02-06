@@ -17,7 +17,7 @@ function runExperiment(experimentFile, data, expname, addSettings, metacentrum)
 %                  | logical
 %
 % See Also:
-%   metacentrum_runExperiment, createExperiment
+%   metacentrum_runExperiment2, createExperiment
 
   % initialization
   if nargin < 1

@@ -1,10 +1,12 @@
-function metacentrum_task(expname, taskID)
+function metacentrum_task(expname, taskID, taskSettings)
 % Individual task running during one job
 
-  cd('..')
-  startup
-  EXPPATH = [filesep, fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), ...
-    'prg', 'schizostudy', 'exp', 'experiments', expname)];
+  % setting paths
+  LOCALEXPPATH = fullfile('exp', 'experiments', expname);
+  SCHIZOPATH = [filesep, fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), ...
+    'prg', 'schizostudy')];
+  EXPPATH = fullfile(SCHIZOPATH, LOCALEXPPATH);
+  OUTPUTDIR = getenv('SCRATCHDIR');
   
   % create logfile 
   mkdir(fullfile(EXPPATH, 'log'))
@@ -18,13 +20,34 @@ function metacentrum_task(expname, taskID)
   fprintf(fout, '###########################################\n');
   fprintf(fout, 'TaskID: %d\n', taskID);
   fprintf(fout, 'Date: %s\n', char(datetime));
+  
+  % copy necessary files
+  fprintf(fout, 'Copying necessary files...\n');
+  datapath = taskSettings(strfind(taskSettings, 'FCdata = ') + 10, end);
+  datapath = datapath(1:strfind(taskSettings, '''') - 1);
+  filesepsID = strfind(datapath, filesep);
+  datafolders = datapath(1:filesepsID(end) - 1);
+  
+  mkdir(LOCALEXPPATH)
+  mkdir(datafolders)
+  fToCopy = {'src', 'vendor', 'startup.m', datapath};
+  cellfun( @(x) copyfile(fullfile(SCHIZOPATH, x), fullfile(OUTPUTDIR, x)), fToCopy)
+  
+  % run startup
+  fprintf(fout, 'Running startup...');
+  startup
 
   % running experiment
+  fprintf(fout, 'Running settings...');
   try
-    runExperiment(expname)
+    eval(taskSettings)
   catch err
     fprintf(fout, 'Error: %s\n', err.message);
   end
+  
+  % saving results
+  fprintf(fout, 'Saving results...');
+  copyfile(fullfile(OUTPUTDIR, LOCALEXPPATH), fullfile(SCHIZOPATH, LOCALEXPPATH))
 
   fprintf(fout, '###########################################\n');
   fclose(fout);
