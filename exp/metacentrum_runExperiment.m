@@ -1,19 +1,17 @@
 function metacentrum_runExperiment(expname, walltime, taskIDs)
-% Tests settings in 'settingFiles' od 'data' and names the experiment as 
-% 'expname'.
+% metacentrum_runExperiment(expname, walltime, taskIDs) runs tasks 
+% 'taskIDs' from experiment 'expname' with Metacentrum walltime 
+% 'walltime'.
 %
 % Input:
-%   expname       - name of the experiment | string
-%   walltime      - maximum (wall)time for Metacentrum machines | string
-%                   ('4h', '1d', '2d', ...)
-%   numOfMachines - number of machines in Metacentrum | integer
+%   expname  - name of the experiment | string
+%   walltime - maximum (wall)time for Metacentrum machines | string
+%              ('4h', '1d', '2d', ...)
+%   taskIDs  - vector of task numbers to run | integer or [] to run all 
+%              instances
 %
 % See Also:
 %   runExperiment, createExperiment
-
-%  cd(fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), 'prg', 'schizostudy'))
-  
-%  startup
 
   % initialization
   if nargin < 3
@@ -27,9 +25,9 @@ function metacentrum_runExperiment(expname, walltime, taskIDs)
     end
   end
   
-  % uncomment for metacentrum
-%   metafolder = [filesep, fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), 'prg', 'schizostudy')];
-  metafolder = '';
+  % comment for debugging
+  metafolder = [filesep, fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), 'prg', 'schizostudy')];
+%  metafolder = '';
   
   expfolder = fullfile('exp', 'experiments');
   foldername = fullfile(expfolder, expname);
@@ -42,7 +40,10 @@ function metacentrum_runExperiment(expname, walltime, taskIDs)
     % itself
     runExpId = strfind(expContent, 'runExperiment(');
     runExpRow = expContent(runExpId+14 : end);
-    newLineIds = strfind(runExpRow, char(13));
+    newLineIds = strfind(runExpRow, char(10));
+    if isempty(newLineIds)
+      newLineIds = strfind(runExpRow, char(13));
+    end
     runExpRow = runExpRow(1: newLineIds(1));
     % delete white spaces, brackets, semicolons
     runExpRow([strfind(runExpRow, ' '), strfind(runExpRow, ')'), strfind(runExpRow, ';')]) = [];
