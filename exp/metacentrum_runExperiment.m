@@ -78,7 +78,7 @@ function metacentrum_runExperiment(expname, walltime, taskIDs)
   end
   
   % load individual settings
-  [settings, resultNames] = loadSettings({scriptname});
+  settings = loadSettings({scriptname});
   nLoadedTasks = length(settings);
   if isempty(taskIDs)
     taskIDs = 1:nLoadedTasks;
@@ -89,46 +89,46 @@ function metacentrum_runExperiment(expname, walltime, taskIDs)
   
   % the rest is commented for debugging
   
-%   % metacentrum settings
-%   pbs_max_workers = 50;
-%   pbs_params = ['-l walltime=', walltime, ',nodes=^N^:ppn=1,mem=1gb,scratch=1gb,matlab_MATLAB_Distrib_Comp_Engine=^N^'];
+  % metacentrum settings
+  pbs_max_workers = 50;
+  pbs_params = ['-l walltime=', walltime, ',nodes=^N^:ppn=1,mem=1gb,scratch=1gb,matlab_MATLAB_Distrib_Comp_Engine=^N^'];
 
-%   % licence loop
-%   while 1
-%     [tf, ~] = license('checkout', 'Distrib_Computing_Toolbox');
-%     if tf == 1
-%       break
-%     end
-%     display(strcat(datestr(now), ' waiting for licence '));
-%     pause(4);
-%   end
-% 
-%   % job settings
-%   cl = parallel.cluster.Torque;
-%   pause(2);
-%   if ~isdir(fullfile(foldername, 'matlab_jobs'))
-%     mkdir(fullfile(foldername, 'matlab_jobs'))
-%   end
-%   cl.JobStorageLocation = fullfile(foldername, 'matlab_jobs');
-%   cl.ClusterMatlabRoot = matlabroot;
-%   cl.OperatingSystem = 'unix';
-%   cl.ResourceTemplate = pbs_params;
-%   cl.HasSharedFilesystem = true;
-%   cl.NumWorkers = pbs_max_workers;
-% 
-%   job = createJob(cl);
-% 
-%   % tasks creating
-%   for t = 1:nTasks
-%     id = taskIDs(t);
-%     fprintf('Setting up job ID %d / %d ...\n', id, nLoadedTasks);
-%     tasks(t) = createTask(job, @metacentrum_task, 0, {expname, id, settings{id}});
-%   end
-% 
-%   tasks
-% 
-%   % submit job
-%   submit(job)
+  % licence loop
+  while 1
+    [tf, ~] = license('checkout', 'Distrib_Computing_Toolbox');
+    if tf == 1
+      break
+    end
+    display(strcat(datestr(now), ' waiting for licence '));
+    pause(4);
+  end
+
+  % job settings
+  cl = parallel.cluster.Torque;
+  pause(2);
+  if ~isdir(fullfile(foldername, 'matlab_jobs'))
+    mkdir(fullfile(foldername, 'matlab_jobs'))
+  end
+  cl.JobStorageLocation = fullfile(foldername, 'matlab_jobs');
+  cl.ClusterMatlabRoot = matlabroot;
+  cl.OperatingSystem = 'unix';
+  cl.ResourceTemplate = pbs_params;
+  cl.HasSharedFilesystem = true;
+  cl.NumWorkers = pbs_max_workers;
+
+  job = createJob(cl);
+
+  % tasks creating
+  for t = 1:nTasks
+    id = taskIDs(t);
+    fprintf('Setting up job ID %d / %d ...\n', id, nLoadedTasks);
+    tasks(t) = createTask(job, @metacentrum_task, 0, {expname, id, settings{id}});
+  end
+
+  tasks
+
+  % submit job
+  submit(job)
   
 end
 
