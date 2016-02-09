@@ -24,18 +24,16 @@ function metacentrum_task(expname, taskID, taskSettings)
   try
 
     % copy necessary files
-    fprintf(fout, 'pwd: %s\n', pwd);
     fprintf(fout, 'Copying necessary files...\n');
     FCdataID = strfind(taskSettings, 'FCdata = ');
     aposID = strfind(taskSettings, '''');
     aposID(aposID < FCdataID) = [];
     datapath = taskSettings(aposID(1) + 1 : aposID(2) - 1);
-    fprintf(fout, 'datapath: %s\n', datapath);
     filesepsID = strfind(datapath, filesep);
     datafolders = datapath(1:filesepsID(end) - 1);
     dataname    = datapath(filesepsID(end) + 1 : end);
-    fprintf(fout, 'datafolders: %s\n', datafolders)
   
+    cd(OUTPUTDIR)
     mkdir(LOCALEXPPATH)
     fprintf(fout, 'Directory %s created.\n', LOCALEXPPATH);
     fToCopy = {'src', 'vendor', 'startup.m'};
@@ -45,17 +43,15 @@ function metacentrum_task(expname, taskID, taskSettings)
     copyfile(datapath, newdataname)
     % change taskSettings according to new path
     taskSettings = [taskSettings(1:aposID(1)), newdataname, taskSettings(aposID(2):end)];
-  
+    
     % run startup
     fprintf(fout, 'Running startup...\n');
-    cd(OUTPUTDIR)
     startup
 
     % running experiment
-    fprintf(fout, 'Running settings...\n');
-    fprintf(fout, 'taskSettings: \n%s\n', taskSettings);
-  
+    fprintf(fout, 'Running settings:\n%s\n', taskSettings);
     settingsEval(taskSettings, OUTPUTDIR, fout)
+
   catch err
     fprintf(fout, 'Error: %s\n', getReport(err));
   end
@@ -76,17 +72,15 @@ function settingsEval(expression, OUTPUTDIR, fout)
   restOfExpression = strrep(restOfExpression, 'settings', 'experimentSettings');
   eval(restOfExpression)
   fullfileID = strfind(classFCrow, 'fullfile(filename, ''');
+  apostrID = strfind(classFCrow, '''');
   if exist('filename', 'var') && ~isempty(fullfileID)
-    apostrID = strfind(classFCrow, '''');
-    fileAppendix = classFCrow(apostrID(1)+1 : apostrID(2)-1);
+    fileAppendix = classFCrow(apostrID(3)+1 : apostrID(4)-1);
     filename = fullfile(filename, fileAppendix);
   else
     error('Could not find fullfile(filename...')
   end
-  apostrID = strfind(classFCrow, '''');
   method = classFCrow(apostrID(1) + 1 : apostrID(2) - 1);
   if exist('experimentSettings', 'var')
-    fprintf(fout, 'pwd: %s\n', pwd);
     classifyFC(FCdata, method, experimentSettings, filename)
     fprintf(fout, 'filename: %s\n', filename)
   else
