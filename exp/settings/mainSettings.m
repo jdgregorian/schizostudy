@@ -88,7 +88,7 @@ settings.gridsearch.bounds = {[10^-3, 10^3]};
 settings.gridsearch.npoints = 11;
 settings.gridsearch.scaling = {{'log', 'lin'}};
 
-perf = classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_grid', datamark, '.mat']));
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_grid', datamark, '.mat']));
 
 %% rbf - autoscale 'off', gridsearch 'rbf_sigma'
 clear settings
@@ -257,7 +257,7 @@ clear settings
 
 settings.note = 'Default RBF';
 
-perf = classifyFC(FCdata, 'rbf', settings, fullfile(filename, ['rbf', datamark, '.mat']));
+classifyFC(FCdata, 'rbf', settings, fullfile(filename, ['rbf', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% final results listing

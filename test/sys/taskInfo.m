@@ -1,6 +1,7 @@
 % Startup tasks informations
 fprintf('Find PRTools alternatives to already implemented methods.\n')
 fprintf('Generating TeX files with results\n')
+fprintf('Finish metacentrum_runExperiment2 if necessary (and unify with first version???)\n')
 fprintf('Documentation\n')
 fprintf('RDA speed up and functionality\n')
 fprintf('Labels in column or independent?\n')

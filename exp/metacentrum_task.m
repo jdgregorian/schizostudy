@@ -19,20 +19,20 @@ function metacentrum_task(expname, taskID, taskSettings)
   
   fprintf(fout, '###########################################\n');
   fprintf(fout, 'TaskID: %d\n', taskID);
+  fprintf(fout, 'SettingsID: %d\n', taskID);
   fprintf(fout, 'Date: %s\n', char(datetime));
   
   try
-
-    % copy necessary files
+    % prepare necessary files
     fprintf(fout, 'Copying necessary files...\n');
     FCdataID = strfind(taskSettings, 'FCdata = ');
     aposID = strfind(taskSettings, '''');
     aposID(aposID < FCdataID) = [];
     datapath = taskSettings(aposID(1) + 1 : aposID(2) - 1);
     filesepsID = strfind(datapath, filesep);
-    datafolders = datapath(1:filesepsID(end) - 1);
     dataname    = datapath(filesepsID(end) + 1 : end);
   
+    % move to output directory and copy necessary files
     cd(OUTPUTDIR)
     mkdir(LOCALEXPPATH)
     fToCopy = {'src', 'vendor', 'startup.m'};
@@ -57,7 +57,7 @@ function metacentrum_task(expname, taskID, taskSettings)
   
   % saving results
   fprintf(fout, 'Saving results...\n');
-  copyfile(fullfile(OUTPUTDIR, LOCALEXPPATH), fullfile(SCHIZOPATH, LOCALEXPPATH))
+  copyfile(fullfile(OUTPUTDIR, LOCALEXPPATH), EXPPATH)
 
   fprintf(fout, '###########################################\n');
   fclose(fout);

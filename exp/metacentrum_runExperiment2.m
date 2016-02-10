@@ -1,92 +1,54 @@
-function metacentrum_runExperiment2(settingFiles, data, expname, addSettings, walltime, numOfMachines)
-% Tests settings in 'settingFiles' od 'data' and names the experiment as 
-% 'expname'.
+function metacentrum_runExperiment2(expname, walltime, numOfMachines)
+% metacentrum_runExperiment2(expname, walltime, numOfMachines) runs not 
+% finished or not running tasks from experiment 'expname' on 
+% 'numOfMachines' machines with Metacentrum walltime 'walltime'.
+%
+% NOT FUNCTIONAL
 %
 % Input:
-%   settingFiles  - m-file or cell array of m-files with settings of
-%                   classifiers | string (cell array of strings)
-%   data          - char or cell array of char containing path(s) to data
-%                   that should be tested | string (cell array of strings)
-%   expname       - name of the experiment | string
-%   addSettings   - additional settings for each settings from
-%                   'settingFiles' | string or cell array of strings
-%   walltime      - maximum (wall)time for Metacentrum machines | string
-%                   ('4h', '1d', '2d', ...)
+%   expname  - name of the experiment | string
+%   walltime - maximum (wall)time for Metacentrum machines | string
+%              ('4h', '1d', '2d', ...)
+%   taskIDs  - vector of task numbers to run | integer or [] to run all 
+%              instances
 %   numOfMachines - number of machines in Metacentrum | integer
 %
 % See Also:
-%   runExperiment, createExperiment
-
-%  cd(fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), 'prg', 'schizostudy'))
-  
-%  startup
+%   metacentrum_runExperiment, runExperiment, createExperiment
 
   % initialization
-  if nargin < 1
-    help metacentrum_runExperiment
-    return
+  if nargin < 3
+    numOfMachines = 10;
+    if nargin < 2
+      walltime = '4h';
+      if nargin < 1
+        help metacentrum_runExperiment
+        return
+      end
+    end
   end
-  if nargin == 1
-    eval(settingFiles)
-  end
- 
+  
   metafolder = [filesep, fullfile('storage', 'plzen1', 'home', getenv('LOGNAME'), 'prg', 'schizostudy')];
- 
-  if ~exist('data', 'var')
-    data = fullfile('data', 'data_FC_190subjects.mat');
-  end
-  if ~exist('expname', 'var')
-    expname = ['exp_', data, '_', char(datetime)];
-  end
-  if ~exist('addSettings', 'var')
-    addSettings = {''};
-  end
-  if ~exist('walltime', 'var')
-    walltime = '4h'; 
-  end
-  if ~exist('numOfMachines', 'var')
-    numOfMachines = 10; 
-  end
-  
-  if ~iscell(settingFiles)
-    settingFiles = {settingFiles};
-  end
-  if ~iscell(data)
-    data = {data};
-  end
-  
   expfolder = fullfile('exp', 'experiments');
   foldername = fullfile(expfolder, expname);
-  scriptname = fullfile(foldername, [expname, '.m']);
-
-  % data check
-  missing = ~((cellfun(@(x) exist(x, 'file'), data)) | (cellfun(@isdir, data)));
-  fprintf('missing: %d\n', missing)
-
-  % omit missing data
-  if all(missing)
-    error('There is no data for computing. Check if all data files and folders are correctly specified.')
-  elseif any(missing)
-    fprintf('Omitting missing data files:\n')
-    cellfun(@(x) fprintf('%s\n', x), data(missing))
-    fprintf('\n')
-    data = data(~missing);
-  end  
+  scriptname = fullfile(foldername, [expname, '_runscript.m']);
 
   % if experiment was not created yet
   if ~isdir(foldername) || ~exist(scriptname, 'file')
-    data = cellfun(@(x) fullfile(metafolder, x), data, 'UniformOutput', false);
-    createExperiment(expfolder, expname, settingFiles, data)
+    metacentrum_createExperiment(foldername, expfolder, metafolder)
     fprintf('Experiment created\n')
   end
   
+  % load individual settings
+  [settings, resultNames] = loadSettings({scriptname});
+  
   % metacentrum settings
   pbs_max_workers = 50;
-  pbs_params = ['-l walltime=', walltime, ',nodes=^N^:ppn=1,mem=1gb,scratch=1gb,matlab_MATLAB_Distrib_Comp_Engine=^N^'];
+  pbs_params = ['-l walltime=', walltime, ',nodes=^N^:ppn=1,mem=2gb,scratch=1gb,matlab_MATLAB_Distrib_Comp_Engine=^N^'];
 
   % licence loop
   while 1
-    [tf, ~] = license('checkout','Distrib_Computing_Toolbox');
+    [tf, ~] = license('checkout', 'Distrib_Computing_Toolbox');
     if tf == 1
       break
     end
@@ -112,7 +74,7 @@ function metacentrum_runExperiment2(settingFiles, data, expname, addSettings, wa
   % tasks creating
   for id = 1:numOfMachines
     fprintf('Setting up job ID %d / %d ...\n', id, numOfMachines);
-    tasks(id) = createTask(job, @metacentrum_task, 0, {expname, id});
+    tasks(id) = createTask(job, @metacentrum_task2, 0, {expname, id, settings, resultNames});
   end
 
   tasks
