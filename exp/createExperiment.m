@@ -58,7 +58,7 @@ function createExperiment(expfolder, expname, settingFiles, data, addSettings)
     elseif isempty(dataslash)
       datamarkPrep = data{d};
     else
-      datamarkPrep = data{d}(dataslash + 6 : end);
+      datamarkPrep = data{d}(dataslash + 5 : end);
     end
     slashes = strfind(datamarkPrep, filesep);
     datamarkPrep(slashes) = '_';

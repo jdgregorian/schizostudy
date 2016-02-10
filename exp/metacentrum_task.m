@@ -35,7 +35,6 @@ function metacentrum_task(expname, taskID, taskSettings)
   
     cd(OUTPUTDIR)
     mkdir(LOCALEXPPATH)
-    fprintf(fout, 'Directory %s created.\n', LOCALEXPPATH);
     fToCopy = {'src', 'vendor', 'startup.m'};
     cellfun( @(x) copyfile(fullfile(SCHIZOPATH, x), fullfile(OUTPUTDIR, x)), fToCopy)
     mkdir('data')
@@ -50,7 +49,7 @@ function metacentrum_task(expname, taskID, taskSettings)
 
     % running experiment
     fprintf(fout, 'Running settings:\n%s\n', taskSettings);
-    settingsEval(taskSettings, OUTPUTDIR, fout)
+    settingsEval(taskSettings)
 
   catch err
     fprintf(fout, 'Error: %s\n', getReport(err));
@@ -58,15 +57,13 @@ function metacentrum_task(expname, taskID, taskSettings)
   
   % saving results
   fprintf(fout, 'Saving results...\n');
-  fprintf(fout, 'source: %s\n', fullfile(OUTPUTDIR, LOCALEXPPATH));
-  fprintf(fout, 'destination: %s\n', fullfile(SCHIZOPATH, LOCALEXPPATH));
   copyfile(fullfile(OUTPUTDIR, LOCALEXPPATH), fullfile(SCHIZOPATH, LOCALEXPPATH))
 
   fprintf(fout, '###########################################\n');
   fclose(fout);
 end
 
-function settingsEval(expression, OUTPUTDIR, fout)
+function settingsEval(expression)
   classFCrow = expression(strfind(expression, 'classifyFC'):end);
   restOfExpression = expression(1 : strfind(expression, 'classifyFC')-1);
   restOfExpression = strrep(restOfExpression, 'settings', 'experimentSettings');
@@ -82,7 +79,6 @@ function settingsEval(expression, OUTPUTDIR, fout)
   method = classFCrow(apostrID(1) + 1 : apostrID(2) - 1);
   if exist('experimentSettings', 'var')
     classifyFC(FCdata, method, experimentSettings, filename)
-    fprintf(fout, 'filename: %s\n', filename)
   else
     error('Could not find variable settings in taskSettings')
   end
