@@ -93,6 +93,8 @@ function createExperiment(expfolder, expname, settingFiles, data, addSettings)
   fclose(FID);  
   
   % create directory for marking running tasks
-  mkdir(foldername, 'running')
+  if ~isdir(fullfile(foldername, 'running'))
+    mkdir(foldername, 'running')
+  end
   
 end
