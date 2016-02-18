@@ -70,7 +70,7 @@ perf = classifyFC(FCdata, 'svm', settings);
 clear settings
 
 settings.svm.kernel_function = 'rbf';
-settings.svm.rbf_sigma = 42; % found through gridsearch
+settings.svm.rbf_sigma = 42; 
 
 perf = classifyFC(FCdata,'svm',settings);
 
@@ -79,7 +79,7 @@ clear settings
 
 settings.svm.kernel_function = 'rbf';
 settings.svm.autoscale = false;
-settings.svm.rbf_sigma = 7; % found through gridsearch
+settings.svm.rbf_sigma = 7;
 
 perf = classifyFC(FCdata,'svm',settings);
 
@@ -88,13 +88,21 @@ clear settings
 
 settings.svm.kernel_function = 'rbf';
 
+% settings.gridsearch.mode = 'simple';
+% settings.gridsearch.kfold = 5;
+% settings.gridsearch.properties = {'boxconstraint', 'rbf_sigma'};
+% settings.gridsearch.levels = [1, 1];
+% settings.gridsearch.bounds = {[1.1 * 10^-3, 10^5], [10^-5, 10^5]};
+% settings.gridsearch.npoints = [3, 3];
+% settings.gridsearch.scaling = {{'log', 'lin', 'lin'}, {'log', 'lin', 'lin'}};
+
 settings.gridsearch.mode = 'simple';
 settings.gridsearch.kfold = 5;
-settings.gridsearch.properties = {'boxconstraint', 'rbf_sigma'};
-settings.gridsearch.levels = [1, 1];
-settings.gridsearch.bounds = {[1.1 * 10^-3, 10^5], [10^-5, 10^5]};
-settings.gridsearch.npoints = [3, 3];
-settings.gridsearch.scaling = {{'log', 'lin', 'lin'}, {'log', 'lin', 'lin'}};
+settings.gridsearch.properties = {'rbf_sigma'};
+settings.gridsearch.levels = 1;
+settings.gridsearch.bounds = {[1, 100]};
+settings.gridsearch.npoints = [100];
+settings.gridsearch.scaling = {{'lin'}};
 
 perf = classifyFC(FCdata,'svm',settings);
 

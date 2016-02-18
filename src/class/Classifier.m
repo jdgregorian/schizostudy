@@ -51,9 +51,6 @@ classdef (Abstract) Classifier
     %   settings.gridsearch.npoints = [5, 4]; 
     %   settings.gridsearch.scaling = {{'log', 'lin', 'lin'},
     %                                  {'lin', 'lin', 'lin'}};
-    % 
-    % Warning: 'settings' can be in different format - use prepareSettings
-    %          first
 
       % no gridsearch set -> regular training
       if ~isfield(obj.settings, 'gridsearch') || ...
