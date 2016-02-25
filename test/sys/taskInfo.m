@@ -11,7 +11,6 @@ fprintf('Improve network architecture gridsearch in trainCVClassifier\n')
 fprintf('ANN, RBF - good settings - Filip Dechterenko?\n')
 
 fprintf('\nMost recent: \n')
-fprintf('    Verify if qda in prtools has so good results\n')
 fprintf('    Write superclass for linear and svmtrees\n')
 fprintf('    Adjust classifier settings according to matlab version\n')
 fprintf('    Boosting strategies\n')
