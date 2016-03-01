@@ -22,7 +22,13 @@ function listSettingsResults(folder)
   resultname = [folder, filesep, foldername, '.txt'];
   
   % loading data
-  [avgPerformance, settings, method, data, performance, elapsedTime, errors, returnedFiles, omittedFiles] = returnResults(folder);
+  [avgPerformance, settings, method, data, results, returnedFiles, omittedFiles] = returnResults(folder);
+  
+  performance = results.performance;
+  elapsedTime = results.elapsedTime;
+  errors = results.errors;
+  classPred = results.class;
+  actualPerf = results.actualPerformance;
   
   nFiles = length(returnedFiles);
   nOmitted = length(omittedFiles);
@@ -60,8 +66,28 @@ function listSettingsResults(folder)
         f = f + 1;
         % file header printing
         fprintf(FID,'\n---------------------------------------------------------------------------------\n\n');
-        fprintf(FID,'  Method: %s %s Performance: %.2f%%\n\n', method{s}, ...
-          char(ones(1, 48 - length(method{s}))*32) ,avgPerformance(s, d)*100);
+        % find constant predictions
+        actualClassPred = classPred{s, d};
+        if ~isempty(actualClassPred)
+          constID = false(1, length(actualClassPred));
+          for l = 1:length(actualClassPred)
+            nanLessClassPred = actualClassPred{l};
+            nanLessClassPred(isnan(nanLessClassPred)) = [];
+            constID(l) = all(nanLessClassPred) || all(~nanLessClassPred);
+          end
+        end
+        % print basic results
+        fprintf(FID,'  Method: %s %s Performance: %.2f%%\n', method{s}, ...
+          char(ones(1, 48 - length(method{s}))*32), avgPerformance(s, d)*100);
+        if abs(actualPerf(s, d) - avgPerformance(s, d)) > 10^(-5)
+          fprintf(FID,'%s Actual performance: %.2f%%\n', char(ones(1, 52)*32), actualPerf(s,d)*100);
+        end
+        if all(constID)
+          % all results were constant
+          fprintf(FID, '%s (constant prediction)\n', char(ones(1, 57)*32));
+        else
+          fprintf(FID, '\n');
+        end
         fprintf(FID,'  File: %s\n', returnedFiles{f});
         fprintf(FID,'  Data: %s\n', data{d});
         fprintf(FID,'  Elapsed time: %.3f seconds\n', sum(elapsedTime{s, d}));

@@ -1,6 +1,7 @@
-function [avgPerformances, settings, method, data, performance, elapsedTime, errors, returnedFiles, omittedFiles] = returnResults(folders)
-% [avgPerformances, settings, method, data, performance, elapsedTime, 
-%    errors, returnedFiles, omittedFiles] = returnResults(folders) 
+function [avgPerformances, settings, method, data, results, ...
+  returnedFiles, omittedFiles] = returnResults(folders)
+% [avgPerformances, settings, method, data, results, returnedFiles, 
+%  omittedFiles] = returnResults(folders) 
 % lists results of FC performance testing in 'folders' cellarray.
 %
 % Input:
@@ -14,13 +15,20 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
 %   settings        - N settings of tested classifiers
 %   method          - N methods of tested classifier
 %   data            - M data sources
-%   performance     - N x M cell array of performances of individual
-%                     iterations
-%   elapsedTime     - N x M cell array of elapsed times of individual
-%                     iterations
-%   errors          - N x M matrix of errors occured during testing
-%   returnedFiles   - list of returned files
-%   omittedFiles    - list of omitted files
+%   results         - N x M structure of results with following fields:
+%
+%     performance        - cell array of performances of individual
+%                          iterations
+%     actualPerformance  - vector of average performance omitting
+%                          non-classified points
+%     elapsedTime        - cell array of elapsed times of individual
+%                          iterations
+%     errors             - matrix of errors occured during testing
+%     class              - class predictions of tested classifier
+%     correctPredictions - vector of correct predictions of classifier
+%
+%   returnedFiles  - list of returned files
+%   omittedFiles   - list of omitted files
 %
 % See Also:
 %   listSettingsResults
@@ -35,17 +43,20 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
   end
   
   nFolders = length(folders);
-
+  
   % initialize output
   avgPerformances = cell(1, nFolders);
   settings = cell(1, nFolders);
   method = cell(1, nFolders);
   data = cell(1, nFolders);
   performance = cell(1, nFolders);
+  actualPerformance = cell(1, nFolders);
   elapsedTime = cell(1, nFolders);
   errors = cell(1, nFolders);
   returnedFiles = cell(1, nFolders);
   omittedFiles = cell(1, nFolders);
+  class = cell(1, nFolders);
+  correctPredictions = cell(1, nFolders);
 
   % folder loop
   for f = 1:nFolders
@@ -64,12 +75,14 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
       folderAvgPerformance = zeros(nFiles,1);
       folderErrors = cell(nFiles,1);
       folderElapsedTime = cell(nFiles,1);
+      folderClass = cell(nFiles, 1);
+      folderCorrectPredictions = cell(nFiles, 1);
       nEmptyFiles = 0;
-      usefulFiles = true(nFiles,1);
+      usefulFiles = true(nFiles, 1);
 
       fprintf('Loading data...\n')
       necessaryVariables = {'settings', 'method', 'data', 'performance', 'avgPerformance'};
-      possibleVariables = [necessaryVariables, 'errors', 'elapsedTime'];
+      possibleVariables = [necessaryVariables, 'errors', 'elapsedTime', 'class', 'correctPredictions'];
       % loading files
       for fil = 1:nFiles
         filename = [folders{f}, filesep, fileList(fil).name];
@@ -87,6 +100,12 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
             if isfield(variables, 'elapsedTime')
               folderElapsedTime{fil - nEmptyFiles} = variables.elapsedTime;
             end
+            if isfield(variables, 'class')
+              folderClass{fil - nEmptyFiles} = variables.class;
+            end
+            if isfield(variables, 'correctPredictions')
+              folderCorrectPredictions{fil - nEmptyFiles} = variables.correctPredictions;
+            end
           else
             fprintf('Omitting file (lack of result variables): %s\n', filename)
             nEmptyFiles = nEmptyFiles + 1;
@@ -102,8 +121,11 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
       % fill performances
       avgPerformances{f} = [];
       performance{f} = {};
+      actualPerformance{f} = [];
       errors{f} = {};
       elapsedTime{f} = {};
+      class{f} = {};
+      correctPredictions{f} = {};
       uniqueSettings = {};
       uSettings = {};
       uniqueSettings_Method = {};
@@ -120,6 +142,11 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
         if ~isempty(settingsID)
           settingsID = settingsID(strcmp(fMethod, uniqueSettings_Method(settingsID)));
         end
+        % count actual performance
+        actualPerf = zeros(1, length(folderCorrectPredictions{s}));
+        for iter = 1:length(folderCorrectPredictions{s})
+          actualPerf(iter) = sum(folderCorrectPredictions{s}{iter}(~isnan(folderClass{s}{iter})))/sum(~isnan(folderClass{s}{iter}));
+        end
         % new settings
         if isempty(settingsID)
           uniqueSettings{end+1} = folderSettings{s};
@@ -128,8 +155,11 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
           dataID = find(strcmp(uniqueData, folderData{s}), 1);
           avgPerformances{f}(end+1, dataID) = folderAvgPerformance(s);
           performance{f}{end+1, dataID} = folderPerformance{s};
+          actualPerformance{f}(end+1, dataID) = mean(actualPerf);
           errors{f}{end+1, dataID} = folderErrors{s};
           elapsedTime{f}{end+1, dataID} = folderElapsedTime{s};
+          class{f}{end+1, dataID} = folderClass{s};
+          correctPredictions{f}{end+1, dataID} = folderCorrectPredictions{s};
         % existing settings
         else
           dataID = find(strcmp(uniqueData, folderData{s}), 1);
@@ -139,8 +169,11 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
           end
           avgPerformances{f}(settingsID, dataID) = folderAvgPerformance(s);
           performance{f}{settingsID, dataID} = folderPerformance{s};
+          actualPerformance{f}(settingsID, dataID) = mean(actualPerf);
           errors{f}{settingsID, dataID} = folderErrors{s};
           elapsedTime{f}{settingsID, dataID} = folderElapsedTime{s};
+          class{f}{settingsID, dataID} = folderClass{s};
+          correctPredictions{f}{settingsID, dataID} = folderCorrectPredictions{s};
         end
       end
 
@@ -153,16 +186,27 @@ function [avgPerformances, settings, method, data, performance, elapsedTime, err
     end
   end
   
-  % simple output for one input
+  % save the rest of variables to appropriate output
   if nFolders == 1
+    % simple output for one input
     avgPerformances = avgPerformances{1};
     settings = settings{1};
     method = method{1};
     data = data{1};
-    performance = performance{1};
-    elapsedTime = elapsedTime{1};
-    errors = errors{1};
+    results.performance = performance{1};
+    results.elapsedTime = elapsedTime{1};
+    results.errors = errors{1};
     returnedFiles = returnedFiles{1};
     omittedFiles = omittedFiles{1};
+    results.class = class{1};
+    results.correctPredictions = correctPredictions{1};
+    results.actualPerformance = actualPerformance{1};
+  else
+    results.performance = performance;
+    results.elapsedTime = elapsedTime;
+    results.errors = errors;
+    results.class = class;
+    results.correctPredictions = correctPredictions;
+    results.actualPerformance = actualPerformance;
   end
 end
