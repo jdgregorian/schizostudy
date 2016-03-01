@@ -33,6 +33,9 @@ classdef (Abstract) DecisionTree
   methods (Abstract)
     % function verifying stopping criterions
     cont = continueTraining(obj)
+    
+    % function choosing node to split
+    splitNode = chooseSplitNode(obj);
   end
     
   methods
@@ -74,6 +77,7 @@ classdef (Abstract) DecisionTree
       obj.parent = 0;
       obj.children = [0 0];
       obj.nodeData = ones(1, nSubjects);
+      obj.predictor = {};
 
       % user defined tree properties
       obj.weights = defopts(settings, 'weights', ones(1, nSubjects));
@@ -94,11 +98,41 @@ classdef (Abstract) DecisionTree
 
       i = 0;
       % training cycle start
-      while obj.continueTraining && i < maxSplitNum
+      while obj.continueTraining() && i < maxSplitNum
         i = i+1; % just to be sure training ends
-        %TODO: training cycle
+        splitNodeID = obj.chooseSplitNode(data, values);
+        splitNodeDataID = obj.nodeData == splitNodeID;
+        obj = obj.splitNode(splitNodeID, data(splitNodeDataID, :), values(splitNodeDataID));
       end
-
+    end
+    
+    function obj = splitNode(obj, splitNodeID, data, values)
+      % function splitting chosen node
+      
+      % create child nodes
+      obj.parent(end+1:end+2) = splitNodeID;
+      obj.nodes = nNodes + 2;
+      obj.children(splitNodeID, :) = [obj.nodes-1, obj.nodes];
+      obj.children(obj.nodes-1:obj.nodes, :) = zeros(2, 2);
+      
+      obj = obj.trainSplitCriterion(data, values);
+      obj.nodeData = obj.splitPoints(data, splitNodeID);
+      obj = obj.trainPredictors();
+      %TODO:
+    end
+    
+    function y = predict(obj, data, trainData)
+      % prediction function of decision tree for dataset data
+      % data         - points to predict
+      % originalData - data used to tree training (used when inForest == true)
+      
+      if nargin < 3 
+        assert(~obj.inForest, 'Tree with no input of original data cannot be the part of the forest!')
+        originalData = [];
+      end
+      
+      
+      
     end
 
     function LT = LinearTree(data, labels, settings)
