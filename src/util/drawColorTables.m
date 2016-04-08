@@ -1,5 +1,5 @@
-function drawColorTables(gene,error)
-% plots colored graphs for gene and error matrices for better visualisation
+function drawColorTables(gene, error)
+% Plots colored graphs for gene and error matrices for better visualisation
 % of RDA performance changing according to alpha and delta parametres
 
 errorTable = load(error);

@@ -8,4 +8,5 @@ exp/experiments/*.zip
 test/sys/.creator
 test/test.m
 vendor/conn
+src/visual/html
 *~
