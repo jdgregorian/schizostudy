@@ -22,7 +22,7 @@ function listSettingsResults(folder)
   resultname = [folder, filesep, foldername, '.txt'];
   
   % loading data
-  [avgPerformance, settings, method, data, results, returnedFiles, omittedFiles] = returnResults(folder);
+  [avgPerformance, settingArray, method, data, results, returnedFiles, omittedFiles] = returnResults(folder);
   
   performance = results.performance;
   elapsedTime = results.elapsedTime;
@@ -96,7 +96,8 @@ function listSettingsResults(folder)
         % settings printing
         fprintf(FID,'  Settings:\n');
         fprintf(FID,'\n');
-        printSettings(FID, settings{s});
+        settings = settingArray{s};
+        printStructure(settings, FID);
 
         % performances printing
         nPerf = length(performance{s, d});
@@ -116,139 +117,6 @@ function listSettingsResults(folder)
   
   fclose(FID);
   
-end
-
-function printSettings(FID, settings)
-% Prints settings to file FID
-
-  settingsSF = subfields(settings);
-  for sf = 1:length(settingsSF)
-    valueSF = eval(['settings.', settingsSF{sf}]);
-    fprintf(FID,'    settings.%s = ', settingsSF{sf});
-    % array settings
-    if numel(valueSF) > 1 && ~ischar(valueSF)
-      printArray(FID, valueSF);
-    % non-array value
-    else
-      printVal(FID, valueSF);
-    end
-    fprintf(FID,';\n');
-  end
-end
-
-function printVal(FID, val)
-% function checks the class of value and prints it in appropriate format
-% to file FID
-
-  if isempty(val)
-    if iscell(val)
-      fprintf(FID,'{}');
-    else
-      fprintf(FID,'[]');
-    end
-  elseif iscell(val) || (numel(val) > 1 && ~ischar(val))
-  % cell or any kind of array (except char)
-    printArray(FID, val);
-  else
-    switch class(val)
-      case 'char'
-        fprintf(FID,'''%s''', val);
-      case 'double'
-        if (isnan(val) || val == Inf || mod(val,1))
-          fprintf(FID,'%f', val);
-        else
-          fprintf(FID,'%d', val);
-        end
-      case 'logical'
-        if val
-          fprintf(FID,'true');
-        else
-          fprintf(FID,'false');
-        end
-      case 'function_handle'
-        fprintf(FID,'@%s', func2str(val));
-      case 'struct'
-        printStruct(FID, val)
-      otherwise
-        fprintf(FID,'%s %dx%d', class(val), size(val,1), size(val,2));
-    end
-  end
-end
-
-function printArray(FID, val)
-% function prints array to file FID
-
-  % cell array
-  if iscell(val)
-    fprintf(FID,'{');
-    % first row
-    printVal(FID, val{1,1})
-    for c = 2:size(val,2)
-      fprintf(FID,', ');
-      printVal(FID, val{1,c})
-    end
-    % rest of rows
-    for r = 2:size(val,1)
-      fprintf(FID,'; ');
-      printVal(FID, val{r,1})
-      for c = 2:size(val,2)
-        fprintf(FID,', ');
-        printVal(FID, val{r,c})
-      end
-    end
-    fprintf(FID,'}');
-  % other arrays
-  else
-    fprintf(FID,'[');
-    % first row
-    printVal(FID, val(1,1))
-    for c = 2:size(val,2)
-      fprintf(FID,', ');
-      printVal(FID, val(1,c))
-    end
-    % rest of rows
-    for r = 2:size(val,1)
-      fprintf(FID,'; ');
-      printVal(FID, val(r,1))
-      for c = 2:size(val,2)
-        fprintf(FID,', ');
-        printVal(FID, val(r,c))
-      end
-    end
-    fprintf(FID,']');
-  end
-end
-
-function printStruct(FID, s)
-% prints structure to file FID
-
-  sf = fieldnames(s);
-  fprintf(FID,'struct(');
-  fprintf(FID,'''%s'', ', sf{1});
-  printVal(FID, getfield(s, sf{1}))
-  for fnum = 2 : length(sf)
-    fprintf(FID,', ''%s'', ', sf{fnum});
-    printVal(FID, getfield(s, sf{fnum}))
-  end
-  fprintf(FID,')');
-end
-
-function sf = subfields(ThisStruct)
-% sf = subfields(ThisStruct) returns cell array of all fields of structure 
-% ThisStruct except structure names.
-
-   sf = fieldnames(ThisStruct);
-   Nsf = length(sf);
-   deletesf = false(1,Nsf);
-   for fnum = 1:Nsf
-     if isstruct(ThisStruct.(sf{fnum}))
-       cn = subfields(ThisStruct.(sf{fnum}));
-       sf = cat(1, sf, strcat(sf(fnum), '.', cn));
-       deletesf(fnum) = true;
-     end
-   end
-   sf(deletesf) = []; % delete structure names
-
 end
 
 function printErrors(FID, errors)
