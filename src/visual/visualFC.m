@@ -1,10 +1,11 @@
-function h = visualFC(FCmatrix, name, id)
+function h = visualFC(FCmatrix, name, id, minVal)
 % Visualize function connectivity matrix
 %
 % Input:
 %   FCmatrix - function connectivity matrix
 %   id       - patients/volunteers ID
 %   name     - name of visualization
+%   minVal   - minimal value for color scaling between multiple figures
 %
 % Output:
 %   h - handle of image
@@ -20,10 +21,16 @@ function h = visualFC(FCmatrix, name, id)
       end
     end
   end
+  
+  if nargin < 4
+    minVal = min(min(FCmatrix));
+  end
 
   h = figure();
-%   A = shiftdim(FCmatrix(patId(d), :, :), 1);
-  image(FCmatrix*255);
+  % add -1 element to normalize colors in different images
+  FCmatrix(1,1) = minVal;
+  image(FCmatrix, 'CDataMapping', 'scaled');
+  colorbar
   imageTitle = [];
   if ~isempty(name)
     imageTitle = name;
