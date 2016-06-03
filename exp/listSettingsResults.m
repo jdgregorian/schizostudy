@@ -19,7 +19,8 @@ function listSettingsResults(folder)
   
   folderPos = strfind(folder, filesep);
   foldername = folder(folderPos(end) + 1 : end);
-  resultname = [folder, filesep, foldername, '.txt'];
+  pprocFolder = fullfile(folder, 'pproc');
+  resultname = fullfile(pprocFolder, [foldername, '_report.txt']);
   
   % loading data
   [avgPerformance, settingArray, method, data, results, returnedFiles, omittedFiles] = returnResults(folder);
@@ -34,6 +35,10 @@ function listSettingsResults(folder)
   nOmitted = length(omittedFiles);
   [nSettings, nData] = size(avgPerformance);
 
+  % check postprocessing folder
+  if ~exist(pprocFolder, 'dir')
+    mkdir(pprocFolder);
+  end
   % printing results to txt file
   FID = fopen(resultname, 'w');
   assert(FID ~= -1, 'Cannot open %s !', resultname)
@@ -97,7 +102,7 @@ function listSettingsResults(folder)
         fprintf(FID,'  Settings:\n');
         fprintf(FID,'\n');
         settings = settingArray{s};
-        printStructure(settings, FID);
+        printStructure(settings, FID, 'StructName', '    settings');
 
         % performances printing
         nPerf = length(performance{s, d});

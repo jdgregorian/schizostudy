@@ -21,7 +21,7 @@ function saved = reduceSubjects(datafile, subjectOut, classOut, balance)
 %   saved - denotes if the result was succesfully saved | boolean
 %
 % See Also:
-%   reduceFCData csvexport
+%   reduceFCData, csvexport
 
   saved = false;
 
