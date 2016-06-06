@@ -89,11 +89,13 @@ function [avgPerformances, settings, method, data, results, ...
         try
           variables = load(filename, possibleVariables{:});
           if all(isfield(variables, necessaryVariables(1:end-1)))
+            % compulsory variables
             folderSettings{fil - nEmptyFiles} = variables.settings;
             folderMethod{fil - nEmptyFiles} = variables.method;
             folderData{fil - nEmptyFiles} = variables.data;
             folderPerformance{fil - nEmptyFiles} = variables.performance;
             folderAvgPerformance(fil - nEmptyFiles) = variables.avgPerformance;
+            % optional variables
             if isfield(variables, 'errors')
               folderErrors{fil - nEmptyFiles} = variables.errors;
             end
@@ -117,7 +119,7 @@ function [avgPerformances, settings, method, data, results, ...
           usefulFiles(fil) = false;
         end
       end
-
+      
       % fill performances
       avgPerformances{f} = [];
       performance{f} = {};
@@ -145,7 +147,12 @@ function [avgPerformances, settings, method, data, results, ...
         % count actual performance
         actualPerf = zeros(1, length(folderCorrectPredictions{s}));
         for iter = 1:length(folderCorrectPredictions{s})
-          actualPerf(iter) = sum(folderCorrectPredictions{s}{iter}(~isnan(folderClass{s}{iter})))/sum(~isnan(folderClass{s}{iter}));
+          if length(folderCorrectPredictions{s}{iter}) == length(folderClass{s}{iter})
+            actualPerf(iter) = sum(folderCorrectPredictions{s}{iter}(~isnan(folderClass{s}{iter})))/sum(~isnan(folderClass{s}{iter}));
+          else
+            warning('Number of predictions and number of classified subjects differs (in useful file %d)', s)
+            actualPerf(iter) = NaN;
+          end
         end
         % new settings
         if isempty(settingsID)

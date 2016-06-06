@@ -33,6 +33,6 @@ function settings = settings2struct(varargin)
 
   % keep cells as cells due to struct command
   vararCellId = cellfun(@iscell, varargin);
-  varargin(vararCellId) = {varargin(vararCellId)};
+  varargin(vararCellId) = cellfun(@(x) {x}, varargin(vararCellId), 'UniformOutput', false);
   settings = struct(varargin{:});
 end
