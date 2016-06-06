@@ -1,6 +1,6 @@
 function runExperiment(experimentFile, data, expname, addSettings, metacentrum)
-% runExperiment(settingFiles, data, expname, metacentrum) tests 
-% settings in 'settingFiles' on 'data' and names the experiment as 
+% runExperiment(settingFiles, data, expname, addSettings, metacentrum) 
+% tests settings in 'settingFiles' on 'data' and names the experiment as 
 % 'expname'.
 %
 % runExperiment(experimentFile) runs experiment set in 'experimentFile'

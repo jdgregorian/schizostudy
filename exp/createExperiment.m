@@ -15,7 +15,7 @@ function createExperiment(expfolder, expname, settingFiles, data, addSettings)
 % See Also:
 %   runExperiment, loadSettings
 
-  if nargin < 5
+  if nargin < 5 || isempty(addSettings)
     addSettings = {''};
   end
   if ~iscell(addSettings)

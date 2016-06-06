@@ -115,7 +115,9 @@ function [data, labels] = loadFC(loadedData)
   data = NaN(Nsubjects,matDim*(matDim-1)/2);
   for i = 1:Nsubjects
       oneFC = shiftdim(FC(i,:,:),1);
-      data(i,:) = transpose(nonzeros(triu(oneFC+5)-6*eye(matDim)))-5;
+      % to ensure saving zero correlations constant is added before
+      % and subtracted after transformation
+      data(i, :) = nonzeros(triu(oneFC + 5, 1))' - 5;
   end
 end
 

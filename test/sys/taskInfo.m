@@ -1,5 +1,6 @@
 % Startup tasks informations
 fprintf('Find PRTools alternatives to already implemented methods.\n')
+fprintf('New features computation (and the following classification).\n')
 fprintf('Generating TeX files with results\n')
 fprintf('Finish metacentrum_runExperiment2 if necessary (and unify with first version???)\n')
 fprintf('Documentation\n')
