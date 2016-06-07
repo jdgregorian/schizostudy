@@ -117,7 +117,12 @@ function [data, labels] = loadFC(loadedData)
       oneFC = shiftdim(FC(i,:,:),1);
       % to ensure saving zero correlations constant is added before
       % and subtracted after transformation
-      data(i, :) = nonzeros(triu(oneFC + 5, 1))' - 5;
+      if min(triu(oneFC, 1)) > 0
+        shiftConst = 0;
+      else
+        shiftConst = ceil(abs(min(min(triu(oneFC, 1)))) + 1);
+      end
+      data(i, :) = nonzeros(triu(oneFC + shiftConst, 1))' - shiftConst;
   end
 end
 
