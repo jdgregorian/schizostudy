@@ -14,8 +14,14 @@ function resultTable(avgPerformance, varargin)
   settings.methods = defopts(settings, 'Method', def_methods);
   def_data = arrayfun(@(x) ['data_1', num2str(x)], 1:nData, 'UniformOutput', false);
   settings.datanames = defopts(settings, 'Datanames', def_data);
+  tableFormat = defopts(settings, 'Format', 'txt');
   
-  printTable(FID, avgPerformance, settings)
+  switch tableFormat
+    case 'txt'
+      printTable(FID, avgPerformance, settings)
+    otherwise
+      error('Format %s is not implemented.', tableFormat)
+  end
 end
 
 function printTable(FID, data, settings)
@@ -23,19 +29,24 @@ function printTable(FID, data, settings)
 
   maxLengthMethod = max(max(cellfun(@length, settings.methods)), length('Method'));
   methodSize = maxLengthMethod + 1;
-  perfSize = max(max(cellfun(@length, settings.datanames)), 8);
+  perfSize = max(max(cellfun(@length, settings.datanames)) + 1, 8);
 
   % head row
-  fprintf('\nMethod%s', gap(methodSize, 'Method'));
-  cellfun(@(x) fprintf(FID, ' %s%s', x, gap(perfSize - 1, x)), settings.datanames)
-  fprintf('\n')
+  fprintf(FID, '  Method%s', gap(methodSize, 'Method'));
+  cellfun(@(x) fprintf(FID, '%s%s', gap(perfSize, x), x), settings.datanames);
+  fprintf(FID, '\n');
   
   % result rows
   for s = 1:size(data, 1)
-    fprintf(FID, '%s%s', settings.methods{s}, gap(methodSize, settings.methods{s}));
-    arrayfun(@(x) printPerf(FID, perfSize, data(s, x)), 1:size(data,2))
+    fprintf(FID, '  %s%s', settings.methods{s}, gap(methodSize, settings.methods{s}));
+    arrayfun(@(x) printPerf(FID, perfSize, data(s, x)), 1:size(data, 2))
     fprintf(FID, '\n');
   end
+end
+
+function printTexTable(FID, data, settings)
+% prints tex table to file FID
+
 end
 
 function printPerf(FID, maxLength, perf)

@@ -63,6 +63,15 @@ function listSettingsResults(folder)
     fprintf(FID,'\n');
   end
   
+  % print result table
+  fprintf(FID,'\n---------------------------------------------------------------------------------\n\n');
+  datanames = createDatanames(data);
+  for d = 1:nData
+    fprintf(FID, '  %s: %s\n', datanames{d}, data{d});
+  end
+  fprintf(FID, '\n');
+  resultTable(avgPerformance, 'FID', FID, 'Method', method, 'Datanames', datanames)
+  
   % printing settings results
   f = 0;
   for s = 1 : nSettings
@@ -165,4 +174,37 @@ function printErrors(FID, errors)
     end
   end
   
+end
+
+function datanames = createDatanames(data)
+% creates shorter names for data
+  nData = length(data);
+  dataNameBase = cell(1, nData);
+  
+  % find unique parts of names
+  for d = 1:nData
+    nameBase = unique(strsplit(data{d}, {'/', '_'}));
+    nameBase = nameBase(~strcmp(nameBase, 'data'));
+    dataNameBase{d} = [cellfun(@(x) x(1:min(length(x), 3)), nameBase(1:end-1), 'UniformOutput', false), ...
+                       nameBase{end}(1:min(length(nameBase{end}), 3))];
+  end
+  uniqueBase = unique([dataNameBase{:}]);
+  IDs = cell2mat(cellfun(@(x) ismember(uniqueBase, x), dataNameBase, 'UniformOutput', false)');
+  notInAllID = ~all(IDs);
+  datanames = arrayfun(@(x) [uniqueBase{IDs(x, :) & notInAllID}], 1:nData, 'UniformOutput', false);
+  
+  % ensure different names
+  [C, ia, ic] = unique(datanames);
+  if length(C) < nData
+    for i = 1:length(ia)
+      if length(datanames(ia(i) == ic)) > 1
+        id = find(ia(i) == ic);
+        for j = 1:length(datanames(ia(i) == ic))
+          datanames{id(j)} = [datanames{id(j)}, '_', num2str(j)];
+        end
+      end
+    end
+  end
+  
+  %TODO: if name is still too long, make it data_1, data_2, etc.
 end
