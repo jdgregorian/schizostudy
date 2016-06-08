@@ -46,20 +46,24 @@ end
 
 function printTexTable(FID, data, settings)
 % prints tex table to file FID
-
+  
 end
 
 function printPerf(FID, maxLength, perf)
 % prints performance perf to FID with appropriate length
-  if perf < 1
-    n = 2;
-    if perf < 0.1
-      n = 1;
-    end
+  if isnan(perf)
+    fprintf(FID, '%s---  ', gap(maxLength, 5));
   else
-    n = 3;
+    if perf < 1
+      n = 2;
+      if perf < 0.1
+        n = 1;
+      end
+    else
+      n = 3;
+    end
+    fprintf(FID, '%s%0.2f%%', gap(maxLength, n + 4), perf*100);
   end
-  fprintf(FID, '%s%0.2f%%', gap(maxLength, n + 4), perf*100);
 end
 
 function g = gap(maxLength, n)

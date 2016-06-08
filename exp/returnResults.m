@@ -1,6 +1,6 @@
-function [avgPerformances, settings, method, data, results, ...
+function [avgPerformance, settings, method, data, results, ...
   returnedFiles, omittedFiles] = returnResults(folders)
-% [avgPerformances, settings, method, data, results, returnedFiles, 
+% [avgPerformance, settings, method, data, results, returnedFiles, 
 %  omittedFiles] = returnResults(folders) 
 % lists results of FC performance testing in 'folders' cellarray.
 %
@@ -9,13 +9,13 @@ function [avgPerformances, settings, method, data, results, ...
 %             strings
 %
 % Output:
-%   avgPerformances - N x M matrix of average performances of unique 
-%                     settings, N is number of settings, M is number of 
-%                     data sources
-%   settings        - N settings of tested classifiers
-%   method          - N methods of tested classifier
-%   data            - M data sources
-%   results         - N x M structure of results with following fields:
+%   avgPerformance - N x M matrix of average performances of unique 
+%                    settings, N is number of settings, M is number of data
+%                    sources
+%   settings       - N settings of tested classifiers
+%   method         - N methods of tested classifier
+%   data           - M data sources
+%   results        - N x M structure of results with following fields:
 %
 %     performance        - cell array of performances of individual
 %                          iterations
@@ -45,7 +45,7 @@ function [avgPerformances, settings, method, data, results, ...
   nFolders = length(folders);
   
   % initialize output
-  avgPerformances = cell(1, nFolders);
+  avgPerformance = cell(1, nFolders);
   settings = cell(1, nFolders);
   method = cell(1, nFolders);
   data = cell(1, nFolders);
@@ -121,7 +121,7 @@ function [avgPerformances, settings, method, data, results, ...
       end
       
       % fill performances
-      avgPerformances{f} = [];
+      avgPerformance{f} = [];
       performance{f} = {};
       actualPerformance{f} = [];
       errors{f} = {};
@@ -160,7 +160,7 @@ function [avgPerformances, settings, method, data, results, ...
           uSettings{end+1} = fSettings; % for settings comparison
           uniqueSettings_Method{end+1} = folderMethod{s};
           dataID = find(strcmp(uniqueData, folderData{s}), 1);
-          avgPerformances{f}(end+1, dataID) = folderAvgPerformance(s);
+          avgPerformance{f}(end+1, dataID) = folderAvgPerformance(s);
           performance{f}{end+1, dataID} = folderPerformance{s};
           actualPerformance{f}(end+1, dataID) = mean(actualPerf);
           errors{f}{end+1, dataID} = folderErrors{s};
@@ -170,11 +170,11 @@ function [avgPerformances, settings, method, data, results, ...
         % existing settings
         else
           dataID = find(strcmp(uniqueData, folderData{s}), 1);
-          if (dataID <= size(avgPerformances{f},2)) && (~isempty(performance{f}{settingsID, dataID}))
+          if (dataID <= size(avgPerformance{f},2)) && (~isempty(performance{f}{settingsID, dataID}))
             fprintf('Omitting file (result redundancy): %s\n', filename)
             usefulFiles(s) = false;
           end
-          avgPerformances{f}(settingsID, dataID) = folderAvgPerformance(s);
+          avgPerformance{f}(settingsID, dataID) = folderAvgPerformance(s);
           performance{f}{settingsID, dataID} = folderPerformance{s};
           actualPerformance{f}(settingsID, dataID) = mean(actualPerf);
           errors{f}{settingsID, dataID} = folderErrors{s};
@@ -183,6 +183,10 @@ function [avgPerformances, settings, method, data, results, ...
           correctPredictions{f}{settingsID, dataID} = folderCorrectPredictions{s};
         end
       end
+      
+      % correct missing data in performance arrays
+      avgPerformance{f}(cellfun(@isempty, performance{f})) = NaN;
+      actualPerformance{f}(cellfun(@isempty, performance{f})) = NaN;
 
       % save the rest of output
       settings{f} = uniqueSettings;
@@ -196,7 +200,7 @@ function [avgPerformances, settings, method, data, results, ...
   % save the rest of variables to appropriate output
   if nFolders == 1
     % simple output for one input
-    avgPerformances = avgPerformances{1};
+    avgPerformance = avgPerformance{1};
     settings = settings{1};
     method = method{1};
     data = data{1};
