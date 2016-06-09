@@ -90,6 +90,7 @@ function [avgPerformance, settings, method, data, results, ...
           variables = load(filename, possibleVariables{:});
           if all(isfield(variables, necessaryVariables(1:end-1)))
             % compulsory variables
+            folderFilename{fil - nEmptyFiles} = filename;
             folderSettings{fil - nEmptyFiles} = variables.settings;
             folderMethod{fil - nEmptyFiles} = variables.method;
             folderData{fil - nEmptyFiles} = variables.data;
@@ -171,7 +172,7 @@ function [avgPerformance, settings, method, data, results, ...
         else
           dataID = find(strcmp(uniqueData, folderData{s}), 1);
           if (dataID <= size(avgPerformance{f},2)) && (~isempty(performance{f}{settingsID, dataID}))
-            fprintf('Omitting file (result redundancy): %s\n', filename)
+            fprintf('Omitting file (result redundancy): %s\n', folderFilename{s})
             usefulFiles(s) = false;
           end
           avgPerformance{f}(settingsID, dataID) = folderAvgPerformance(s);

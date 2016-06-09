@@ -4,7 +4,6 @@ function [avgPerformance, preparedData, preparedLabels, class] = classifyFC(data
 % settings to method.
 %
 % Input:
-%
 %   data     - path to datafile or folder with training and testing 
 %              folders | string
 %   method   - method used to classification | string
@@ -13,7 +12,6 @@ function [avgPerformance, preparedData, preparedLabels, class] = classifyFC(data
 %            - if empty no saving is done
 %
 % Output:
-%
 %   avgPerformance - average performance of chosen classifier with 
 %                    appropriate settings
 %   preparedData   - functional connectivity data used for computations

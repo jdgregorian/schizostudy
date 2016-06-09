@@ -1,9 +1,9 @@
 function listSettingsResults(folder)
 % listSettingsResults(FOLDER) lists results of FC performance testing 
-% in FOLDER to txt file. 
+% in FOLDER to file 'FOLDER/pproc/FOLDER_report.txt'. 
 %
 % Input:
-%   folder - directory containing results | string
+%   FOLDER - directory containing results | string
 %
 % See Also:
 %   returnResults

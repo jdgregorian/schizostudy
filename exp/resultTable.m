@@ -1,8 +1,21 @@
 function resultTable(avgPerformance, varargin)
-% prints result table
+% resultTable(avgPerformance, settings) prints result table
+%
+% Input:
+%   avgPerformance - array of average performances to print (of size NxM, 
+%                    where N is the number of settings and M is the number 
+%                    of different datasets) | double
+%   settings       - name-value pairs (or structure with fields) of table 
+%                    settings:
+%     FID       - identifier of file to print in | double
+%     Method    - names of methods in table (rows) | cell-array of strings
+%     Datanames - names of data in table (columns) | cell-array of strings
+%
+% See Also:
+%   listSettingsResults
 
   if nargin < 1
-    help printResultTable
+    help resultTable
     return
   end
   

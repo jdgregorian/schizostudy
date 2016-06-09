@@ -1,6 +1,6 @@
 function settings = settings2struct(varargin)
 % settings = settings2struct(settings) parses settings from cell-array in
-% name - value pairs to structure format.
+% name-value pairs to structure format.
 %
 % Example:
 %   All the following commands give the same result:
