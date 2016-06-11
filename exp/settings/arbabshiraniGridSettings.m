@@ -70,7 +70,7 @@ settings.gridsearch.bounds = {[1.1 * 10^-3, 10^5], [10^-5, 10^5]};
 settings.gridsearch.npoints = [11, 11];
 settings.gridsearch.scaling = {{'log', 'lin', 'lin'}, {'log', 'lin', 'lin'}};
 
-classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_sgrid', datamark, '.mat']));
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_sgrid_2', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PRTools classification tree - information gain criterion, optimal pruning
@@ -81,7 +81,7 @@ settings.tree.crit = 'infcrit';
 settings.tree.prune = NaN;
 settings.note = 'PRTools decision tree using information gain criterion and optimization of pruning level.';
 
-classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_inf_optim', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_prt_inf_optim', datamark, '.mat']));
 
 %% PRTools classification tree - Fisher criterion, optimal pruning
 clear settings
@@ -91,7 +91,7 @@ settings.tree.crit = 'fishcrit';
 settings.tree.prune = NaN;
 settings.note = 'PRTools decision tree using Fisher criterion and optimization of pruning level.';
 
-classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_fish_optim', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_prt_fish_optim', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN - gridsearch

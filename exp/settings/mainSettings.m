@@ -88,7 +88,7 @@ settings.gridsearch.bounds = {[10^-3, 10^3]};
 settings.gridsearch.npoints = 11;
 settings.gridsearch.scaling = {{'log', 'lin'}};
 
-classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_grid', datamark, '.mat']));
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_grid_1', datamark, '.mat']));
 
 %% rbf - autoscale 'off', gridsearch 'rbf_sigma'
 clear settings
@@ -105,7 +105,7 @@ settings.gridsearch.bounds = {[10^-3, 10^3]};
 settings.gridsearch.npoints = 11;
 settings.gridsearch.scaling = {{'log', 'lin'}};
 
-classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_grid_noauto', datamark, '.mat']));
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_grid_1_noauto', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Random forest
@@ -231,7 +231,7 @@ clear settings
 settings.implementation = 'prtools';
 settings.note = 'Default logistic linear classifier settings in PRTools.';
 
-classifyFC(FCdata, 'llc', settings, fullfile(filename, ['llc_prtools', datamark, '.mat']));
+classifyFC(FCdata, 'llc', settings, fullfile(filename, ['llc_prt', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% naive Bayes

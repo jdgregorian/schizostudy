@@ -60,7 +60,7 @@ settings.implementation = 'prtools';
 settings.tree.crit = 'infcrit';
 settings.note = 'PRTools decision tree using information gain criterion.';
 
-classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_inf', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_prt_inf', datamark, '.mat']));
 
 %% PRTools classification tree - Fisher criterion
 clear settings
@@ -69,7 +69,7 @@ settings.implementation = 'prtools';
 settings.tree.crit = 'fishcrit';
 settings.note = 'PRTools decision tree using Fisher criterion.';
 
-classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_fish', datamark, '.mat']));
+classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_prt_fish', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% LDA
@@ -114,7 +114,7 @@ clear settings
 settings.implementation = 'prtools';
 settings.note = 'Default logistic linear classifier settings in PRTools.';
 
-classifyFC(FCdata,'llc',settings, fullfile(filename,['llc',datamark,'.mat']));
+classifyFC(FCdata, 'llc', settings, fullfile(filename, ['llc_prt', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% naive Bayes (PRTools)
@@ -150,7 +150,7 @@ clear settings
 
 settings.note = 'RBF default settings.';
 
-classifyFC(FCdata, 'rbf', settings, fullfile(filename, ['rbf_default', datamark, '.mat']));
+classifyFC(FCdata, 'rbf', settings, fullfile(filename, ['rbf', datamark, '.mat']));
 
 %% final results listing
 
