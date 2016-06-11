@@ -46,8 +46,9 @@ function metacentrum_runExperiment(expname, walltime, taskIDs, reqMemory)
   nLoadedTasks = length(settings);
   if isempty(taskIDs)
     taskIDs = 1:nLoadedTasks;
-  elseif strcmp(taskIDs, 'missing')
-    
+  elseif any(strcmp(taskIDs, {'missing', 'miss'}))
+    resultNames = cellfun(@eval, resultNames, 'UniformOutput', false);
+    taskIDs = find(updateTaskList(foldername, resultNames));
   else
     taskIDs(taskIDs > nLoadedTasks) = [];
   end
@@ -94,12 +95,4 @@ function metacentrum_runExperiment(expname, walltime, taskIDs, reqMemory)
   % submit job
   submit(job)
   
-end
-
-function taskIDs = missingIDs(resultNames, foldername)
-% returns IDs of tasks not having results in experiment folder 'foldername'
-  apostID = cellfun(@(x) strfind(x, ''''), resultNames);
-  haveApost = ~cellfun(@isempty, apostID);
-  %TODO: finish resulNames transcription with no apostrophes
-  resultNames(haveApost) = cellfun(@(x) x(:), resultNames(haveApost));
 end

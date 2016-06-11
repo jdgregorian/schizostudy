@@ -119,19 +119,6 @@ function runExperiment(experimentFile, data, expname, addSettings, metacentrum)
 
 end
 
-function availableTaskID = updateTaskList(foldername, resultNames)
-% updates info about finished and running tasks
-
-  finishedTasks = dir(fullfile(foldername, '*.mat'));
-  finishedTaskNames = arrayfun(@(x) x.name(1:end-4), finishedTasks, 'UniformOutput', false);
-  runningTasks = dir(fullfile(foldername, 'running'));
-  if length(runningTasks) > 2
-    runningTasks = runningTasks(3:end);
-  end
-  availableTaskID = cellfun(@(x) ~any(strcmp(x(1:end-4), [{runningTasks.name}'; finishedTaskNames])), resultNames);
-
-end
-
 function secureEval(expression)
 % function for secure evaluation of 'expression' without any influence on
 % current code
