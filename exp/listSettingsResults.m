@@ -70,7 +70,7 @@ function listSettingsResults(folder)
     fprintf(FID, '  %s: %s\n', datanames{d}, data{d});
   end
   fprintf(FID, '\n');
-  resultTable(avgPerformance, 'FID', FID, 'Method', method, 'Datanames', datanames)
+  resultTable(avgPerformance, 'FID', FID, 'Method', method, 'Datanames', datanames, 'Settings', settingArray)
   
   % printing settings results
   f = 0;

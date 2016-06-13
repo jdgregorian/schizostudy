@@ -97,7 +97,6 @@ classifyFC(FCdata, 'tree', settings, fullfile(filename, ['tree_prt_fish_optim', 
 %% KNN - gridsearch
 clear settings
 
-settings.knn.k = 1;
 settings.knn.distance = 'euclidean';
 settings.note = 'KNN classifier using simple gridsearch on property k.';
 
