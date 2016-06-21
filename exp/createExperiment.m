@@ -13,7 +13,7 @@ function createExperiment(expfolder, expname, settingFiles, data, addSettings)
 %                   array of strings
 %
 % See Also:
-%   runExperiment, loadSettings
+%   runExperiment, loadSettings, metacentrum_createExperiment
 
   if nargin < 5 || isempty(addSettings)
     addSettings = {''};

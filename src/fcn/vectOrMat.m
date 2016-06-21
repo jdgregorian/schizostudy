@@ -14,6 +14,11 @@ function [vector, matrix, names] = vectOrMat(datafile)
   vector = [];
   matrix = [];
   names = [];
+  
+  if nargin == 0
+    help vectOrMat
+    return
+  end
 
   datanames = fieldnames(datafile);
   value1 = getfield(datafile, datanames{1});

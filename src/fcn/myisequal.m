@@ -1,6 +1,12 @@
 function res = myisequal(a, b)
-% Compares 'a' and 'b' and returns true if they are the same (even in the 
-% case of NaN) and false if they are not.
+% res = myisequal(a, b) compares 'a' and 'b' and returns true if they have 
+% the same values (even in the case of NaN) and false if they are not.
+
+  if nargin == 0
+    res = [];
+    help myisequal
+    return
+  end
 
   res = isequal(a, b);
   
