@@ -1,6 +1,7 @@
-function str = printStructure(structure, FID, varargin)
+function str = printStructure(structure, varargin)
 % printStructure(structure, FID, option) prints all fields and values of 
-% 'structure' to file 'FID'
+% 'structure' to file 'FID'. Printed structures and its fields can be of
+% size 2 at maximum.
 %
 % Input:
 %   structure - structure to print
@@ -13,19 +14,19 @@ function str = printStructure(structure, FID, varargin)
 %                                  'field'  - does not return structure 
 %                                             name
 
-%TODO: include FID to varargin:
-%         printStructure(structure)
-%         printStructure(structure, FID)
-%         printStructure(structure, varargin)
-%         printStructure(structure, FID, varargin)
+% TODO:
+%   increase dimension of printed structures and its values (printArray)
 
   str = [];
-  if nargin < 2
+  if nargin < 2 || ~isnumeric(varargin{1})
     FID = 1;
     if nargin < 1
       help printStructure
       return
     end
+  elseif isnumeric(varargin{1})
+    FID = varargin{1};
+    varargin = varargin(2:end);
   end
   
   % parse settings
@@ -41,31 +42,36 @@ function str = printStructure(structure, FID, varargin)
   extraStruct.s = structure;
   % gain all structure subfields
   settingsSF = subfields(extraStruct);
+  % find main dot position
+  dotPos = strfind(settingsSF{1}, '.');
+  if ~isempty(dotPos)
+    dotPos = dotPos(1);
+  end
     
   % print all subfields
   for sf = 1:length(settingsSF)
-    % eval due to multiple subfields
-    valueSF = eval(['extraStruct.', settingsSF{sf}]);
     switch option
       case {'value', 'values'}
         strToPrint = '';
       case {'field', 'fields'}
-        strToPrint = [settingsSF{sf}(3:end), ' = '];
+        strToPrint = [settingsSF{sf}(dotPos+1:end), ' = '];
       otherwise
         if strcmp(structureName(end), ' ') || ~isstruct(structure)
           strToPrint = [structureName, settingsSF{sf}(3:end), ' = '];
         else
-          strToPrint = [structureName, '.', settingsSF{sf}(3:end), ' = '];
+          strToPrint = [structureName, settingsSF{sf}(2:end), ' = '];
         end
     end
     str = prt(str, '%s', strToPrint);
+    % eval due to multiple subfields
+    valueSF = eval(['extraStruct.', settingsSF{sf}]);
     % array settings
     if numel(valueSF) > 1 && ~ischar(valueSF)
       str = printArray(str, valueSF);
     % non-array value
     else
       str = printVal(str, valueSF);
-    end
+     end
     if strcmp(option, 'value')
       if length(settingsSF) ~= 1
         str = prt(str, '\n');

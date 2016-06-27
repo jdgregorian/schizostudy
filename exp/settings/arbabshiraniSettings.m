@@ -30,7 +30,7 @@ settings.svm.kernel_function = 'linear';
 settings.svm.boxconstraint = 1.5;
 settings.note = 'Linear SVM';
 
-classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear', datamark, '.mat']));
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear_arbab', datamark, '.mat']));
 
 %% polynomial
 clear settings
@@ -40,7 +40,7 @@ settings.svm.boxconstraint = 0.12;
 settings.svm.polyorder = 3;
 settings.note = 'Polynomial SVM';
 
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly', datamark, '.mat']));
+classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly_arbab', datamark, '.mat']));
 
 %% rbf
 clear settings
@@ -50,7 +50,7 @@ settings.svm.boxconstraint = 1.25;
 settings.svm.rbf_sigma = 1;
 settings.note = 'RBF SVM';
 
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_rbf', datamark, '.mat']));
+classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_rbf_arbab', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% PRTools classification tree - information gain criterion
@@ -95,7 +95,7 @@ clear settings
 settings.implementation = 'prtools';
 settings.note = 'Fisher''s linear discriminant (PRTools) has no settings.';
 
-classifyFC(FCdata,'fisher',settings, fullfile(filename, ['fisher', datamark, '.mat']));
+classifyFC(FCdata, 'fisher', settings, fullfile(filename, ['fisher', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% KNN
