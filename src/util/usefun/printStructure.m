@@ -6,7 +6,7 @@ function str = printStructure(structure, varargin)
 % Input:
 %   structure - structure to print
 %   FID       - file identifier or filename | integer or string
-%   settings  - pairs of property (string) and value or struct with 
+%   settings  - pairs of property (string) and value, or struct with 
 %               properties as fields:
 %                 'StructName' - name of structure to be printed in result
 %                 'Format'     - format of resulting string:

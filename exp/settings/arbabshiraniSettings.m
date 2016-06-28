@@ -123,7 +123,7 @@ clear settings
 settings.implementation = 'prtools';
 settings.note = 'Default PRTools naive Bayes settings.';
 
-classifyFC(FCdata, 'nb', settings, fullfile(filename,['nb',datamark,'.mat']));
+classifyFC(FCdata, 'nb', settings, fullfile(filename,['nb_prt',datamark,'.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Artificial Neural Networks

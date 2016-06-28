@@ -1,12 +1,17 @@
 function [avgPerformance, settings, method, data, results, ...
-  returnedFiles, omittedFiles] = returnResults(folders)
+  returnedFiles, omittedFiles] = returnResults(folders, varargin)
 % [avgPerformance, settings, method, data, results, returnedFiles, 
-%  omittedFiles] = returnResults(folders) 
+%  omittedFiles] = returnResults(folders, resultSettings) 
 % lists results of FC performance testing in 'folders' cellarray.
 %
 % Input:
 %   folders - list of folders to process | string or cell array of 
 %             strings
+%   resultSettings - pairs of property (string) and value, or struct with 
+%                    properties as fields:
+%                      'SeparateReduction' - consider data with reduced
+%                                            dimension as solo data |
+%                                            boolean
 %
 % Output:
 %   avgPerformance - N x M matrix of average performances of unique 
@@ -33,6 +38,8 @@ function [avgPerformance, settings, method, data, results, ...
 % See Also:
 %   listSettingsResults
 
+%TODO: concatenate folders results
+
   if nargin == 0 || isempty(folders)
     help returnResults
     return
@@ -43,6 +50,11 @@ function [avgPerformance, settings, method, data, results, ...
   end
   
   nFolders = length(folders);
+  
+  % parse function settings
+  resultSettings = settings2struct(varargin);
+  separRed = defopts(resultSettings, 'SeparateReduction', false);
+  %TODO: catOutput = defopts(resultSettings, 'CatOutput', false);
   
   % initialize output
   avgPerformance = cell(1, nFolders);
@@ -138,9 +150,23 @@ function [avgPerformance, settings, method, data, results, ...
         % compare uniqueness of settings omitting field 'note'
         fSettings = folderSettings{s};
         fMethod = folderMethod{s};
+        % omit notes 
         if isfield(fSettings, 'note')
           fSettings = rmfield(fSettings, 'note');
         end
+        % separation of data dimension reduction
+        if separRed && isfield(fSettings, 'dimReduction')
+          fDimReduction = fSettings.dimReduction;
+          fDataName = [folderData{s}, '__', fDimReduction.name, num2str(fDimReduction.nDim)];
+          dataID = find(strcmp(uniqueData, fDataName), 1);
+          if isempty(dataID)
+            uniqueData{end+1} = fDataName;
+          end
+          fSettings = rmfield(fSettings, 'dimReduction');
+        else
+          fDataName = folderData{s};
+        end
+        % find appropriate settings
         settingsID = find(cellfun(@(x) myisequal(fSettings, x), uSettings));
         if ~isempty(settingsID)
           settingsID = settingsID(strcmp(fMethod, uniqueSettings_Method(settingsID)));
@@ -160,7 +186,7 @@ function [avgPerformance, settings, method, data, results, ...
           uniqueSettings{end+1} = folderSettings{s};
           uSettings{end+1} = fSettings; % for settings comparison
           uniqueSettings_Method{end+1} = folderMethod{s};
-          dataID = find(strcmp(uniqueData, folderData{s}), 1);
+          dataID = find(strcmp(uniqueData, fDataName), 1);
           avgPerformance{f}(end+1, dataID) = folderAvgPerformance(s);
           performance{f}{end+1, dataID} = folderPerformance{s};
           actualPerformance{f}(end+1, dataID) = mean(actualPerf);
@@ -170,7 +196,7 @@ function [avgPerformance, settings, method, data, results, ...
           correctPredictions{f}{end+1, dataID} = folderCorrectPredictions{s};
         % existing settings
         else
-          dataID = find(strcmp(uniqueData, folderData{s}), 1);
+          dataID = find(strcmp(uniqueData, fDataName), 1);
           if (dataID <= size(avgPerformance{f},2)) && (~isempty(performance{f}{settingsID, dataID}))
             fprintf('Omitting file (result redundancy): %s\n', folderFilename{s})
             usefulFiles(s) = false;
