@@ -83,32 +83,40 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
   [data, settings] = reduceDim(data, labels, settings);
   settings.transformPrediction = false; % reduction is outside -> further 
                                         % transformation is not necessary
-  Nsubjects = size(data, 1);
+  nSubjects = size(data, 1);
   
   % data scaling to zero mean and unit variance
   settings.autoscale = defopts(settings, 'autoscale', false);
   if settings.autoscale
     mx   = mean(data);
     stdx = std(data);
-    data = (data-mx(ones(Nsubjects,1),:))./stdx(ones(Nsubjects,1),:);
+    data = (data-mx(ones(nSubjects,1),:))./stdx(ones(nSubjects,1),:);
   end
 
   if trainTestMode
-    class = zeros(1, Nsubjects - trainSize);
-    correctPredictions = zeros(1, Nsubjects - trainSize);
+    class = zeros(1, nSubjects - trainSize);
+    correctPredictions = zeros(1, nSubjects - trainSize);
     errors = cell(1);
     kFold = 1;
-    CVindices = [zeros(1,trainSize), ones(1,Nsubjects - trainSize)];
+    CVindices = [zeros(1,trainSize), ones(1,nSubjects - trainSize)];
   else % count cross-validation
-    class = zeros(1, Nsubjects);
-    correctPredictions = zeros(1, Nsubjects);
-    errors = cell(1,Nsubjects);
+    class = zeros(1, nSubjects);
+    correctPredictions = zeros(1, nSubjects);
+    errors = cell(1,nSubjects);
     kFold = defopts(settings, 'crossval', 'loo');
-    if strcmpi(kFold, 'loo') || (kFold > Nsubjects)
-      kFold = Nsubjects;
-      CVindices = 1:Nsubjects;
+    % leave-one-out
+    if strcmpi(kFold, 'loo') || (kFold > nSubjects)
+      kFold = nSubjects;
+      CVindices = 1:nSubjects;
+    % leave-two-out
+    elseif strcmpi(kFold, 'lto')
+      if mod(nSubjects, 2)
+        warning(['Number of subjects in leave-two-out cross-validation should be even.\n', ...
+          'Odd number can lead to incorrect results.'])
+      end
+      CVindices = defopts(settings, 'pairing', ceil((1:nSubjects)/2));
     else
-      CVindices = crossvalind('kfold', Nsubjects, kFold);
+      CVindices = crossvalind('kfold', nSubjects, kFold);
     end
   end
   
@@ -180,7 +188,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
   end
   
   % overall performance of classifier
-  performance = sum(correctPredictions)/(Nsubjects-trainSize);
+  performance = sum(correctPredictions)/(nSubjects-trainSize);
  
 end
 
