@@ -1,7 +1,7 @@
 function metacentrum_runExperiment(expname, walltime, taskIDs, reqMemory)
-% metacentrum_runExperiment(expname, walltime, taskIDs) runs tasks 
-% 'taskIDs' from experiment 'expname' with Metacentrum walltime 
-% 'walltime' and required memory 'memory'.
+% metacentrum_runExperiment(expname, walltime, taskIDs, reqMemory) runs 
+% tasks 'taskIDs' from experiment 'expname' with Metacentrum walltime 
+% 'walltime' and required memory 'reqMemory'.
 %
 % Input:
 %   expname  - name of the experiment | string

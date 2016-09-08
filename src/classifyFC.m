@@ -147,8 +147,10 @@ function [data, labels] = loadDataLabels(loadedData)
     return
   else
     data = double(matrix);
-    vector(double(vector) == classes(1)) = 0;
-    vector(double(vector) == classes(2)) = 1;
+    if ~isequal(classes, [0, 1])
+      vector(double(vector) == classes(1)) = 0;
+      vector(double(vector) == classes(2)) = 1;
+    end
     if size(vector,1) < size(vector,2)
       labels = vector';
     else

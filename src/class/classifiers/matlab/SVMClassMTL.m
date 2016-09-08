@@ -18,11 +18,13 @@ classdef SVMClassMTL < MatlabClassifier
     % training function
       cellset = cellSettings(obj.settings, {'gridsearch', 'implementation', 'prior'});
       obj.classifier = svmtrain(trainingData, trainingLabels, cellset{:});
+%       obj.classifier = fitcsvm(trainingData, trainingLabels, cellset{:});
     end
     
     function y = predict(obj, testingData, ~, ~)
     % prediction using SVM
-      y = svmclassify(obj.classifier, testingData);
+     y = svmclassify(obj.classifier, testingData);
+%       y = predict(obj.classifier, testingData);
     end
     
   end
