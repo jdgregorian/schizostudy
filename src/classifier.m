@@ -105,7 +105,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     errors = cell(1,nSubjects);
     kFold = defopts(settings, 'crossval', 'loo');
     % leave-one-out
-    if strcmpi(kFold, 'loo') || (kFold > nSubjects)
+    if strcmpi(kFold, 'loo') || (isnumeric(kFold) && (kFold > nSubjects))
       kFold = nSubjects;
       CVindices = 1:nSubjects;
     % leave-two-out
@@ -114,6 +114,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         warning(['Number of subjects in leave-two-out cross-validation should be even.\n', ...
           'Odd number can lead to incorrect results.'])
       end
+      kFold = ceil(nSubjects/2);
       CVindices = defopts(settings, 'pairing', ceil((1:nSubjects)/2));
     else
       CVindices = crossvalind('kfold', nSubjects, kFold);
