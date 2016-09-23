@@ -178,7 +178,12 @@ end
 
 function datanames = createDatanames(data)
 % creates shorter names for data
+
   nData = length(data);
+  if nData < 2
+    datanames = data;
+    return
+  end
   dataNameBase = cell(1, nData);
   
   % find unique parts of names
