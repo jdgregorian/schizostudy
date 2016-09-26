@@ -14,19 +14,19 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 % Input:
 %
 %   method   - shortcut of the classifier type used | string
-%              'svm'     - support vector machine
-%              'rf'      - random forest
-%              'tree'    - decision tree
-%              'nb'      - naive Bayes
-%              'knn'     - k-nearest neighbours
-%              'llc'     - logistic linear classifier
-%              'lda'     - linear discriminant analysis
-%              'qda'     - quadratic discriminant analysis
-%              'rda'     - regularized discriminant analysis (RDA 14)
-%              'fisher'  - Fisher's linear discriminant fisherc (PRTools)
 %              'ann'     - artificial neural network
-%              'rbf'     - radial basis function network
+%              'fisher'  - Fisher's linear discriminant fisherc (PRTools)
+%              'knn'     - k-nearest neighbours
+%              'lda'     - linear discriminant analysis
+%              'llc'     - logistic linear classifier
+%              'nb'      - naive Bayes
 %              'perc'    - linear perceptron
+%              'qda'     - quadratic discriminant analysis
+%              'rbf'     - radial basis function network
+%              'rda'     - regularized discriminant analysis (RDA 14)
+%              'rf'      - random forest
+%              'svm'     - support vector machine
+%              'tree'    - decision tree
 %   data     - input data matrix (rows - datapoints, columns - data 
 %              dimension) or 1x2 cell array {training, testing} data 
 %              | double matrix, cell array
@@ -96,13 +96,11 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
   if trainTestMode
     class = zeros(1, nSubjects - trainSize);
     correctPredictions = zeros(1, nSubjects - trainSize);
-    errors = cell(1);
     kFold = 1;
     CVindices = [zeros(1,trainSize), ones(1,nSubjects - trainSize)];
   else % count cross-validation
     class = zeros(1, nSubjects);
     correctPredictions = zeros(1, nSubjects);
-    errors = cell(1,nSubjects);
     kFold = defopts(settings, 'crossval', 'loo');
     % leave-one-out
     if strcmpi(kFold, 'loo') || (isnumeric(kFold) && (kFold > nSubjects))
@@ -120,6 +118,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       CVindices = crossvalind('kfold', nSubjects, kFold);
     end
   end
+  errors = cell(1, kFold);
   
   % create classifier
   % the following line will be removed after unification of classifiers
@@ -134,13 +133,14 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     return
   end
     
+  % cross-validation loop
   for sub = 1:kFold
     
     foldIds = sub == CVindices;
     trainingData = data(~foldIds,:);
     trainingLabels = labels(~foldIds);
     
-    % dimension reduction inside the LOO loop
+    % dimension reduction inside the loop
 %     [trainingSet, settings] = reduceDim(trainingSet,settings);
     
     try % one error should not cancel full computation
@@ -160,6 +160,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       % prediction
       y = TC.predict(testingData, trainingData, trainingLabels);
       
+      % return numeric output
       if iscell(y)
         if length(y) == 1
           y = str2double(y{1});
@@ -168,6 +169,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
         end
       end
       
+      % return class predictions
       if trainTestMode
         correctPredictions = y == testingLabels;
         class = y;
