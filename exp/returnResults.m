@@ -157,7 +157,15 @@ function [avgPerformance, settings, method, data, results, ...
         % separation of data dimension reduction
         if separRed && isfield(fSettings, 'dimReduction')
           fDimReduction = fSettings.dimReduction;
-          fDataName = [folderData{s}, '__', fDimReduction.name, num2str(fDimReduction.nDim)];
+          % create unique reduction name
+          fDataName = [folderData{s}, '__', fDimReduction.name];
+          dimRedFields = fieldnames(fDimReduction);
+          % remove field name
+          dimRedFields = dimRedFields(~strcmp(dimRedFields, 'name'));
+          % add other parameters of dimension reduction to unique name
+          for drf = 1:length(dimRedFields)
+            fDataName = [fDataName, num2str(fDimReduction.(dimRedFields{drf}))];
+          end
           dataID = find(strcmp(uniqueData, fDataName), 1);
           if isempty(dataID)
             uniqueData{end+1} = fDataName;
@@ -214,6 +222,16 @@ function [avgPerformance, settings, method, data, results, ...
       % correct missing data in performance arrays
       avgPerformance{f}(cellfun(@isempty, performance{f})) = NaN;
       actualPerformance{f}(cellfun(@isempty, performance{f})) = NaN;
+      
+      % keep only columns containing data
+      keepColID = ~all(isnan(avgPerformance{f}));
+      avgPerformance{f} = avgPerformance{f}(:, keepColID);
+      performance{f} = performance{f}(:, keepColID);
+      actualPerformance{f} = actualPerformance{f}(:, keepColID);
+      errors{f} = errors{f}(:, keepColID);
+      elapsedTime{f} = elapsedTime{f}(:, keepColID);
+      class{f} = class{f}(:, keepColID);
+      correctPredictions{f} = correctPredictions{f}(:, keepColID);
 
       % save the rest of output
       settings{f} = uniqueSettings;
