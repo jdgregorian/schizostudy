@@ -1,5 +1,5 @@
-% Script for testing main settings of classifiers on dataset with
-% 190 subjects and full conectivity matrices.
+% Script for testing main settings of classifiers on DWI dataset with
+% 154 subjects. Leave-two-out method is used.
 
 % initialization
 expfolder = fullfile('exp', 'experiments');
