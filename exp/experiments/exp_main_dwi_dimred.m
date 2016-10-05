@@ -1,5 +1,6 @@
 % Script for testing main settings of classifiers on DWI dataset with
-% 154 subjects with dimension reduced by pca to 20, 40, 80, 153.
+% 154 subjects with dimension reduced by pca to 20, 40, 80, 153 and by
+% ttest using significance level 0.05 out of cross-validation loop.
 % Leave-two-out method is used.
 
 % initialization

@@ -1,7 +1,7 @@
 function [reducedData, transMatrix] = pcaReduction(data, nDim)
-% reducedData = pcaReduction(data, nDim) provides principle component 
-% analysis feature reduction of 'data' to 'nDim'-dimensional data (at
-% maximum)
+% [reducedData, transMatrix] = pcaReduction(data, nDim) provides principle 
+% component analysis feature reduction of 'data' to 'nDim'-dimensional data
+% (at maximum).
 %
 % Input:
 %   data - N x M data matrix | double
@@ -11,6 +11,8 @@ function [reducedData, transMatrix] = pcaReduction(data, nDim)
 %   reducedData - N x nDim data | double
 %   transMatrix - matrix of transformation data to new coordinate system |
 %                 double
+% See Also:
+%   ttestReduction, kendallReduction, classifier
 
   reducedData = [];
   [Nsubjects, dim] = size(data);
@@ -21,8 +23,8 @@ function [reducedData, transMatrix] = pcaReduction(data, nDim)
   elseif nargin == 1
     nDim = dim;
   end
-  if nDim > Nsubjects-1
-    nDim = Nsubjects-1;
+  if nDim > Nsubjects - 1
+    nDim = Nsubjects - 1;
   end
 
   % pca

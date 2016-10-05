@@ -1,7 +1,7 @@
-function reducedData = kendallReduction(data, labels, nDim, treshold)
-% reducedData = kendallReduction(data, labels, nDim) provides feature 
-% reduction of 'data' to 'nDim'-dimensional data (at maximum) using Kendall
-% tau rank coefficient (according to Hui 2009).
+function [reducedData, idVector] = kendallReduction(data, labels, nDim, treshold)
+% [reducedData, idVector] = kendallReduction(data, labels, nDim) provides 
+% feature reduction of 'data' to 'nDim'-dimensional data (at maximum) using
+% Kendall tau rank coefficient (according to Hui 2009).
 %
 % Input:
 %   data     - N x M data matrix | double
@@ -11,9 +11,15 @@ function reducedData = kendallReduction(data, labels, nDim, treshold)
 %
 % Output:
 %   reducedData - N x nDim data | double
+%   idVector    - vector of dimensions to keep | logical
+%
+% See Also:
+%   pcaReduction, ttestReduction, classifier
 
-
-  reducedData = [];
+  if nargout > 0
+    reducedData = [];
+    idVector = [];
+  end
   [Nsubjects, dim] = size(data);
   
   if nargin < 4
@@ -40,14 +46,23 @@ function reducedData = kendallReduction(data, labels, nDim, treshold)
     end
   end
   nd = ones(1, dim) * nOne * nZero - nc;
-  tau = (nc - nd)/(nZero*nOne); % count Kendall tau ranks
+  % count Kendall tau ranks
+  tau = (nc - nd)/(nZero*nOne); 
 
   [sortedTau, tauId] = sort(abs(tau), 'descend');
-  reducedData = data(:, tauId(1:nDim)); % reduction by dimension setting
-  reducedData = reducedData(:, sortedTau(1:nDim) > treshold); % reduction by treshold
-
-  if isempty(reducedData) % check if some data left
+  % create vector of dimensions to keep
+  idVector = false(1, dim);
+  % reduction by dimension setting
+  idVector(tauId(1:nDim)) = true;
+  % reduction by treshold
+  idVector(tauId(sortedTau < treshold)) = false;
+  
+  % check if some data left
+  if sum(idVector) == 0
     warning('Too severe constraints! Preventing emptyness of reduced dataset by keeping one dimension with the greatest Kendall tau rank.')
-    reducedData = data(:, tauId(1));
+    idVector(tauId(1)) = true;
   end
+  % return only chosen dimensions
+  reducedData = data(:, idVector);
+  
 end

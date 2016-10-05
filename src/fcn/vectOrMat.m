@@ -11,9 +11,11 @@ function [vector, matrix, names] = vectOrMat(datafile)
 %    names  - structure containing names of vector and matrix fields in
 %             datafile
 
-  vector = [];
-  matrix = [];
-  names = [];
+  if nargout > 0
+    vector = [];
+    matrix = [];
+    names = [];
+  end
   
   if nargin == 0
     help vectOrMat
@@ -21,8 +23,8 @@ function [vector, matrix, names] = vectOrMat(datafile)
   end
 
   datanames = fieldnames(datafile);
-  value1 = getfield(datafile, datanames{1});
-  value2 = getfield(datafile, datanames{2});
+  value1 = datafile.(datanames{1});
+  value2 = datafile.(datanames{2});
   
   % matrix and vector filter
   if ismatrix(value1) && isvector(value2)

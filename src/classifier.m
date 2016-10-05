@@ -79,10 +79,20 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     end
   end
   
+  % where the dimension reduction should be provided (in loop or out of the
+  % cross-validation loop)
+  if isfield(settings, 'dimReduction')
+    dimRedInLoop = defopts(settings.dimReduction, 'inloop', false);
+  else
+    dimRedInLoop = false;
+  end
   % dimension reduction outside the LOO loop
-  [data, settings] = reduceDim(data, labels, settings);
-  settings.transformPrediction = false; % reduction is outside -> further 
-                                        % transformation is not necessary
+  if ~dimRedInLoop
+    [data, settings] = reduceDim(data, labels, settings);
+    settings.transformPrediction = false; % reduction is outside -> further 
+                                          % transformation is not necessary
+  end
+  
   nSubjects = size(data, 1);
   
   % data scaling to zero mean and unit variance
@@ -140,10 +150,13 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     trainingData = data(~foldIds,:);
     trainingLabels = labels(~foldIds);
     
-    % dimension reduction inside the loop
-%     [trainingSet, settings] = reduceDim(trainingSet,settings);
-    
-    try % one error should not cancel full computation
+    % one error should not cancel full computation
+    try
+
+      % dimension reduction inside the loop
+      if dimRedInLoop
+        [trainingData, settings] = reduceDim(trainingData, trainingLabels, settings);
+      end
 
       % training
       TC = TC.train(trainingData, trainingLabels);
@@ -151,9 +164,13 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
       % transform data if necessary (automatically disabled in outside
       % transformation)
       if settings.transformPrediction
-        testingData = data(foldIds,:)*settings.dimReduction.transMatrix;
+        if isvector(settings.dimReduction.transMatrix)
+          testingData = data(foldIds, settings.dimReduction.transMatrix);
+        else
+          testingData = data(foldIds, :)*settings.dimReduction.transMatrix;
+        end
       else
-        testingData = data(foldIds,:);
+        testingData = data(foldIds, :);
       end
       testingLabels = labels(foldIds);
 
@@ -216,7 +233,7 @@ function [reducedData, settings] = reduceDim(data, indices, settings)
   defSet.name = 'none';
   settings.dimReduction = defopts(settings, 'dimReduction', defSet);
   settings.dimReduction.name = defopts(settings.dimReduction, 'name', defSet.name);
-  settings.transformPrediction = false;
+  settings.transformPrediction = true;
   nDim = defopts(settings.dimReduction, 'nDim', dim);
   if nDim > dim
     nDim = dim;  % maximum of chosen dimensions
@@ -226,27 +243,27 @@ function [reducedData, settings] = reduceDim(data, indices, settings)
     case 'none'
       % no dimension reduction 
       reducedData = data;
+      settings.transformPrediction = false;
       return
       
     case 'pca'
       % principle component analysis feature reduction
       fprintf('Starting dimension reduction by PCA...\n')
       [reducedData, settings.dimReduction.transMatrix] = pcaReduction(cData, nDim);
-      settings.transformPrediction = true;
       
     case 'kendall'
       % Kendall tau rank coefficient feature reduction
       fprintf('Starting dimension reduction using Kendall tau rank coefficients...\n')
       % minimal Kendall tau rank value
       treshold = defopts(settings.dimReduction, 'treshold', -1);
-      reducedData = kendallReduction(cData, cIndices, nDim, treshold);
+      [reducedData, settings.dimReduction.transMatrix] = kendallReduction(cData, cIndices, nDim, treshold);
       
     case 'ttest'
       % t-test feature reduction
       fprintf('Starting dimension reduction using t-test...\n')
       % significance level
       alpha = defopts(settings.dimReduction, 'alpha', 0.05);
-      reducedData = ttestReduction(cData, cIndices, nDim, alpha);
+      [reducedData, settings.dimReduction.transMatrix] = ttestReduction(cData, cIndices, nDim, alpha);
     
     case 'median'
       % feature reduction based on median (Honza Kalina's suggestion)
@@ -255,14 +272,14 @@ function [reducedData, settings] = reduceDim(data, indices, settings)
       nZeros = Nsubjects - nOnes;
       % minimum number of differences
       minDif = defopts(settings.dimReduction, 'minDif', 2*abs(nOnes-nZeros));
-      reducedData = medianReduction(cData, cIndices, nDim, minDif);
+      [reducedData, settings.dimReduction.transMatrix] = medianReduction(cData, cIndices, nDim, minDif);
       
     case 'hmean'
       % feature reduction based on highest mean
       fprintf('Starting dimension reduction using highest mean...\n')
       % minimal value of mean
       minVal = defopts(settings.dimReduction, 'minVal', 0);
-      reducedData = hMeanReduction(cData, nDim, minVal);
+      [reducedData, settings.dimReduction.transMatrix] = hMeanReduction(cData, nDim, minVal);
       
     otherwise
       error('Wrong dimReduction property name!!!')

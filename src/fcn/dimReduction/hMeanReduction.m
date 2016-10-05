@@ -1,7 +1,8 @@
-function [reducedData, meanData] = hMeanReduction(data, nDim, minVal)
-% reducedData = hMeanReduction(data, labels, nDim, minDif) provides 
-% feature reduction of 'data' to 'nDim'-dimensional data (at maximum) by
-% omitting features with low averages of values
+function [reducedData, idVector, meanData] = hMeanReduction(data, nDim, minVal)
+% [reducedData, idVector, meanData] = 
+%                              hMeanReduction(data, labels, nDim, minDif) 
+% provides feature reduction of 'data' to 'nDim'-dimensional data 
+% (at maximum) by omitting features with low averages of values.
 %
 % Input:
 %   data   - N x M data matrix | double
@@ -10,38 +11,51 @@ function [reducedData, meanData] = hMeanReduction(data, nDim, minVal)
 %
 % Output:
 %   reducedData - N x nDim data | double
-
-  reducedData = [];
+%   idVector    - vector of dimensions to keep | logical
+%   meanData    - nDim means of data | double vector
+%
+% See Also:
+%   pcaReduction, ttestReduction, kendallReduction, classifier
+  
+  if nargout > 0
+    reducedData = [];
+    idVector = [];
+    meanData = [];
+  end
   if nargin == 0
     help hMeanReduction
     return
   end
   
-  if nargin < 4
+  if nargin < 3
     % minimal value of average
     minVal = 0;
-    if nargin < 3
+    if nargin < 2
       nDim = size(data, 2);
     end
   end
 
   meanData = mean(data, 1);
-  reducedData = data(:, meanData >= minVal);
-  redDim = size(reducedData, 2);
+  % create vector of dimensions to keep
+  idVector = meanData >= minVal;
 
   % check if some data left
-  if redDim == 0
+  if sum(idVector) == 0
     warning(['Too severe constraints! Preventing emptyness of reduced', ...
-      'dataset by keeping one dimension with the highest average.'])
-    [meanData, maxId] = max(meanData);
-    reducedData = data(:, maxId(1));
-  % reduction by dimensions with the highest averages
-  elseif redDim > nDim
-    meanData = meanData(meanData >= minVal);
-    [~, meanId] = sort(meanData, 'descend');
-    reducedData = reducedData(:, meanId(1:nDim));
-    meanData = meanData(meanId(1:nDim));
-  else
-    meanData = meanData(meanData >= minVal);
+      'dataset by keeping dimensions with the highest averages.'])
+    [~, ~, I] = unique(meanData);
+    maxId = I == max(I);
+    idVector(maxId) = true;
   end
+  
+  % reduction by dimensions with the highest averages
+  if sum(idVector) > nDim
+    [~, meanId] = sort(meanData, 'descend');
+    idVector(meanId(nDim + 1:end)) = false;
+  end
+  
+  % return reduced data
+  reducedData = data(:, idVector);
+  meanData = meanData(idVector);
+  
 end

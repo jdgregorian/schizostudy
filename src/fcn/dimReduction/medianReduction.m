@@ -1,7 +1,7 @@
-function reducedData = medianReduction(data, labels, nDim, minDif)
-% reducedData = medianReduction(data, labels, nDim, minDif) provides 
-% feature reduction of 'data' to 'nDim'-dimensional data (at maximum) using 
-% Honza Kalina's suggestion: 
+function [reducedData, idVector] = medianReduction(data, labels, nDim, minDif)
+% [reducedData, idVector] = medianReduction(data, labels, nDim, minDif) 
+% provides feature reduction of 'data' to 'nDim'-dimensional data 
+% (at maximum) using Honza Kalina's suggestion: 
 %   Choose median value in each dimension, count how many individuals has 
 %   greater or lower value.
 %
@@ -13,8 +13,15 @@ function reducedData = medianReduction(data, labels, nDim, minDif)
 %
 % Output:
 %   reducedData - N x nDim data | double
+%   idVector    - vector of dimensions to keep | logical
+%
+% See Also:
+%   pcaReduction, ttestReduction, kendallReduction, classifier
 
-  reducedData = [];
+  if nargout > 0
+    reducedData = [];
+    idVector = [];
+  end
   if nargin == 0
     help medianReduction
     return
@@ -32,6 +39,7 @@ function reducedData = medianReduction(data, labels, nDim, minDif)
     end
   end
 
+  % calculate group medians
   medData = median(data, 1);
   greaterSub = data > repmat(medData, Nsubjects, 1);
   greaterOnes = sum(greaterSub & repmat(labels, 1, dim), 1);
@@ -39,18 +47,22 @@ function reducedData = medianReduction(data, labels, nDim, minDif)
   % count median difference coefficient
   nDif = abs(greaterOnes - greaterZeros) + abs(nOnes - nZeros - greaterOnes + greaterZeros);
 
-  reducedData = data(:, nDif >= minDif);
-  redDim = size(reducedData, 2);
+  % create vector of dimensions to keep
+  idVector = nDif >= minDif;
 
   % check if some data left
-  if redDim == 0
+  if sum(idVector) == 0
     warning(['Too severe constraints! Preventing emptyness of reduced',...
-      'dataset by keeping one dimension with the highest difference coefficient.'])
-    [~, minId] = min(nDif);
-    reducedData = data(:, minId(1));
-  % reduction by dimensions with the highest difference coefficients
-  elseif redDim > nDim
-    [~, difId] = sort(nDif(nDif >= minDif), 'descend');
-    reducedData = reducedData(:, difId(1:nDim));
+      'dataset by keeping dimensions with the highest difference coefficients.'])
+    [~, ~, minId] = unique(nDif);
+    idVector(minId == 1) = true;
   end
+  % reduction by dimensions with the highest difference coefficients
+  if sum(idVector) > nDim
+    [~, difId] = sort(nDif(idVector), 'descend');
+    idVector(difId(nDim + 1:end)) = false;
+  end
+  % return reduced data
+  reducedData = data(:, idVector);
+  
 end
