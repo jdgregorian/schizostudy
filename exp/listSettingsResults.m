@@ -1,9 +1,13 @@
-function listSettingsResults(folder)
-% listSettingsResults(FOLDER) lists results of FC performance testing 
-% in FOLDER to file 'FOLDER/pproc/FOLDER_report.txt'. 
+function listSettingsResults(folder, varargin)
+% listSettingsResults(FOLDER, settings) lists results of FC performance 
+% testing in FOLDER to file 'FOLDER/pproc/FOLDER_report.txt'. 
 %
 % Input:
-%   FOLDER - directory containing results | string
+%   FOLDER   - directory containing results | string
+%   settings - pairs of property (string) and value, or struct with 
+%              properties as fields:
+%                'SeparateReduction' - consider data with reduced dimension 
+%                                      as solo data | boolean
 %
 % See Also:
 %   returnResults
@@ -17,14 +21,20 @@ function listSettingsResults(folder)
     return
   end
   
+  % parse function settings
+  resultSettings = settings2struct(varargin);
+  separRed = defopts(resultSettings, 'SeparateReduction', false);
+  
   folderPos = strfind(folder, filesep);
   foldername = folder(folderPos(end) + 1 : end);
   pprocFolder = fullfile(folder, 'pproc');
   resultname = fullfile(pprocFolder, [foldername, '_report.txt']);
   
   % loading data
-  [avgPerformance, settingArray, method, data, results, returnedFiles, omittedFiles] = returnResults(folder);
+  [avgPerformance, overallSettings, method, data, results, returnedFiles, omittedFiles] = returnResults(folder, 'SeparateReduction', separRed);
   
+  settingArray = overallSettings.classifiers;
+  dimReduction = overallSettings.dimReduction;
   performance = results.performance;
   elapsedTime = results.elapsedTime;
   errors = results.errors;
@@ -112,8 +122,10 @@ function listSettingsResults(folder)
         fprintf(FID,'\n');
         settings = settingArray{s};
         printStructure(settings, FID, 'StructName', '    settings');
+        printStructure(dimReduction{d}, FID, 'StructName', '    settings.dimReduction');
 
         % performances printing
+
         nPerf = length(performance{s, d});
         if nPerf > 1
           fprintf(FID,'\n  Performances per iterations: \n');
@@ -199,6 +211,8 @@ function datanames = createDatanames(data)
   datanames = arrayfun(@(x) [uniqueBase{IDs(x, :) & notInAllID}], 1:nData, 'UniformOutput', false);
   
   % ensure different names
+  emptyNamesID = cellfun(@isempty, datanames);
+  datanames(emptyNamesID) = arrayfun(@(x) ['data_', num2str(x)], 1:sum(emptyNamesID), 'UniformOutput', false);
   [C, ia, ic] = unique(datanames);
   if length(C) < nData
     for i = 1:length(ia)

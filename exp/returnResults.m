@@ -17,7 +17,12 @@ function [avgPerformance, settings, method, data, results, ...
 %   avgPerformance - N x M matrix of average performances of unique 
 %                    settings, N is number of settings, M is number of data
 %                    sources
-%   settings       - N settings of tested classifiers
+%   settings       - structure with following fields:
+%     
+%     classifiers   - N settings of tested classifiers
+%     dimReduction  - all dimension reduction settings, empty if
+%                     'SeparateReduction' is false
+%
 %   method         - N methods of tested classifier
 %   data           - M data sources
 %   results        - N x M structure of results with following fields:
@@ -145,6 +150,7 @@ function [avgPerformance, settings, method, data, results, ...
       uSettings = {};
       uniqueSettings_Method = {};
       uniqueData = unique(folderData(1:nFiles - nEmptyFiles));
+      dimRedSettings = {};
 
       for s = 1 : nFiles - nEmptyFiles
         % compare uniqueness of settings omitting field 'note'
@@ -164,11 +170,12 @@ function [avgPerformance, settings, method, data, results, ...
           dimRedFields = dimRedFields(~strcmp(dimRedFields, 'name'));
           % add other parameters of dimension reduction to unique name
           for drf = 1:length(dimRedFields)
-            fDataName = [fDataName, num2str(fDimReduction.(dimRedFields{drf}))];
+            fDataName = [fDataName, '_', num2str(fDimReduction.(dimRedFields{drf}))];
           end
           dataID = find(strcmp(uniqueData, fDataName), 1);
           if isempty(dataID)
             uniqueData{end+1} = fDataName;
+            dimRedSettings{end+1} = fSettings.dimReduction;
           end
           fSettings = rmfield(fSettings, 'dimReduction');
         else
@@ -191,7 +198,7 @@ function [avgPerformance, settings, method, data, results, ...
         end
         % new settings
         if isempty(settingsID)
-          uniqueSettings{end+1} = folderSettings{s};
+          uniqueSettings{end+1} = fSettings;
           uSettings{end+1} = fSettings; % for settings comparison
           uniqueSettings_Method{end+1} = folderMethod{s};
           dataID = find(strcmp(uniqueData, fDataName), 1);
@@ -234,9 +241,10 @@ function [avgPerformance, settings, method, data, results, ...
       correctPredictions{f} = correctPredictions{f}(:, keepColID);
 
       % save the rest of output
-      settings{f} = uniqueSettings;
+      settings{f}.classifiers = uniqueSettings;
+      settings{f}.dimReduction = dimRedSettings;
       method{f} = uniqueSettings_Method;
-      data{f} = uniqueData;
+      data{f} = uniqueData(keepColID);
       returnedFiles{f} = {fileList(usefulFiles).name};
       omittedFiles{f} = {fileList(~usefulFiles).name};
     end
