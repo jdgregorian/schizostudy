@@ -122,7 +122,9 @@ function listSettingsResults(folder, varargin)
         fprintf(FID,'\n');
         settings = settingArray{s};
         printStructure(settings, FID, 'StructName', '    settings');
-        printStructure(dimReduction{d}, FID, 'StructName', '    settings.dimReduction');
+        if ~isempty(dimReduction{d})
+          printStructure(dimReduction{d}, FID, 'StructName', '    settings.dimReduction');
+        end
 
         % performances printing
 

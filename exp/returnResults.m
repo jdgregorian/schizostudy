@@ -175,11 +175,15 @@ function [avgPerformance, settings, method, data, results, ...
           dataID = find(strcmp(uniqueData, fDataName), 1);
           if isempty(dataID)
             uniqueData{end+1} = fDataName;
-            dimRedSettings{end+1} = fSettings.dimReduction;
+            dimRedSettings{length(uniqueData)} = fSettings.dimReduction;
           end
           fSettings = rmfield(fSettings, 'dimReduction');
         else
           fDataName = folderData{s};
+%           dataID = find(strcmp(uniqueData, fDataName), 1);
+%           if separRed && isempty(dataID)
+%             dimRedSettings{end+1} = [];
+%           end
         end
         % find appropriate settings
         settingsID = find(cellfun(@(x) myisequal(fSettings, x), uSettings));
