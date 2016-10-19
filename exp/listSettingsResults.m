@@ -29,6 +29,7 @@ function listSettingsResults(folder, varargin)
   foldername = folder(folderPos(end) + 1 : end);
   pprocFolder = fullfile(folder, 'pproc');
   resultname = fullfile(pprocFolder, [foldername, '_report.txt']);
+  xlsTableName = fullfile(pprocFolder, [foldername, '_table.xls']);
   
   % loading data
   [avgPerformance, overallSettings, method, data, results, returnedFiles, omittedFiles] = returnResults(folder, 'SeparateReduction', separRed);
@@ -44,6 +45,14 @@ function listSettingsResults(folder, varargin)
   nFiles = length(returnedFiles);
   nOmitted = length(omittedFiles);
   [nSettings, nData] = size(avgPerformance);
+  % names of data
+  datanames = createDatanames(data);
+  
+  % print xls table
+  fprintf('Saving average performance table to %s...\n', xlsTableName)
+  resultTable(avgPerformance, 'FID', xlsTableName, 'Format', 'xls', ...
+                              'Method', method, 'Datanames', datanames, ...
+                              'Settings', settingArray)
 
   % check postprocessing folder
   if ~exist(pprocFolder, 'dir')
@@ -75,12 +84,13 @@ function listSettingsResults(folder, varargin)
   
   % print result table
   fprintf(FID,'\n---------------------------------------------------------------------------------\n\n');
-  datanames = createDatanames(data);
   for d = 1:nData
     fprintf(FID, '  %s: %s\n', datanames{d}, data{d});
   end
   fprintf(FID, '\n');
-  resultTable(avgPerformance, 'FID', FID, 'Method', method, 'Datanames', datanames, 'Settings', settingArray)
+  resultTable(avgPerformance, 'FID', FID, 'Format', 'txt', ...
+                              'Method', method, 'Datanames', datanames, ...
+                              'Settings', settingArray)
   
   % printing settings results
   f = 0;
@@ -145,6 +155,8 @@ function listSettingsResults(folder, varargin)
   
   fclose(FID);
   
+  fprintf('Report files successfully generated\n')
+  
 end
 
 function printErrors(FID, errors)
@@ -208,13 +220,19 @@ function datanames = createDatanames(data)
                        nameBase{end}(1:min(length(nameBase{end}), 3))];
   end
   uniqueBase = unique([dataNameBase{:}]);
+  % turn around to begin with last sorted
+  uniqueBase = uniqueBase(end:-1:1);
   IDs = cell2mat(cellfun(@(x) ismember(uniqueBase, x), dataNameBase, 'UniformOutput', false)');
   notInAllID = ~all(IDs);
   datanames = arrayfun(@(x) [uniqueBase{IDs(x, :) & notInAllID}], 1:nData, 'UniformOutput', false);
   
-  % ensure different names
+  % ensure names - default names
   emptyNamesID = cellfun(@isempty, datanames);
   datanames(emptyNamesID) = arrayfun(@(x) ['data_', num2str(x)], 1:sum(emptyNamesID), 'UniformOutput', false);
+  % ensure name if the first character is not a number
+  numFirstNamesID = cellfun(@(x) isstrprop(x(1), 'digit'), datanames);
+  datanames(numFirstNamesID) = cellfun(@(x) ['data_', x], datanames(numFirstNamesID), 'UniformOutput', false);
+  % create different names for so far same datanames
   [C, ia, ic] = unique(datanames);
   if length(C) < nData
     for i = 1:length(ia)

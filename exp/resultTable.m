@@ -7,9 +7,11 @@ function resultTable(avgPerformance, varargin)
 %                    of different datasets) | double
 %   settings       - name-value pairs (or structure with fields) of table 
 %                    settings:
-%     FID       - identifier of file to print in | double
-%     Method    - names of methods in table (rows) | cell-array of strings
 %     Datanames - names of data in table (columns) | cell-array of strings
+%     Format    - format of resulting table | {'txt', 'xls'}
+%     FID       - identifier (or name) of file to print in | double or
+%                 string (only string for 'xls' format)
+%     Method    - names of methods in table (rows) | cell-array of strings
 %     Settings  - settings of methods in table | cell-array of struct
 %
 % See Also:
@@ -23,17 +25,43 @@ function resultTable(avgPerformance, varargin)
   [nSettings, nData] = size(avgPerformance);
   % parse settings
   settings = settings2struct(varargin);
-  FID = defopts(settings, 'FID', 1);
-  def_methods = arrayfun(@(x) ['method_', num2str(x)], 1:nSettings, 'UniformOutput', false);
-  settings.methods = defopts(settings, 'Method', def_methods);
-  def_data = arrayfun(@(x) ['data_1', num2str(x)], 1:nData, 'UniformOutput', false);
-  settings.datanames = defopts(settings, 'Datanames', def_data);
-  settings.dataSettings = defopts(settings, 'Settings', cell(1, nSettings));
   tableFormat = defopts(settings, 'Format', 'txt');
+  if strcmp(tableFormat, 'xls')
+    defFile = 'data.xls';
+    FID = defopts(settings, 'FID', defFile);
+    % xls printing needs string name as FID
+    if isnumeric(FID)
+      warning('FID for xls format has to be string. Changing output to %s.', defFile)
+      FID = defFile;
+    end
+  else
+    FID = defopts(settings, 'FID', 1);
+  end
+  def_methods = arrayfun(@(x) ['method_', num2str(x)], 1:nSettings, 'UniformOutput', false);
+  settings.Method = defopts(settings, 'Method', def_methods);
+  def_data = arrayfun(@(x) ['data_1', num2str(x)], 1:nData, 'UniformOutput', false);
+  settings.Datanames = defopts(settings, 'Datanames', def_data);
+  settings.Settings = defopts(settings, 'Settings', cell(1, nSettings));
+  settings.methodStrings = cellfun(@(x, y) methodString(x, tableFormat, y), ...
+                           settings.Method, settings.Settings, 'UniformOutput', false);
   
+  % print table according to its format
   switch tableFormat
+    
     case 'txt'
-      printTable(FID, avgPerformance, settings)
+      if ~isnumeric(FID)
+        fname = FID;
+        FID = fopen(fname, 'w');
+        assert(FID ~= -1, 'Cannot open %s !', fname)
+        printTable(FID, avgPerformance, settings)
+        fclose(FID);
+      else
+        printTable(FID, avgPerformance, settings)
+      end
+      
+    case 'xls'
+      printXlsTable(FID, avgPerformance, settings)
+      
     otherwise
       error('Format %s is not implemented.', tableFormat)
   end
@@ -42,14 +70,14 @@ end
 function printTable(FID, data, settings)
 % prints text table to file FID
 
-  methodStrings = cellfun(@(x, y) methodString(x, y), settings.methods, settings.dataSettings, 'UniformOutput', false);
+  methodStrings = settings.methodStrings;
   maxLengthMethod = max(max(cellfun(@length, methodStrings)), length('Method'));
   methodSize = maxLengthMethod + 1;
-  perfSize = max(max(cellfun(@length, settings.datanames)) + 1, 8);
+  perfSize = max(max(cellfun(@length, settings.Datanames)) + 1, 8);
 
   % head row
   fprintf(FID, '  Method%s', gap(methodSize, 'Method'));
-  cellfun(@(x) fprintf(FID, '%s%s', gap(perfSize, x), x), settings.datanames);
+  cellfun(@(x) fprintf(FID, '%s%s', gap(perfSize, x), x), settings.Datanames);
   fprintf(FID, '\n');
   
   % result rows
@@ -59,6 +87,36 @@ function printTable(FID, data, settings)
     fprintf(FID, '\n');
   end
 end
+
+function printXlsTable(fname, data, settings)
+% prints table to xls file FID
+
+% TODO:
+%   - print as percents
+%   - print actual performances
+%   - conditional format ??? is it possible?
+%       - if not -> marking by extra symbol (to easily find out
+%       differences)
+
+  % datanames cannot contain some characters
+  datanames = strrep(settings.Datanames, '.', '_');
+  % compute averages and add them as the last row
+  data(end+1, :) = nanmean(data);
+  
+  % create table
+  datatable = array2table(data);
+  datatable.Properties.RowNames = [settings.methodStrings, {'Average'}];
+  datatable.Properties.VariableNames = datanames;
+  % delete old version
+  if exist(fname, 'file')
+    delete(fname)
+  end
+  % print table to file fname
+  writetable(datatable, fname, 'WriteRowNames', true, 'Range', 'A2')
+  % change first column name to 'Method'
+  writetable(table({'Method'}), fname, 'WriteVariableNames', false, 'Range', 'A2')
+end
+
 
 function printTexTable(FID, data, settings)
 % prints tex table to file FID
@@ -90,9 +148,21 @@ function g = gap(maxLength, n)
   g = ' '*ones(1, maxLength - n);
 end
 
-function ms = methodString(method, settings)
-% generates string in accordance with method and its settings
-  if isempty(settings)
+function ms = methodString(method, strformat, settings)
+% generates string in accordance with method, its settings and mostly
+% format of resulting table
+%
+% Input:
+%   method    - method name | string
+%   strformat - format of resulting file | {'txt', 'xls'}
+%                 'txt' - text file string (shorter)
+%                 'xls' - xls file string (full)
+%   settings  - settings of method | struct
+    
+  if nargin < 2
+    strformat = 'txt';
+  end
+  if nargin < 3 || isempty(settings)
     ms = method;
     return
   end
@@ -105,55 +175,46 @@ function ms = methodString(method, settings)
         % kernel
         ker = defopts(settings.svm, 'kernel_function', []);
         if ~isempty(ker)
-          addms{end+1} = ker(1:3);
+          addms{end+1} = getSpecVal(ker, strformat);
         end
         % autoscaling
         auto = defopts(settings.svm, 'autoscale', []);
         if ~isempty(auto) && auto
-          addms{end+1} = 'on';
+          addms{end+1} = getSpecVal('autoscale_on', strformat);
         elseif ~isempty(auto) && ~auto
-          addms{end+1} = 'off';
+          addms{end+1} = getSpecVal('autoscale_off', strformat);
         end
       end
     % decision tree
     case 'tree'
       if isfield(settings, 'tree')
         if isfield(settings.tree, 'type')
-          addms{end+1} = settings.tree.type(1:3);
+          addms{end+1} = getSpecVal(settings.tree.type, strformat);
         end
         if isfield(settings.tree, 'crit')
-          addms{end+1} = settings.tree.crit(1:3);
+          addms{end+1} = getSpecVal(settings.tree.crit, strformat);
         end
         if isnan(defopts(settings.tree, 'prune', []))
-          addms{end+1} = 'opt';
+          addms{end+1} = getSpecVal('optimal', strformat);
         end
       end
     % random forest
     case 'rf'
       if isfield(settings, 'rf')
         if isfield(settings.rf, 'type') && strcmp(settings.rf.type, 'matlab')
-          addms{end+1} = 'mtl';
+          addms{end+1} = getSpecVal('matlab', strformat);
         end
         if isfield(settings.rf, 'TreeType')
-          addms{end+1} = settings.rf.TreeType(1:3);
+          addms{end+1} = getSpecVal(settings.rf.TreeType, strformat);
         end
         if isfield(settings.rf, 'learning')
-          addms{end+1} = settings.rf.learning(1:3);
+          addms{end+1} = getSpecVal(settings.rf.learning, strformat);
         end
-      end
-    % k-nearest neighbours
-    case 'knn'
-      if isfield(settings, 'knn') && isfield(settings.knn, 'k')
-        method = [num2str(settings.knn.k), '-nn'];
-      else
-        method = 'k-nn';
       end
     % discriminant analyses
     case {'lda', 'qda'}
-      if isfield(settings, 'implementation') && strcmp(settings.implementation, 'matlab')
-        addms{end+1} = 'mtl';
-      elseif isfield(settings, 'implementation') && strcmp(settings.implementation, 'prtools')
-        addms{end+1} = 'prt';
+      if isfield(settings, 'implementation')
+        addms{end+1} = getSpecVal(settings.implementation, strformat);
       end
   end
   
@@ -163,15 +224,66 @@ function ms = methodString(method, settings)
   end
   
   % add extension to method name
-  if ~isempty(addms) > 0
-    add = [' - ', addms{1}];
-    if length(addms) > 1
-      for i = 2:length(addms)
-        add = [add, ', ', addms{i}];
-      end
-    end
-  else
+  if isempty(addms)
     add = [];
+  else
+    add = [' - ', strjoin(addms, ', ')];
   end
-  ms = [method, add];
+  ms = [getSpecVal(method, strformat, true), add];
+end
+
+function val = getSpecVal(s, resFormat, method)
+% Return special string value
+%
+% Input:
+%   method - boolean
+  
+  if nargin < 3
+    method = false;
+  end  
+    
+  % format
+  if strcmp(resFormat, 'txt')
+    valStruct = txtValues();
+  else
+    valStruct = xlsValues();
+  end
+  
+  % find value
+  if isfield(valStruct, s)
+    val = valStruct.(s);
+  % otherwise use default function
+  else
+    if method
+      val = valStruct.defMethod(s);
+    else
+      val = valStruct.defProp(s);
+    end
+  end
+end
+
+function val = txtValues()
+% function for default set of txt values
+
+  % default function
+  val.defMethod = @(x) x;
+  val.defProp   = @(x) x(1:3);
+  val.knn = 'k-nn';
+  val.matlab = 'mtl';
+  val.prtools = 'prt';
+  val.autoscale_on = 'on';
+  val.autoscale_off = 'off';
+end
+
+function val = xlsValues()
+% function for default set of txt values
+
+  % default function
+  val.defMethod = @(x) upper(x);
+  val.defProp   = @(x) x;
+  val.fisher = 'Fisher';
+  val.nb = 'Naive Bayes';
+  val.tree = 'Tree';
+  val.autoscale_on = 'autoscale on';
+  val.autoscale_off = 'autoscale off';
 end

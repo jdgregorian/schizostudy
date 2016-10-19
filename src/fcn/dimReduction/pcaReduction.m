@@ -14,13 +14,17 @@ function [reducedData, transMatrix] = pcaReduction(data, nDim)
 % See Also:
 %   ttestReduction, kendallReduction, classifier
 
-  reducedData = [];
-  [Nsubjects, dim] = size(data);
-  
+  if nargout > 0
+    reducedData = [];
+    transMatrix = [];
+  end
   if nargin == 0
     help pcaReduction
     return
-  elseif nargin == 1
+  end
+  
+  [Nsubjects, dim] = size(data);
+  if nargin == 1
     nDim = dim;
   end
   if nDim > Nsubjects - 1
