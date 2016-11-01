@@ -1,5 +1,5 @@
-%% DWI dataset clustering
-% Results of DWI dataset clustering 
+%% DWI dataset clustering and finding outliers
+% Results of DWI dataset clustering and outliers finding
 
 %%
 
@@ -8,7 +8,7 @@ S = load('data/data_DWI_154subjects.mat');
 patID = logical(S.indices);
 conID = ~logical(S.indices);
 
-%% Perform PCA
+%% Fulldata PCA
 [~, redData, lambda] = pca(S.data);
 
 fprintf('Eigenvalues: \n')
@@ -26,7 +26,8 @@ end
 
 fprintf('\nThe rest of eigenvalues differences is lower than %g.\n', diffToShow)
 
-%% Two principle components
+%%
+% Two and three principle components
 close all
 
 % reduce dimension
@@ -43,11 +44,11 @@ scatter(actualData(conID, 1), actualData(conID, 2), 'o')
 xlabel('First PCA component')
 ylabel('Second PCA component')
 legend('patients', 'controls')
+title('2 principle components of full data')
 
 hold off
 
-%% Three principle components
-close all
+% Three principle components
 
 % reduce dimension
 dim = 3;
@@ -66,13 +67,14 @@ xlabel('First PCA component')
 ylabel('Second PCA component')
 zlabel('Third PCA component')
 legend('patients', 'controls')
+title('3 principle components of full data')
 
 view(40, 10)
 
 hold off
 
 
-%% Perform PCA only on patients
+%% PCA only on patients
 [~, redData, lambda] = pca(S.data(patID, :));
 
 fprintf('Eigenvalues: \n')
@@ -90,7 +92,8 @@ end
 
 fprintf('\nThe rest of eigenvalues differences is lower than %g.\n', diffToShow)
 
-%% Two principle components (only patients)
+%%
+% Two and three principle components (only patients)
 close all
 
 % reduce dimension
@@ -109,8 +112,7 @@ title('2 principle components of patients')
 
 hold off
 
-%% Three principle components (only patients)
-close all
+% Three principle components (only patients)
 
 % reduce dimension
 dim = 3;
@@ -133,29 +135,54 @@ view(40, 10)
 
 hold off
 
-%% Patients clustering analyses in 2D
+%% Patients clustering analysis in 2, 5, and 10D
 
 close all
 
-% reduce dimension
+%%
+
+% 2D
 dim = 2;
-% cluster analyses
-clusterAnalyses(redData, 1:dim)
+% cluster analysis
+clusterAnalysis(redData, 1:dim)
 
-%% Patients clustering analyses in 5D
+%%
 
-close all
-
-% reduce dimension
+% 5D
 dim = 5;
-% cluster analyses
-clusterAnalyses(redData, 1:dim)
+% cluster analysis
+clusterAnalysis(redData, 1:dim)
 
-%% Patients clustering analyses in 10D
+%%
+
+% 10D
+dim = 10;
+% cluster analysis
+clusterAnalysis(redData, 1:dim)
+
+%% Outlier finding - mahalanobis
+% Mahalanobis distance is computed between each point and the rest of 
+% points. 5 points are marked as possible outliers.
 
 close all
 
-% reduce dimension
+% 2D
+dim = 2;
+% outlier analysis
+outlierAnalysis(redData, 1:dim)
+
+% 5D
+dim = 5;
+% outlier analysis
+outlierAnalysis(redData, 1:dim)
+
+% 10D
 dim = 10;
-% cluster analyses
-clusterAnalyses(redData, 1:dim)
+% outlier analysis
+outlierAnalysis(redData, 1:dim)
+
+
+%%
+
+% final clearing
+close all
