@@ -21,7 +21,7 @@ function clusterAnalysis(data, dim, varargin)
   end
 
   % parse function settings
-  settings = settings2struct(varargin);
+  settings = settings2struct(varargin{:});
   maxGroups = defopts(settings, 'maxGroups', 20);
   dendrTitle = defopts(settings, 'title', [num2str(length(dim)), 'D']);
 
@@ -35,13 +35,13 @@ function clusterAnalysis(data, dim, varargin)
   % display dendrogram
   [~, dendrID] = dendrogram(clustData, maxGroups);
   hold on
-  xlabel('Patient group')
+  xlabel('Point group')
   ylabel('Distance')
   title(dendrTitle)
   hold off
 
   % print properties of data
-  fprintf('Numbers of patients in groups:\n\n')
+  fprintf('Numbers of points in groups:\n\n')
   fprintf('Group:   %s\n', num2str(1:maxGroups))
   fprintf('Number:')
   for i = 1:maxGroups
