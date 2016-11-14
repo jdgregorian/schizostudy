@@ -105,7 +105,7 @@ function printXlsTable(fname, data, settings)
   
   % create table
   datatable = array2table(data);
-  datatable.Properties.RowNames = [settings.methodStrings, {'Average'}];
+  datatable.Properties.RowNames = [uniqueString(settings.methodStrings), {'Average'}];
   datatable.Properties.VariableNames = datanames;
   % delete old version
   if exist(fname, 'file')
@@ -286,4 +286,22 @@ function val = xlsValues()
   val.tree = 'Tree';
   val.autoscale_on = 'autoscale on';
   val.autoscale_off = 'autoscale off';
+end
+
+function str = uniqueString(str)
+% changes cell-array of string to unique strings
+
+  nStr = length(str);
+  strID = cell2mat(cellfun(@(x) strcmp(x, str), str, 'UniformOutput', false)');
+
+  for i = 1:nStr
+    % find actual string
+    actualID = find(strID(i, :));
+    for aid = 2:length(actualID)
+      str{actualID(aid)} = [str{i}, ' (', num2str(aid), ')'];
+    end
+    % delete all same string occurences
+    strID(strID(i, :), strID(i, :)) = false;
+  end
+
 end

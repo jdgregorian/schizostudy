@@ -48,16 +48,17 @@ function listSettingsResults(folder, varargin)
   % names of data
   datanames = createDatanames(data);
   
+  % check postprocessing folder
+  if ~exist(pprocFolder, 'dir')
+    mkdir(pprocFolder);
+  end
+  
   % print xls table
   fprintf('Saving average performance table to %s...\n', xlsTableName)
   resultTable(avgPerformance, 'FID', xlsTableName, 'Format', 'xls', ...
                               'Method', method, 'Datanames', datanames, ...
                               'Settings', settingArray)
 
-  % check postprocessing folder
-  if ~exist(pprocFolder, 'dir')
-    mkdir(pprocFolder);
-  end
   % printing results to txt file
   FID = fopen(resultname, 'w');
   assert(FID ~= -1, 'Cannot open %s !', resultname)
@@ -132,7 +133,7 @@ function listSettingsResults(folder, varargin)
         fprintf(FID,'\n');
         settings = settingArray{s};
         printStructure(settings, FID, 'StructName', '    settings');
-        if ~isempty(dimReduction{d})
+        if ~isempty(dimReduction) && ~isempty(dimReduction{d})
           printStructure(dimReduction{d}, FID, 'StructName', '    settings.dimReduction');
         end
 
