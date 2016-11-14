@@ -7,15 +7,17 @@ function resultTable(avgPerformance, varargin)
 %                    of different datasets) | double
 %   settings       - name-value pairs (or structure with fields) of table 
 %                    settings:
-%     Datanames - names of data in table (columns) | cell-array of strings
-%     Format    - format of resulting table | {'txt', 'xls'}
-%     FID       - identifier (or name) of file to print in | double or
-%                 string (only string for 'xls' format)
-%     Method    - names of methods in table (rows) | cell-array of strings
-%     Settings  - settings of methods in table | cell-array of struct
+%     ActualPerf - array of actual performances of classifier (same size as
+%                  avgPerformance) | double
+%     Datanames  - names of data in table (columns) | cell-array of strings
+%     Format     - format of resulting table | {'txt', 'xls'}
+%     FID        - identifier (or name) of file to print in | double or
+%                  string (only string for 'xls' format)
+%     Method     - names of methods in table (rows) | cell-array of strings
+%     Settings   - settings of methods in table | cell-array of struct
 %
 % See Also:
-%   listSettingsResults
+%   listSettingsResults, returnResults
 
   if nargin < 1
     help resultTable
@@ -44,6 +46,7 @@ function resultTable(avgPerformance, varargin)
   settings.Settings = defopts(settings, 'Settings', cell(1, nSettings));
   settings.methodStrings = cellfun(@(x, y) methodString(x, tableFormat, y), ...
                            settings.Method, settings.Settings, 'UniformOutput', false);
+  settings.actualPerf = defopts(settings, 'ActualPerf', avgPerformance);
   
   % print table according to its format
   switch tableFormat
@@ -92,8 +95,6 @@ function printXlsTable(fname, data, settings)
 % prints table to xls file FID
 
 % TODO:
-%   - print as percents
-%   - print actual performances
 %   - conditional format ??? is it possible?
 %       - if not -> marking by extra symbol (to easily find out
 %       differences)
@@ -103,8 +104,19 @@ function printXlsTable(fname, data, settings)
   % compute averages and add them as the last row
   data(end+1, :) = nanmean(data);
   
+  % prepare strings of data
+  dataString = arrayfun(@(x) sprintf('%0.2f%%', 100*x), data, 'UniformOutput', false);
+  % find differences between avgPerformance and actualPerformace
+  diffPerf = data(1:end-1, :) ~= settings.actualPerf;
+  diffPerfS = [diffPerf; false(1, size(data, 2))];
+  % add actual performances
+  dataString(diffPerfS) = arrayfun(@(x, y) sprintf('%0.2f%% (%0.2f%%)', 100*x, 100*y), ...
+                           data(diffPerfS), settings.actualPerf(diffPerf), 'UniformOutput', false);
+  % replace NaN's
+  dataString(isnan(data)) = {'NaN'};
+  
   % create table
-  datatable = array2table(data);
+  datatable = array2table(dataString);
   datatable.Properties.RowNames = [uniqueString(settings.methodStrings), {'Average'}];
   datatable.Properties.VariableNames = datanames;
   % delete old version
@@ -114,6 +126,7 @@ function printXlsTable(fname, data, settings)
   % print table to file fname
   writetable(datatable, fname, 'WriteRowNames', true, 'Range', 'A2')
   % change first column name to 'Method'
+  % writetable is used because xlswrite does not wort properly
   writetable(table({'Method'}), fname, 'WriteVariableNames', false, 'Range', 'A2')
 end
 
