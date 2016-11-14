@@ -23,9 +23,9 @@ stay_id_10([out_id_10, out_id_10 + nPatients]) = false;
 % save results for 5%
 indices = dataContent.indices(stay_id_05);
 data = dataContent.data(stay_id_05, :);
-save([dataFile(1:end-4), '_out_05.mat'], 'data', 'indices')
+save(fullfile('data', ['data_DWI_', num2str(length(indices)), 'subjects_out.mat']), 'data', 'indices')
 
 % save results for 10%
 indices = dataContent.indices(stay_id_10);
 data = dataContent.data(stay_id_10, :);
-save([dataFile(1:end-4), '_out_10.mat'], 'data', 'indices')
+save(fullfile('data', ['data_DWI_', num2str(length(indices)), 'subjects_out.mat']), 'data', 'indices')

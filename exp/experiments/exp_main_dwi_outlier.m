@@ -9,24 +9,28 @@ expfolder = fullfile('exp', 'experiments');
 setfolder = fullfile('exp', 'settings');
 
 % datafiles
-DWI154sub = fullfile('data', 'data_DWI_154subjects.mat');
+DWI138sub = fullfile('data', 'data_DWI_138subjects_out.mat');
+DWI146sub = fullfile('data', 'data_DWI_146subjects_out.mat');
 
 % main settings
 mainSettings = fullfile(setfolder, 'mainSettings.m');
 
 % additional settings
+% data paths are added due to correct match
 pca20  = ['settings.dimReduction.name = ''pca'';',...
           'settings.dimReduction.nDim = 20;'];
 ltoSet_05 = ['settings.crossval = ''lto'';',...
              'settings.pairing = [1:73, 1:73];', ...
+             'FCdata = ''', DWI146sub,''';',...
              pca20];
 ltoSet_10 = ['settings.crossval = ''lto'';',...
              'settings.pairing = [1:69, 1:69];', ...
+             'FCdata = ''', DWI138sub,''';',...
              pca20];
         
 % summary
 settingFiles = {mainSettings};
-data = {DWI154sub};
+data = {DWI138sub, DWI146sub};
 additionalSettings = {ltoSet_05, ltoSet_10};
 expname = 'exp_main_dwi_outlier';
 
