@@ -1,5 +1,6 @@
 *.asv
 data/*
+doc/tex
 results/*
 startupSchizo.m
 exp/experiments/*/

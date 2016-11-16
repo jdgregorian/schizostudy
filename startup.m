@@ -4,6 +4,7 @@ if ~isdir('data')
 end
 
 addpath(genpath('data'))
+addpath(genpath('doc'))
 addpath(genpath('exp'))
 addpath(genpath('src'))
 addpath(genpath('test'))
