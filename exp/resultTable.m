@@ -100,7 +100,7 @@ function printXlsTable(fname, data, settings)
 %       differences)
 
   % datanames cannot contain some characters
-  datanames = strrep(settings.Datanames, '.', '_');
+  datanames = regexprep(settings.Datanames, '[\.\\\/]', '_'); % . \ /
   % compute averages and add them as the last row
   data(end+1, :) = nanmean(data);
   
