@@ -62,7 +62,7 @@ function runExperiment(experimentFile, data, expname, addSettings, metacentrum)
   scriptname = fullfile(foldername, [expname, '_runscript.m']);
 
   % logfile creation
-  mkdir(fullfile(foldername, 'log'))
+  [~, msg] = mkdir(fullfile(foldername, 'log'));
   ftest = fopen(fullfile(foldername, 'log', ['run_log_', strrep(datestr(clock), ':', '_'), '.txt']), 'w');
   if ftest ==-1
     warning('Cannot open log file!')
