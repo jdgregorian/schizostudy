@@ -20,31 +20,38 @@ function reduceFCData(data, subjectOut, regionOut, resultName)
     return
   end
   if nargin == 1 || strcmp(subjectOut, 'default')
-    subjectOut = [66,101,102,104,113,144,152,166,178,179,189,190,192];
+    % subjectOut = [66, 101, 102, 104, 113, 144, 152, 166, 178, 179, 189, 190, 192];
+    subjectOut = [];
   end
   if nargin < 3 || strcmp(regionOut, 'default')
-    regionOut = [71,72];
+    % regionOut = [71, 72];
+    regionOut = [];
     if nargin < 4
       resultName = [];
     end
   end
 
-  load(data)
+  dataContent = load(data);
   
   % find out type of connectivity matrix
-  if exist('FC','var')
+  if isfield(dataContent, 'FC')
     newName = 'FC';
-    CM = FC;
-  elseif exist('SC','var')
+    CM = dataContent.FC;
+    dataContent = rmfield(dataContent, 'FC');
+  elseif isfield(dataContent, 'SC')
     newName = 'SC';
-    CM = SC;
+    CM = dataContent.SC;
+    dataContent = rmfield(dataContent, 'SC');
   else
     error('FC or SC matrix has to be included in file!')
   end
   
   % check indices existence
-  assert( exist('indices_patients', 'var') && exist('indices_volunteers', 'var'), ...
+  assert( isfield(dataContent, 'indices_patients') && isfield(dataContent, 'indices_volunteers'), ...
     'Vectors indices_patients and indices_volunteers has to be included in file.')
+  indices_patients = dataContent.indices_patients;
+  indices_volunteers = dataContent.indices_volunteers;
+  dataContent = rmfield(dataContent, {'indices_patients', 'indices_volunteers'});
 
   % decide which subjects and regions stay
   nOrigSub = size(CM, 1);
@@ -77,7 +84,14 @@ function reduceFCData(data, subjectOut, regionOut, resultName)
     end
     if overwrite
       eval([newName, ' = CM;'])
-      save(resultName, newName, 'indices_patients', 'indices_volunteers')
+      % checkout other variables in mat-file
+      varNames = fieldnames(dataContent);
+      for n = 1:length(varNames)
+        eval([varNames{n}, ' = dataContent.', varNames{n}, ';'])
+      end
+      
+      % save resulting data
+      save(resultName, newName, 'indices_patients', 'indices_volunteers', varNames{:})
     end
   end
 end
