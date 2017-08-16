@@ -46,17 +46,15 @@ while notMatch && (iter < maxIter)
     permutations = [permutations; keepId'];
 
     % age test
-    normalDistPat = chi2gof(age(patKeepId));
-    fprintf('chi-age-pat: %d  ', normalDistPat)
-    normalDistCon = chi2gof(age(conKeepId));
-    fprintf('chi-age-con: %d  ', normalDistCon)
     notMatchAge = ttest2(age(patKeepId), age(conKeepId));
     fprintf('ttest-age: %d  ', notMatchAge)
     % sex test
-    notMatchSex = ttest2(sex(patKeepId), sex(conKeepId));
-    fprintf('ttest-sex: %d  ', notMatchSex)
+    contTable = [sum( sex(patKeepId)), sum( sex(conKeepId)); ... % [M-P, M-C;
+                 sum(~sex(patKeepId)), sum(~sex(conKeepId))];    %  F-P, F-C]
+    notMatchSex = fishertest(contTable);
+    fprintf('fisher-sex: %d  ', notMatchSex)
     % notMatch = normalDistPat || normalDistCon || notMatchAge || notMatchSex;
-    notMatch = normalDistPat || notMatchAge || notMatchSex;
+    notMatch = notMatchAge || notMatchSex;
   else
     notMatch = 1;
     fprintf('Permutation already tested')
@@ -64,7 +62,6 @@ while notMatch && (iter < maxIter)
   fprintf('\n')
 end
 
-warning('Chi2-test for age controls ignored.')
 subjectKeep = ismember(1:length(age), [patKeepId, conKeepId]);
 matchTable_new = matchTable(subjectKeep, :);
 subjectOut = find(~subjectKeep);
