@@ -102,7 +102,7 @@ function printXlsTable(fname, data, settings)
   % datanames cannot contain some characters
   datanames = regexprep(settings.Datanames, '[\.\\\/]', '_'); % . \ /
   % compute averages and add them as the last row
-  data(end+1, :) = nanmean(data);
+  data(end+1, :) = mean(data, 'omitnan');
   
   % prepare strings of data
   dataString = arrayfun(@(x) sprintf('%0.2f%%', 100*x), data, 'UniformOutput', false);
