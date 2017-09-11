@@ -4,13 +4,13 @@ function metacentrum_runExperiment(expname, walltime, taskIDs, reqMemory)
 % 'walltime' and required memory 'reqMemory'.
 %
 % Input:
-%   expname  - name of the experiment | string
-%   walltime - maximum (wall)time for Metacentrum machines | string
-%              ('4h', '1d', '2d', ...)
-%   taskIDs  - vector of task numbers to run | integer or [] to run all 
-%              instances
-%   reqMemory   - required memory for experiment on Metacentrum | string
-%              ('500mb', '1gb', '4gb', ...)
+%   expname   - name of the experiment | string
+%   walltime  - maximum (wall)time for Metacentrum machines | string
+%               ('4:00:00')
+%   taskIDs   - vector of task numbers to run | integer or [] to run all 
+%               instances
+%   reqMemory - required memory for experiment on Metacentrum | string
+%               ('500mb', '1gb', '4gb', ...)
 %
 % See Also:
 %   runExperiment, metacentrum_task, createExperiment
@@ -21,7 +21,7 @@ function metacentrum_runExperiment(expname, walltime, taskIDs, reqMemory)
     if nargin < 3
       taskIDs = [];
       if nargin < 2
-        walltime = '4h';
+        walltime = '4:00:00';
         if nargin < 1
           help metacentrum_runExperiment
           return
@@ -56,7 +56,7 @@ function metacentrum_runExperiment(expname, walltime, taskIDs, reqMemory)
   
   % metacentrum settings
   pbs_max_workers = 50;
-  pbs_params = ['-l walltime=', walltime, ',nodes=^N^:ppn=1,mem=', reqMemory, ',scratch=1gb,matlab_MATLAB_Distrib_Comp_Engine=^N^'];
+  pbs_params = ['-l select=1:ncpus=1:mem=', reqMemory, ':scratch_local=1gb -l walltime=', walltime, ' -l matlab_MATLAB_Distrib_Comp_Engine=^N^'];
 
   % licence loop
   while 1
@@ -90,7 +90,7 @@ function metacentrum_runExperiment(expname, walltime, taskIDs, reqMemory)
     tasks(t) = createTask(job, @metacentrum_task, 0, {expname, id, settings{id}});
   end
 
-  tasks
+  disp(tasks)
 
   % submit job
   submit(job)
