@@ -1,9 +1,11 @@
 classdef KNNClassMTL < MatlabClassifier
+% KNN classifier using default Matlab implementation
+
   properties
-    method     % classifier method
-    settings
-    classifier % own classifier
-    implementation
+    method         % classifier method
+    settings       % classifier settings
+    classifier     % own classifier
+    implementation % implementation used for classifier
   end
   
   methods
@@ -14,19 +16,20 @@ classdef KNNClassMTL < MatlabClassifier
       obj.method = 'knn';
       obj.settings.k = defopts(settings, 'k', 1);
       obj.settings.distance = defopts(settings, 'distance', 'euclidean');
-      obj.settings.rule = defopts(settings, 'rule', 'nearest');
     end
     
-    function obj = trainClassifier(obj, ~, ~)
-    % knn has no training function
+    function obj = trainClassifier(obj, trainingData, trainingLabels)
+    % knn training function
+      cellset = cellSettings(obj.settings, {'gridsearch', 'implementation', 'prior', 'k', 'distance'});
+      obj.classifier = fitcknn(trainingData, trainingLabels, ...
+                               'NumNeighbors', obj.settings.k, ...
+                               'Distance', obj.settings.distance, ...
+                               cellset{:});
     end
     
-    function y = predict(obj, testingData, trainingData, trainingLabels)
+    function y = predict(obj, testingData, ~, ~)
     % prediction using knn
-      y = knnclassify(testingData, trainingData, trainingLabels, ...
-          obj.settings.k, ...
-          obj.settings.distance, ...
-          obj.settings.rule);
+      y = obj.classifier.predict(testingData);
     end
     
   end

@@ -1,4 +1,6 @@
 classdef NBClassMTL < MatlabClassifier
+% Naive Bayes classifier using default Matlab implementation
+
   properties
     method         % classifier method
     settings       % classifier settings
@@ -17,7 +19,7 @@ classdef NBClassMTL < MatlabClassifier
     function obj = trainClassifier(obj, trainingData, trainingLabels)
     % training function
       cellset = cellSettings(obj.settings, {'gridsearch', 'implementation', 'prior'});
-      obj.classifier = NaiveBayes.fit(trainingData, trainingLabels, cellset{:});
+      obj.classifier = fitcnb(trainingData, trainingLabels, cellset{:});
     end
     
     function y = predict(obj, testingData, ~, ~)

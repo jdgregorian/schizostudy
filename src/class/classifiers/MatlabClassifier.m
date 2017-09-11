@@ -3,7 +3,7 @@ classdef (Abstract) MatlabClassifier < Classifier
     method         % classifier method
     settings       % classifier settings
     classifier     % own classifier
-    implementation % imlementation used for classifier
+    implementation % implementation used for classifier
   end
 
   methods (Abstract)
