@@ -12,7 +12,7 @@ function reduceFCData(data, subjectOut, regionOut, resultName)
 %   resultName - name of resulting datafile | string
 %
 % See Also:
-%   csvexport
+%   prepareFCData, csvexport
 
   % check input
   if nargin == 0
