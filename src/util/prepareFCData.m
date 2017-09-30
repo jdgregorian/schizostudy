@@ -3,14 +3,14 @@ function prepareFCData(filename, varargin)
 % format for FC classification
 %
 % Input:
-%   filename   - name of the mat-file
-%   settings   - pairs of property (string) and value, or struct with 
-%                properties as fields:
-%                  ExSubject   - subjects to be excluded
-%                  ExDim       - dimensions to be excluded
-%                  FCvariable  - variable containing FC matrix
-%                  IndicesFile - file containing subject indices
-%                  ResultName  - name of resulting file
+%   filename - name of the mat-file
+%   settings - pairs of property (string) and value, or struct with 
+%              properties as fields:
+%                ExSubject   - subjects to be excluded
+%                ExDim       - dimensions to be excluded
+%                FCvariable  - variable containing FC matrix
+%                IndicesFile - file containing subject indices
+%                ResultName  - name of resulting file
 %
 % See Also:
 %   reduceFCData

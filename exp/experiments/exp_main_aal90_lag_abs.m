@@ -1,23 +1,21 @@
 % Script for testing main settings of classifiers on dataset with 180 
-% subjects using AAL atlas with 90 regions. The dataset was gained through 
-% reduction of data_FC_190subjects_B.mat by excluding randomly chosen 
-% patients to gain balanced dataset (90 patients : 90 controls). 
-% The groups are matched on age and sex.
+% subjects using AAL atlas with 90 regions. The dataset uses lagged 
+% FC matrices. The subjects are the same as in data_FC_180subjects.mat.
 
 % initialization
 expfolder = fullfile('exp', 'experiments');
 setfolder = fullfile('exp', 'settings');
 
 % datafiles
-FC180sub = fullfile('data', 'data_FC_180subjects.mat');
+FC180sub_abs = fullfile('data', 'data_FC_aal90_lag_abs_180sub.mat');
 
 % settings
 mainSettings = fullfile(setfolder, 'mainSettings.m');
 
 % summary
 settingFiles = {mainSettings};
-data = {FC180sub};
-expname = 'exp_main_180sub';
+data = {FC180sub_abs};
+expname = 'exp_main_aal90_lag_abs';
 
 % running experiment
 runExperiment(settingFiles, data, expname)
