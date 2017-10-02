@@ -123,11 +123,24 @@ function printXlsTable(fname, data, settings)
   if exist(fname, 'file')
     delete(fname)
   end
-  % print table to file fname
-  writetable(datatable, fname, 'WriteRowNames', true, 'Range', 'A2')
-  % change first column name to 'Method'
-  % writetable is used because xlswrite does not wort properly
-  writetable(table({'Method'}), fname, 'WriteVariableNames', false, 'Range', 'A2')
+  
+  try
+    % print table to file fname
+    writetable(datatable, fname, 'WriteRowNames', true, 'Range', 'A2')
+    % change first column name to 'Method'
+    % writetable is used because xlswrite does not wort properly
+    writetable(table({'Method'}), fname, 'WriteVariableNames', false, 'Range', 'A2')
+  catch err
+    % print table to text file
+    fprintf(2, 'Error: %s\n', err.message);
+    % change fname.* to fname.txt
+    [fname_path, fname_name] = fileparts(fname);
+    fname = fullfile(fname_path, [fname_name, '.txt']);
+    fprintf('Exporting to file %s\n', fname)
+    % print table to new file fname.txt
+    writetable(datatable, fname, 'WriteRowNames', true)
+    % TODO: change first column name to 'Method'
+  end
 end
 
 

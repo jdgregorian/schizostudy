@@ -54,7 +54,7 @@ function listSettingsResults(folder, varargin)
   end
   
   % print xls table
-  fprintf('Saving average performance table to %s...\n', xlsTableName)
+  fprintf('Saving average performance table to %s\n', xlsTableName)
   resultTable(avgPerformance, 'FID', xlsTableName, 'Format', 'xls', ...
                               'Method', method, 'Datanames', datanames, ...
                               'Settings', settingArray, 'ActualPerf', actualPerf)
@@ -62,7 +62,7 @@ function listSettingsResults(folder, varargin)
   % printing results to txt file
   FID = fopen(resultname, 'w');
   assert(FID ~= -1, 'Cannot open %s !', resultname)
-  fprintf('Printing results to %s...\n', resultname)
+  fprintf('Printing results to %s\n', resultname)
   
   % list header printing
   fprintf(FID,'---------------------------------------------------------------------------------\n');
