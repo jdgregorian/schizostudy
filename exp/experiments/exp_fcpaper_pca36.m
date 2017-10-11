@@ -47,7 +47,7 @@ pca36  = ['settings.dimReduction.name = ''pca'';',...
 settingFiles = {paperSettings};
 data = {ICA9, ICA27, AAL90, Craddock190};
 additionalSettings = {pca36};
-expname = 'exp_fcpaper_orig';
+expname = 'exp_fcpaper_pca36';
 
 % running experiment
 runExperiment(settingFiles, data, expname, additionalSettings)
