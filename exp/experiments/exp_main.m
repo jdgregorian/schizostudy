@@ -1,5 +1,5 @@
 % Script for testing main settings of classifiers on dataset with
-% 190 subjects and full conectivity matrices.
+% 190 subjects and full connectivity matrices.
 
 % initialization
 expfolder = fullfile('exp', 'experiments');
