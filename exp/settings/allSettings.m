@@ -1,4 +1,5 @@
-% Script for testing main settings of classifiers
+% Script for testing larger set of settings of classifiers than in
+% mainSettings.m
 %
 % Variables 'FCdata', 'filename', 'expfolder' and 'datamark' should be 
 % defined before run.
@@ -9,7 +10,7 @@ if ~exist('FCdata', 'var')
   FCdata = fullfile('data', 'data_FC_190subjects_B.mat');
 end
 if ~exist('filename', 'var')
-  filename = 'mainSettings';
+  filename = 'allSettings';
 end
 if ~exist('expfolder', 'var')
   expfolder = fullfile('exp', 'experiments');

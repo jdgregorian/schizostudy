@@ -49,11 +49,13 @@ function [avgPerformance, preparedData, preparedLabels, class] = classifyFC(data
   
   % prepared data check
   if isempty(preparedData) || isempty(preparedLabels)
-    warning('Wrong input format or file!')
     errors = 'Wrong input format or file!';
-    avgPerformance = NaN;
-    resultFileName = fullfile('exp', 'experiments', filename);
-    save(resultFileName, 'avgPerformance', 'errors', 'data')
+    warning(errors)
+    if nargin == 4
+      avgPerformance = NaN;
+      resultFileName = fullfile('exp', 'experiments', filename);
+      save(resultFileName, 'avgPerformance', 'errors', 'data')
+    end
     return
   end
 
