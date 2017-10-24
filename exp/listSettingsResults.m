@@ -34,6 +34,10 @@ function listSettingsResults(folder, varargin)
   % loading data
   [avgPerformance, overallSettings, method, data, results, returnedFiles, omittedFiles] = returnResults(folder, 'SeparateReduction', separRed);
   
+  if isempty(avgPerformance)
+    error('Folder %s does not contain any result files.', folder)
+  end
+  
   settingArray = overallSettings.classifiers;
   dimReduction = overallSettings.dimReduction;
   performance = results.performance;
