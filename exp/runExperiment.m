@@ -72,7 +72,8 @@ function runExperiment(experimentFile, data, expname, addSettings, metacentrum)
   % if experiment was not created yet
   if ~isdir(foldername) || ~exist(scriptname, 'file')
     fprintf(ftest, 'Creating experiment...\n');
-    createExperiment(expfolder, expname, settingFiles, data, addSettings)
+    runscript = createExperiment(expfolder, expname, settingFiles, data, addSettings);
+    assert(strcmp(runscript, scriptname), 'Script name and runscript name are not the same.')
   end
   
   % find available settings
@@ -108,8 +109,10 @@ function runExperiment(experimentFile, data, expname, addSettings, metacentrum)
     availableTaskID = updateTaskList(foldername, resultNames);
   end
   
-  fprintf('No other tasks available.\n')
-  fprintf(ftest, 'No other tasks available.\n');
+  no_tasks_mess = ['No other tasks available.\n', ...
+                   'If the experimental settings has changed, delete ', scriptname, ' and run the experiment again.\n'];
+  fprintf(no_tasks_mess)
+  fprintf(ftest, no_tasks_mess);
   
   if length(dir(fullfile(foldername, 'running'))) == 2
     rmdir(fullfile(foldername, 'running'))

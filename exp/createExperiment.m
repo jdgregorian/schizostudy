@@ -1,20 +1,33 @@
-function createExperiment(expfolder, expname, settingFiles, data, addSettings)
-% Function creates M-file containing all necessary settings to run the
-% experiment.
+function runscript = createExperiment(expfolder, expname, settingFiles, data, addSettings)
+% runscript = createExperiment(expfolder, expname, settingFiles, data, ...
+%                              addSettings)
+% Function creates M-file 'runscript' containing all necessary settings to 
+% run the experiment.
 %
 % Input:
-%    expfolder    - folder containing experiment | string
-%    expname      - name of the experiment | string
-%    settingFiles - files containing settings of the experiment | string or
-%                   cell array of strings
-%    data         - files containing data to test | string or cell array of
-%                   strings
-%    addSettings  - additional settings for each setting | string or cell
-%                   array of strings
+%   expfolder    - folder containing experiment | string
+%   expname      - name of the experiment | string
+%   settingFiles - files containing settings of the experiment | string or
+%                  cell array of strings
+%   data         - files containing data to test | string or cell array of
+%                  strings
+%   addSettings  - additional settings for each setting | string or cell
+%                  array of strings
+%
+% Output:
+%   runscript - file containing all necessary settings | string
 %
 % See Also:
 %   runExperiment, loadSettings, metacentrum_createExperiment
 
+  if nargout > 0
+    runscript = [];
+  end
+  if nargin < 1
+    help createExperiment
+    return
+  end
+  
   if nargin < 5 || isempty(addSettings)
     addSettings = {''};
   end
@@ -34,7 +47,8 @@ function createExperiment(expfolder, expname, settingFiles, data, addSettings)
   settings = cellfun(@(x) x(1:strfind(x, 'classifyFC') - 1), settings, 'UniformOutput', false);
 
   % print settings with data to .m file
-  FID = fopen(fullfile(foldername, [expname, '_runscript.m']), 'w');
+  runscript = fullfile(foldername, [expname, '_runscript.m']);
+  FID = fopen(runscript, 'w');
   assert(FID ~= -1, 'Cannot open %s !', expname)
   fprintf('Printing settings to %s...\n', expname)
 
