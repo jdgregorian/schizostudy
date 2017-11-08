@@ -162,11 +162,11 @@ classdef (Abstract) Classifier
             trainingData = data(~foldIds, :);
             trainingLabels = labels(~foldIds);
             try
-              gridClass{i+1} = gridClass{i+1}.trainClassifier(trainingData, trainingLabels);
+              gridClass{s} = gridClass{s}.trainClassifier(trainingData, trainingLabels);
               % testing
               testingData = data(foldIds,:);
               testingLabels = labels(foldIds);
-              y = gridClass{i+1}.predict(testingData, trainingData, trainingLabels);
+              y = gridClass{s}.predict(testingData, trainingData, trainingLabels);
               % output check
               if iscell(y)
                 if length(y) == 1
