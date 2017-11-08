@@ -1,20 +1,23 @@
 % classifier performance test
 
-%% generate data
+%% define data
 
-nPacients = 90;
+nPatients = 90;
 nControls = 90;
-dim = 2;
-spaceShift = 0.5;
+dim = 30;
+spaceShift = 1;
 
-dataname = ['test_data_', num2str(dim), 'D_dist_', strrep(num2str(spaceShift), '.', '~'), '.mat'];
+dimdistname = [num2str(dim), 'D_dist_', strrep(num2str(spaceShift), '.', '~')];
+dataname = ['test_data_', dimdistname, '.mat'];
 datafolder = fullfile('data', 'test_data');
 
-pat_data = randn(nPacients, dim);
+%% generate data
+
+pat_data = randn(nPatients, dim);
 con_data = spaceShift + randn(nControls, dim);
 
 data_mat = [pat_data; con_data];
-indices = [ones(nPacients, 1); zeros(nControls, 1)];
+indices = [ones(nPatients, 1); zeros(nControls, 1)];
 
 %% save generated data
 
@@ -33,5 +36,5 @@ hold off
 FCdata = fullfile(datafolder, dataname);
 filename = ['test_', num2str(dim), 'D'];
 expfolder = fullfile('exp', 'experiments');
-datamark = ['_', filename];
+datamark = ['_test_', dimdistname];
 mkdir(expfolder, filename)
