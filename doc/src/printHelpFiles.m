@@ -1,9 +1,13 @@
 function printHelpFiles(filename)
 % printHelpFiles(filename) prints all necessary help files in current
-% directory and subdirectories
+% directory and subdirectories to in TeX file 'filename'.
 
   if nargin < 1
-    filename = fullfile('doc', 'function_help.tex');
+    texFolder = fullfile('doc', 'tex');
+    filename = fullfile(texFolder, 'function_help.tex');
+    if ~isdir(texFolder)
+      mkdir(texFolder)
+    end
   end
 
   % find files in 'exp' folder
