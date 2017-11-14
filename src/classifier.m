@@ -1,4 +1,5 @@
-function [performance, class, correctPredictions, errors] = classifier(method, data, labels, settings)
+function [performance, class, correctPredictions, errors, trainedClassifier] = ...
+           classifier(method, data, labels, settings)
 % Binary classification of data with labels by classifier chosen in method. 
 % Returns performance of cross-validation of appropriate classifier.
 %
@@ -7,9 +8,11 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 %                                    using method
 % classifier(method, data, labels, settings) - use additional settings
 %                                              adjust classification
-% [performance, class, correctPredictions, errors] = classifier(...)
-%   - return classification performance, classes, correct predictions of
-%   individual subjects and pertinent errors of subsets
+% [performance, class, correctPredictions, errors, trainedClassifier] = ...
+%    classifier(...) - return classification performance, classes, correct 
+%                      predictions of individual subjects, pertinent 
+%                      errors of subsets, and trained classifiers on
+%                      subsets
 %
 % Input:
 %
@@ -37,11 +40,13 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 % Output:
 %
 %   performance        - classifiers performance | double
-%   class              - classes assigned to individual subjects ! double 
+%   class              - classes assigned to individual subjects | double 
 %                        vector
 %   correctPredictions - correctness of classifications | boolean vector
 %   errors             - errors of individual subsets | cell array of
-%                       MException
+%                        MException
+%   trainedClassifier  - classifiers trained on individual subsets | cell
+%                        array of Classifier class
 %
 % See Also:
 %   classifyFC
@@ -129,6 +134,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     end
   end
   errors = cell(1, kFold);
+  trainedClassifier = cell(1, kFold);
   
   % create classifier
   % the following line will be removed after unification of classifiers
@@ -139,6 +145,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
     performance = NaN;
     class = NaN;
     correctPredictions = NaN;
+    trainedClassifier = {};
     errors{1} = ['There is no ', method,' method in ', settings.implementation, ' implementation!'];
     return
   end
@@ -160,6 +167,7 @@ function [performance, class, correctPredictions, errors] = classifier(method, d
 
       % training
       TC = TC.train(trainingData, trainingLabels);
+      trainedClassifier{sub} = TC;
 
       % transform data if necessary (automatically disabled in outside
       % transformation)

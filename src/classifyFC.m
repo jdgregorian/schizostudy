@@ -60,18 +60,20 @@ function [avgPerformance, preparedData, preparedLabels, class] = classifyFC(data
   end
 
   % test classification by chosen method for 'iteration' times
-  iteration = defopts(settings,'iteration',1);
+  iteration = defopts(settings, 'iteration', 1);
+  saveClassif = defopts(settings, 'saveClassifier', false);
   performance = zeros(1,iteration);
   class = cell(1,iteration);
   correctPredictions = cell(1,iteration);
   errors = cell(1,iteration);
+  trainedClassifier = cell(1, iteration);
   elapsedTime = zeros(1,iteration);
   for i = 1:iteration
     if iteration > 1
       fprintf('Iteration %d:\n',i)
     end
     tic
-    [performance(i), class{i}, correctPredictions{i}, errors{i}] = classifier(method, preparedData, preparedLabels, settings);
+    [performance(i), class{i}, correctPredictions{i}, errors{i}, trainedClassifier{i}] = classifier(method, preparedData, preparedLabels, settings);
     elapsedTime(i) = toc;
   end
   avgPerformance = mean(performance);
@@ -88,6 +90,9 @@ function [avgPerformance, preparedData, preparedLabels, class] = classifyFC(data
       mkdir(foldername)
     end
     save(resultFileName, 'settings', 'method', 'data', 'performance', 'avgPerformance', 'class', 'correctPredictions', 'errors', 'elapsedTime')
+    if saveClassif
+      save(resultFileName, 'trainedClassifier', '-append')
+    end
   end
 end
 
