@@ -13,6 +13,7 @@ classdef RandomForest
     trainingData   % data used for forest training
     trainingLabels % labels used for forest training
     learning       % learning algorithm (bagging, boosting)
+    treeWeights    % weights of individual trees
   end
     
 methods
@@ -33,11 +34,23 @@ methods
     RF.perfType = defopts(settings, 'perfType', 'alldata');
     RF.trainingData = data;
     RF.trainingLabels = labels;
+    RF.treeWeights = zeros(1, settings.nTrees);
     
     datacount = size(data,1);
     Ndatause = ceil(RF.FBoot*datacount);
-    if strcmpi(RF.learning, 'boosting')
+    settings.weights = ones(Ndatause, 1) / Ndatause;
+    if any(strcmpi(RF.learning, {'adaboost', 'boosting'}))
       useInd = 1:datacount;
+    end
+    % change labels to {-1,+1}
+    if strcmpi(RF.learning, 'adaboost')
+%       classLabels = unique(labels);
+%       dataclass(labels == classLabels(1)) = -1;
+%       dataclass(labels == classLabels(2)) =  1;
+%       labels = dataclass;
+      % This variable will contain the results of the single weak
+      % classifiers weight by their alpha
+      estimateclasssum = zeros(size(labels));
     end
     if strcmpi(RF.TreeType, 'matlab')
       cellset = cellSettings(settings, {'FBoot', 'TreeType', 'learning' ,'perfType'});
@@ -50,7 +63,7 @@ methods
         case {'bag', 'bagging'} % bagging
           useInd = randi(Ndatause, 1, Ndatause);
 
-        case 'boosting' % boosting
+        case {'adaboost', 'boosting'} % boosting
           % boosting will be changed according to different boosting strategies
         otherwise
           warning('Wrong learning algorithm name! Switching to bagging...')
@@ -110,13 +123,38 @@ methods
           pred = Tree.predict(perfData, datause);
         end
         y = round(double(pred));
-        correctPred = y'==perfLabels;
-        RF.performances(T) = sum((correctPred))/length(perfLabels);
-        if strcmpi(RF.learning,'boosting') 
-        % TODO: will be changed according to different boosting strategies by using weights
-          nNotCorrect = sum(~correctPred);
-          useInd(end+1:end+nNotCorrect) = find(~correctPred);
-        end
+        correctPred = (y' == perfLabels);
+        switch RF.learning
+          case 'adaboost'
+            err = sum( settings.weights.*(~correctPred') )/sum(settings.weights);
+            % Weak classifier influence on total result is based on the 
+            % current classification error
+            alpha = 1/2 * log((1-err)/max(err, eps));
+            % We update weights so that wrongly classified samples will 
+            % have more weight
+            settings.weights = settings.weights.* exp(alpha.* (~correctPred'));
+            settings.weights = settings.weights./sum(settings.weights);
+            % Calculate the current error of the cascade of weak
+            % classifiers
+            y(y == 0) = -1;
+            estimateclasssum = estimateclasssum + y'*alpha;
+            % prediction > 0.5 ? and scale back to [0,1]
+            estimateclasstotal = (sign(estimateclasssum) + 1) / 2; 
+            RF.performances(T) = sum(estimateclasstotal == labels)/length(labels);
+            RF.treeWeights(T) = alpha;
+            if(RF.performances(T) == 1)
+              break;
+            end
+          case 'boosting'
+            % TODO: will be changed according to different boosting strategies by using weights
+            nNotCorrect = sum(~correctPred);
+            useInd(end+1:end+nNotCorrect) = find(~correctPred);
+            RF.performances(T) = sum((correctPred))/length(perfLabels);
+            RF.treeWeights(T) = RF.performances(T);
+          otherwise
+            RF.performances(T) = sum((correctPred))/length(perfLabels);
+            RF.treeWeights(T) = RF.performances(T);
+        end     
       else
         RF.performances(T) = 1;
       end
@@ -141,12 +179,13 @@ methods
     if any(strcmpi(RF.perfType, {'allNP','treedataNP'}))
       perf = ones(1,RF.NTrees);
     else
-      perf = RF.performances;
+      perf = RF.treeWeights(1:RF.NTrees);
     end
+    
     y = sum(Y.*repmat(perf, nSubj, 1), 2)/sum(perf); % weighted prediction
     fprintf('%f\n', y);
     
-    y = round(y); %>0.5;
+    y = round(y); % > 0.5 ?
   end  
     
 end

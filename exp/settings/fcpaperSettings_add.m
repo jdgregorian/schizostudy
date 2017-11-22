@@ -148,6 +148,36 @@ settings.note = 'Linear SVM. Autoscale ''off''. Maximum iterations 200000.';
 
 classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear_noauto_iter200', datamark, '.mat']));
 
+%% rbf
+clear settings
+
+settings.svm.kernel_function = 'rbf';
+settings.note = 'Default RBF SVM.';
+
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf', datamark, '.mat']));
+
+%% rbf - autoscale 'off'
+clear settings
+
+settings.svm.kernel_function = 'rbf';
+settings.svm.autoscale = false; 
+settings.note = 'RBF SVM. Autoscale ''off''.';
+
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_noauto', datamark, '.mat']));
+
+%% RF - 11 linear trees - boosting, maxSplit = 10
+clear settings
+
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'linear';
+settings.rf.learning = 'boosting';
+settings.rf.maxSplit = 10;
+settings.rf.distance = 2;
+settings.note = 'Random forest with linear trees. Learning by boosting.';
+
+classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_boost_10split', datamark, '.mat']));
+
 %% final results listing
 
 listSettingsResults(fullfile(expfolder, filename));

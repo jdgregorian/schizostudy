@@ -55,6 +55,9 @@ methods
     LT.maxSplit = defopts(settings, 'maxSplit', 'all');
     LT.dist = defopts(settings, 'distance', 2);
     LT.weights = defopts(settings, 'weights', ones(1,Nsubjects));
+    if size(LT.weights, 1) > 1
+      LT.weights = LT.weights';
+    end
     LT.probability = defopts(settings, 'probability', false);
     LT.draw = defopts(settings, 'draw', false);
     

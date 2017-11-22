@@ -23,22 +23,24 @@ mkdir(expfolder, filename)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SVM
-% linear
+% linear - iter 100000
 clear settings
 
 settings.svm.kernel_function = 'linear';
-settings.note = 'Linear SVM.';
+settings.svm.options = statset('MaxIter', 100000);
+settings.note = 'Linear SVM. Maximum iterations 100000.';
 
-classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear', datamark, '.mat']));
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear_iter100', datamark, '.mat']));
 
-%% linear - autoscale 'off'
+%% linear - autoscale 'off', iter 200000
 clear settings
 
 settings.svm.kernel_function = 'linear';
 settings.svm.autoscale = false;
-settings.note = 'Linear SVM. Autoscale ''off''.';
+settings.svm.options = statset('MaxIter', 200000);
+settings.note = 'Linear SVM. Autoscale ''off''. Maximum iterations 200000.';
 
-classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_linear_noauto', datamark, '.mat']));
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear_noauto_iter200', datamark, '.mat']));
 
 %% quadratic
 clear settings
@@ -74,27 +76,11 @@ settings.note = 'Polynomial(3) SVM. Autoscale ''off''.';
 
 classifyFC(FCdata,'svm',settings, fullfile(filename, ['svm_poly_noauto', datamark, '.mat']));
 
-%% rbf
-clear settings
-
-settings.svm.kernel_function = 'rbf';
-settings.note = 'Default RBF SVM.';
-
-classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf', datamark, '.mat']));
-
-%% rbf - autoscale 'off'
-clear settings
-
-settings.svm.kernel_function = 'rbf';
-settings.svm.autoscale = false; 
-settings.note = 'RBF SVM. Autoscale ''off''.';
-
-classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_rbf_noauto', datamark, '.mat']));
-
 %% rbf - autoscale 'on', gridsearch 'rbf_sigma'
 clear settings
 
 settings.svm.kernel_function = 'rbf';
+settings.saveClassifier = true;
 settings.note = 'RBF SVM using gridsearch on sigma.';
 
 settings.gridsearch.mode = 'simple';
@@ -112,6 +98,7 @@ clear settings
 
 settings.svm.kernel_function = 'rbf';
 settings.svm.autoscale = false;
+settings.saveClassifier = true;
 settings.note = 'RBF SVM using gridsearch on sigma. Autoscale ''off''.';
 
 settings.gridsearch.mode = 'simple';
@@ -160,6 +147,19 @@ settings.rf.distance = 2;
 settings.note = 'Random forest with linear trees. Learning by boosting.';
 
 classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_boost_10split', datamark, '.mat']));
+
+%% RF - 11 linear trees - AdaBoost, maxSplit = 10
+clear settings
+
+settings.rf.nTrees = 11;
+settings.rf.type = 'classic';
+settings.rf.TreeType = 'linear';
+settings.rf.learning = 'adaboost';
+settings.rf.maxSplit = 10;
+settings.rf.distance = 2;
+settings.note = 'Random forest with linear trees. Learning by AdaBoost.';
+
+classifyFC(FCdata, 'rf', settings, fullfile(filename, ['rf_lin_11t_adaboost_10split', datamark, '.mat']));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Trees
@@ -249,6 +249,7 @@ classifyFC(FCdata, 'fisher', settings, fullfile(filename, ['fisher', datamark, '
 clear settings
 
 settings.knn.distance = 'euclidean';
+settings.saveClassifier = true;
 settings.note = 'KNN classifier using gridsearch on k.';
 
 settings.gridsearch.mode = 'simple';
