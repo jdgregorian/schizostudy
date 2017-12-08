@@ -53,6 +53,15 @@ function reduceFCData(data, subjectOut, regionOut, resultName)
   indices_volunteers = dataContent.indices_volunteers;
   dataContent = rmfield(dataContent, {'indices_patients', 'indices_volunteers'});
 
+  % remove regions containing NaN in any subject
+  if isnan(regionOut)
+    regionOut = nanFCregions(CM);
+  end
+  % remove subjects containing NaN in any region
+  if isnan(subjectOut)
+    [~, subjectOut] = nanFCregions(CM);
+  end
+  
   % decide which subjects and regions stay
   nOrigSub = size(CM, 1);
   subjectStay = true(1, nOrigSub);
@@ -72,6 +81,13 @@ function reduceFCData(data, subjectOut, regionOut, resultName)
     if isempty(resultName)
       resultName = fullfile('data', ['data_', newName, '_', num2str(nNewSub), 'subjects.mat']);
     end
+    % folder existence
+    resultFolder = fileparts(resultName);
+    if ~isdir(resultFolder)
+      fprintf('Directory %s does not exist.\nCreating\n', resultFolder)
+      assert(mkdir(resultFolder), 'Directory %s cannot be created.')
+    end
+    % file existence
     if exist(resultName, 'file')
         answer = questdlg(['Overwrite ', resultName, ' ?'], 'Overwritting mat file', 'Overwrite', 'No', 'Overwrite');
         if strcmp('Overwrite', answer)
