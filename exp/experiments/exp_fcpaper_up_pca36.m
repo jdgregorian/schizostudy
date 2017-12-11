@@ -5,7 +5,9 @@
 % The groups are matched on age and sex.
 % Moreover, six datasets with lagged correlation matrices are also tested.
 % This results in 12 different datasets (6 non-lagged, 6 lagged).
-%
+% 
+% This script tests datasets reduced by PCA to dimension 36.
+%%
 % List of datasets:
 %   ICA9        - 9 ICA components
 %   ICA9_den    - 9 ICA components, extra denoising
@@ -41,10 +43,15 @@ Craddock196_lag = fullfile('data', 'unified_preprocessing', 'data_FC_craddock196
 % settings
 paperSettings = fullfile(setfolder, 'fcpaperSettings.m');
 
+% additional settings
+pca36  = ['settings.dimReduction.name = ''pca'';',...
+          'settings.dimReduction.nDim = 36;'];
+	  
 % summary
 settingFiles = {paperSettings};
 data = {ICA9, ICA9_den, ICA24, ICA24_den, AAL90, Craddock196, ICA9_lag, ICA9_den_lag, ICA24_lag, ICA24_den_lag, AAL90_lag, Craddock196_lag};
-expname = 'exp_fcpaper_up_orig';
+additionalSettings = {pca36};
+expname = 'exp_fcpaper_up_pca36';
 
 % running experiment
 runExperiment(settingFiles, data, expname)

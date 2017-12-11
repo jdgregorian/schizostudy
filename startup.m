@@ -19,6 +19,12 @@ else
   addpath(genpath(fullfile('vendor', 'prtools')))
 end
 
+% usefun
+if ~isdir(fullfile('src', 'util', 'usefun'))
+  warning([' Usefun toolbox is missing! It will probably cause malfunction of schizostudy toolbox.',...
+           ' Download usefun at https://github.com/jdgregorian/usefun.git to src/util directory.'])
+end
+
 % CONN
 % uncomment if needed
 % if ~isdir(fullfile('vendor', 'conn'))
