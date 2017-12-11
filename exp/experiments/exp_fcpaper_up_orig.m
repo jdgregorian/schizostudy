@@ -36,7 +36,7 @@ ICA9_den_lag    = fullfile('data', 'unified_preprocessing', 'data_FC_ica9_up_lag
 ICA24_lag       = fullfile('data', 'unified_preprocessing', 'data_FC_ica24_up_lag_abs_180sub.mat');
 ICA24_den_lag   = fullfile('data', 'unified_preprocessing', 'data_FC_ica24_up_lag_abs_180sub_denoise.mat');
 AAL90_lag       = fullfile('data', 'unified_preprocessing', 'data_FC_aal90_up_lag_abs_180sub.mat');
-Craddock196_lag = fullfile('data', 'unified_preprocessing', 'data_FC_craddock196_up_lag_abs180sub.mat');
+Craddock196_lag = fullfile('data', 'unified_preprocessing', 'data_FC_craddock196_up_lag_abs_180sub.mat');
 
 % settings
 paperSettings = fullfile(setfolder, 'fcpaperSettings.m');
