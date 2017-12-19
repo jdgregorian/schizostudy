@@ -39,19 +39,17 @@ methods
     datacount = size(data,1);
     Ndatause = ceil(RF.FBoot*datacount);
     settings.weights = ones(Ndatause, 1) / Ndatause;
-    if any(strcmpi(RF.learning, {'adaboost', 'boosting'}))
-      useInd = 1:datacount;
+    switch RF.learning
+      case 'adaboost'
+        useInd = 1:datacount;
+        % This variable will contain the results of the single weak
+        % classifiers weight by their alpha
+        estimateclasssum = zeros(size(labels));
+      case 'boosting'
+        useInd = 1:datacount;
+        weightBase = ones(1, Ndatause);
     end
-    % change labels to {-1,+1}
-    if strcmpi(RF.learning, 'adaboost')
-%       classLabels = unique(labels);
-%       dataclass(labels == classLabels(1)) = -1;
-%       dataclass(labels == classLabels(2)) =  1;
-%       labels = dataclass;
-      % This variable will contain the results of the single weak
-      % classifiers weight by their alpha
-      estimateclasssum = zeros(size(labels));
-    end
+        
     if strcmpi(RF.TreeType, 'matlab')
       cellset = cellSettings(settings, {'FBoot', 'TreeType', 'learning' ,'perfType'});
     end
@@ -147,8 +145,8 @@ methods
             end
           case 'boosting'
             % TODO: will be changed according to different boosting strategies by using weights
-            nNotCorrect = sum(~correctPred);
-            useInd(end+1:end+nNotCorrect) = find(~correctPred);
+            weightBase = weightBase + (~correctPred);
+            settings.weights = weightBase/sum(weightBase);
             RF.performances(T) = sum((correctPred))/length(perfLabels);
             RF.treeWeights(T) = RF.performances(T);
           otherwise
