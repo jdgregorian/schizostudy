@@ -22,12 +22,27 @@ function [avgPerformance, preparedData, preparedLabels, class] = classifyFC(data
 %   classifier
 
   if nargin < 3
-      settings = [];
-      if nargin < 2
-        help classifyFC
-        return
-      end
+    settings = [];
+    if nargin < 2
+      help classifyFC
+      return
+    end
   end
+  
+  % result saving settings
+  if nargin == 4
+    avgPerformance = NaN;
+    resultFileName = fullfile('exp', 'experiments', filename);
+    [foldername, resultFile, resFileExt] = fileparts(resultFileName);
+    if ~isdir(foldername)
+      mkdir(foldername)
+    end
+    % temporary folder
+    tmpfolder = fullfile(foldername, 'tmp');
+    tmpFileName = fullfile(tmpfolder, [resultFile, resFileExt]);
+    % TODO: load temporary file and continue
+  end
+  
   method = lower(method);
 
   % prepare data
@@ -52,8 +67,6 @@ function [avgPerformance, preparedData, preparedLabels, class] = classifyFC(data
     errors = 'Wrong input format or file!';
     warning(errors)
     if nargin == 4
-      avgPerformance = NaN;
-      resultFileName = fullfile('exp', 'experiments', filename);
       save(resultFileName, 'avgPerformance', 'errors', 'data')
     end
     return
@@ -68,6 +81,7 @@ function [avgPerformance, preparedData, preparedLabels, class] = classifyFC(data
   errors = cell(1,iteration);
   trainedClassifier = cell(1, iteration);
   elapsedTime = zeros(1,iteration);
+  % iteration loop
   for i = 1:iteration
     if iteration > 1
       fprintf('Iteration %d:\n',i)
@@ -75,25 +89,38 @@ function [avgPerformance, preparedData, preparedLabels, class] = classifyFC(data
     tic
     [performance(i), class{i}, correctPredictions{i}, errors{i}, trainedClassifier{i}] = classifier(method, preparedData, preparedLabels, settings);
     elapsedTime(i) = toc;
+    
+    % compute average performance using finished iterations
+    avgPerformance = mean(performance(1:i));
+    
+    % save temporary results
+    if nargin == 4
+      [tmp_stat, ~] = mkdir(tmpfolder);
+      if tmp_stat
+        save(tmpFileName, 'settings', 'method', 'data', 'performance', 'avgPerformance', 'class', 'correctPredictions', 'errors', 'elapsedTime')
+        if saveClassif
+          save(tmpFileName, 'trainedClassifier', '-append')
+        end
+      end
+    end
   end
-  avgPerformance = mean(performance);
 
   fprintf('Method %s had %.2f%% performance in average (%d iterations) on data %s.\nAnd lasted %.2f seconds.\n', ...
           method, avgPerformance*100, iteration, data, sum(elapsedTime));
-  
+        
   % save results
   if nargin == 4
-    resultFileName = fullfile('exp', 'experiments', filename);
-    foldername = strfind(resultFileName, filesep);
-    foldername = resultFileName(1 : foldername(end) - 1);
-    if ~isdir(foldername)
-      mkdir(foldername)
-    end
     save(resultFileName, 'settings', 'method', 'data', 'performance', 'avgPerformance', 'class', 'correctPredictions', 'errors', 'elapsedTime')
     if saveClassif
       save(resultFileName, 'trainedClassifier', '-append')
     end
+    % delete temporary file (and folder) if possible
+    if isfile(tmpFileName)
+      delete(tmpFileName);
+      [~] = rmdir(tmpfolder);
+    end
   end
+  
 end
 
 function [data, labels] = loadFC(loadedData)

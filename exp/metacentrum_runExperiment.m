@@ -93,6 +93,7 @@ function metacentrum_runExperiment(expname, walltime, taskIDs, reqMemory)
   disp(tasks)
 
   % submit job
+  fprintf('Submitting jobs...\n')
   submit(job)
   
 end

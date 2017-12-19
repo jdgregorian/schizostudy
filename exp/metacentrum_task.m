@@ -52,12 +52,17 @@ function metacentrum_task(expname, taskID, taskSettings)
     settingsEval(taskSettings)
 
   catch err
-    fprintf(fout, 'Error: %s\n', getReport(err));
+    fprintf(fout, 'Running error: %s\n', getReport(err));
   end
   
   % saving results
   fprintf(fout, 'Saving results...\n');
-  copyfile(fullfile(OUTPUTDIR, LOCALEXPPATH), EXPPATH)
+  [c_status, c_msg] = copyfile(fullfile(OUTPUTDIR, LOCALEXPPATH), EXPPATH);
+  if c_status
+    fprintf(fout, 'Files successfully saved to %s\n', EXPPATH);
+  else
+    fprintf(fout, 'Saving error: %s\n', c_msg);
+  end
 
   fprintf(fout, '###########################################\n');
   fclose(fout);
