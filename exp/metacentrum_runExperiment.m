@@ -56,7 +56,10 @@ function metacentrum_runExperiment(expname, walltime, taskIDs, reqMemory)
   
   % metacentrum settings
   pbs_max_workers = 50;
-  pbs_params = ['-l select=1:ncpus=1:mem=', reqMemory, ':scratch_local=1gb -l walltime=', walltime, ' -l matlab_MATLAB_Distrib_Comp_Engine=^N^'];
+  pbs_params = ['-l select=1:ncpus=1:mem=', reqMemory, ...
+                ':scratch_local=1gb -l walltime=', walltime, ...
+                ' -l matlab_MATLAB_Distrib_Comp_Engine=^N^', ...
+                ' -N ', expname];
 
   % licence loop
   while 1

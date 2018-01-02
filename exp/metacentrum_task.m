@@ -29,8 +29,8 @@ function metacentrum_task(expname, taskID, taskSettings)
     aposID = strfind(taskSettings, '''');
     aposID(aposID < FCdataID) = [];
     datapath = taskSettings(aposID(1) + 1 : aposID(2) - 1);
-    filesepsID = strfind(datapath, filesep);
-    dataname    = datapath(filesepsID(end) + 1 : end);
+    [datafolder, dataname, dataextension] = fileparts(datapath);
+    dataname = [dataname, dataextension];
   
     % move to output directory and copy necessary files
     cd(OUTPUTDIR)
@@ -39,6 +39,7 @@ function metacentrum_task(expname, taskID, taskSettings)
     cellfun( @(x) copyfile(fullfile(SCHIZOPATH, x), fullfile(OUTPUTDIR, x)), fToCopy)
     mkdir('data')
     newdataname = fullfile('data', dataname);
+    assert(isdir(datafolder), 'Cannot copy %s because %s is not a folder', datapath, datafolder)
     copyfile(datapath, newdataname)
     % change taskSettings according to new path
     taskSettings = [taskSettings(1:aposID(1)), newdataname, taskSettings(aposID(2):end)];
