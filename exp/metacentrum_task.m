@@ -34,8 +34,8 @@ function metacentrum_task(expname, taskID, taskSettings)
     
     % create running folder on storage
     fprintf(fout, 'Creating running folder...\n');
-    aposSplit = strsplit(S, '''');
-    [~, resFilename] = fileparts(aposSplit(end-1));
+    aposSplit = strsplit(taskSettings, '''');
+    [~, resFilename] = fileparts(aposSplit{end-1});
     taskRunFolder = fullfile(EXPPATH, 'running', resFilename);
     [createdRunDir, ~, messID] = mkdir(taskRunFolder);
     if createdRunDir && strcmp(messID, 'MATLAB:MKDIR:DirectoryExists')
@@ -44,7 +44,7 @@ function metacentrum_task(expname, taskID, taskSettings)
     elseif ~createdRunDir
       fprintf(fout, 'Unable to create running folder %s\n', taskRunFolder);
     else
-      fprintf(fout, 'Running folder %s created.\n', taskRunFolder);
+      fprintf(fout, 'Created running folder %s\n', taskRunFolder);
     end
   
     % move to output directory and copy necessary files
@@ -83,7 +83,7 @@ function metacentrum_task(expname, taskID, taskSettings)
   % delete running folder on storage
   try
     rmdir(taskRunFolder)
-    fprintf(fout, 'Running folder %s deleted.\n', taskRunFolder);
+    fprintf(fout, 'Deleted running folder %s\n', taskRunFolder);
   catch
     fprintf(fout, 'Unable to delete running folder %s\n', taskRunFolder);
   end
