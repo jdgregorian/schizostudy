@@ -94,6 +94,9 @@ function metacentrum_runExperiment(expname, walltime, taskIDs, reqMemory)
   end
 
   disp(tasks)
+  
+  % create running folder
+  [~, ~] = mkdir(fullfile(foldername, 'running'));
 
   % submit job
   fprintf('Submitting jobs...\n')
