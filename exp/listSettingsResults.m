@@ -28,16 +28,63 @@ function listSettingsResults(folder, varargin)
   folderPos = strfind(folder, filesep);
   foldername = folder(folderPos(end) + 1 : end);
   pprocFolder = fullfile(folder, 'pproc');
-  resultname = fullfile(pprocFolder, [foldername, '_report.txt']);
+  txtFilename = fullfile(pprocFolder, [foldername, '_report.txt']);
   xlsTableName = fullfile(pprocFolder, [foldername, '_table.xls']);
   
   % loading data
-  [avgPerformance, overallSettings, method, data, results, returnedFiles, omittedFiles] = returnResults(folder, 'SeparateReduction', separRed);
+  [avgPerformance, overallSettings, method, data, results, returnedFiles, omittedFiles] = ...
+    returnResults(folder, 'SeparateReduction', separRed);
   
   if isempty(avgPerformance)
     error('Folder %s does not contain any result files.', folder)
   end
   
+  % parse loaded data
+  settingArray = overallSettings.classifiers;
+  actualPerf = results.actualPerformance;
+  
+  % number of successfully saved report files
+  nSuccessfulSavings = 0;
+  % names of data
+  datanames = createDatanames(data);
+  
+  % check postprocessing folder
+  if ~exist(pprocFolder, 'dir')
+    mkdir(pprocFolder);
+  end
+  
+  % print xls table
+  fprintf('Saving average performance table to %s\n', xlsTableName)
+  try
+    resultTable(avgPerformance, 'FID', xlsTableName, 'Format', 'xls', ...
+                                'Method', method, 'Datanames', datanames, ...
+                                'Settings', settingArray, 'ActualPerf', actualPerf)
+    nSuccessfulSavings = nSuccessfulSavings + 1; 
+  catch err
+    fprintf('Table could not be saved due to the following error:\n%s\n', getReport(err))
+  end
+
+  % printing results to txt file
+  fprintf('Printing results to %s\n', txtFilename)
+  try
+    printResultsTxt(avgPerformance, overallSettings, method, data, ...
+           results, returnedFiles, omittedFiles, txtFilename, datanames, ...
+           folder)
+    nSuccessfulSavings = nSuccessfulSavings + 1;
+  catch err
+    fprintf('Text file could not be saved due to the following error:\n%s\n', getReport(err))
+  end
+  
+  fprintf('%d (out of 2) report files successfully generated\n', nSuccessfulSavings)
+  
+end
+
+function printResultsTxt(avgPerformance, overallSettings, method, data, ...
+           results, returnedFiles, omittedFiles, resultname, datanames, ...
+           folder)
+% prints results to text file
+  
+  % parse input
   settingArray = overallSettings.classifiers;
   dimReduction = overallSettings.dimReduction;
   performance = results.performance;
@@ -49,24 +96,11 @@ function listSettingsResults(folder, varargin)
   nFiles = length(returnedFiles);
   nOmitted = length(omittedFiles);
   [nSettings, nData] = size(avgPerformance);
-  % names of data
-  datanames = createDatanames(data);
-  
-  % check postprocessing folder
-  if ~exist(pprocFolder, 'dir')
-    mkdir(pprocFolder);
-  end
-  
-  % print xls table
-  fprintf('Saving average performance table to %s\n', xlsTableName)
-  resultTable(avgPerformance, 'FID', xlsTableName, 'Format', 'xls', ...
-                              'Method', method, 'Datanames', datanames, ...
-                              'Settings', settingArray, 'ActualPerf', actualPerf)
 
-  % printing results to txt file
+  % open file
   FID = fopen(resultname, 'w');
   assert(FID ~= -1, 'Cannot open %s !', resultname)
-  fprintf('Printing results to %s\n', resultname)
+  
   
   % list header printing
   fprintf(FID,'---------------------------------------------------------------------------------\n');
@@ -160,8 +194,6 @@ function listSettingsResults(folder, varargin)
   
   fclose(FID);
   
-  fprintf('Report files successfully generated\n')
-  
 end
 
 function printErrors(FID, errors)
@@ -241,9 +273,11 @@ function datanames = createDatanames(data)
   [C, ia, ic] = unique(datanames);
   if length(C) < nData
     for i = 1:length(ia)
-      if length(datanames(ia(i) == ic)) > 1
-        id = find(ia(i) == ic);
-        for j = 1:length(datanames(ia(i) == ic))
+      % find identical datanames
+      sameID = (ia(i) == ic);
+      if numel(datanames(sameID)) > 1
+        id = find(sameID);
+        for j = 1:numel(datanames(sameID))
           datanames{id(j)} = [datanames{id(j)}, '_', num2str(j)];
         end
       end

@@ -158,6 +158,16 @@ settings.note = 'Linear SVM. Autoscale ''off''. Maximum iterations 500000.';
 
 classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear_noauto_iter500', datamark, '.mat']));
 
+%% linear - autoscale 'off', iter 1000000
+clear settings
+
+settings.svm.kernel_function = 'linear';
+settings.svm.autoscale = false;
+settings.svm.options = statset('MaxIter', 1000000);
+settings.note = 'Linear SVM. Autoscale ''off''. Maximum iterations 1000000.';
+
+classifyFC(FCdata, 'svm', settings, fullfile(filename, ['svm_linear_noauto_iter1000', datamark, '.mat']));
+
 %% rbf
 clear settings
 
